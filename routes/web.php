@@ -36,3 +36,39 @@ Route::get('/admin/courses', function () {
 Route::get('/admin/reports', function () {
     return view('admin.reports');
 });
+
+Route::get('/faculty/dashboard', function () {
+    return view('faculty.dashboard');
+});
+
+Route::get('/faculty/feedback', function () {
+    return view('faculty.feedback');
+});
+
+Route::get('/faculty/analytics', function () {
+    return view('faculty.analytics');
+});
+
+Route::get('/faculty/profile', function () {
+    return view('faculty.profile');
+});
+
+Route::get('/student/dashboard', function () {
+    return view('student.dashboard');
+});
+
+Route::get('/student/courses', function () {
+    return view('student.courses');
+});
+
+Route::get('/student/feedback', function () {
+    return view('student.feedback');
+});
+
+Route::get('/student/feedback/history', function () {
+    return view('student.feedback.history');
+});
+
+Route::get('/student/profile', function () {
+    return view('student.profile');
+});
