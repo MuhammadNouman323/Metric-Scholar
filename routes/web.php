@@ -33,3 +33,6 @@ Route::get('/admin/faculty', function () {
 Route::get('/admin/courses', function () {
     return view('admin.courses');
 });
+Route::get('/admin/reports', function () {
+    return view('admin.reports');
+});

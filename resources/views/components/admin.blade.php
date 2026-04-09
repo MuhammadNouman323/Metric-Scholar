@@ -68,7 +68,7 @@
                     </svg>
                     Courses
                 </a>
-                <a href="#"
+                <a href="/admin/reports"
                     class="flex items-center px-8 py-3.5 hover:bg-gray-100 hover:text-gray-900 transition-colors border-l-4 border-transparent">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
