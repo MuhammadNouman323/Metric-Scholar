@@ -156,30 +156,34 @@
             <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                 <div class="flex justify-between items-center mb-7">
                     <h3 class="text-[19px] font-bold text-gray-900">Historical Trend</h3>
-                    <span
-                        class="text-[12px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">Last 4 Semesters</span>
+                    <span class="text-[12px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">Last 4
+                        Semesters</span>
                 </div>
 
                 <!-- SVG Line Chart -->
                 <div class="w-full h-[180px] relative mb-4">
                     <svg viewBox="0 0 600 180" class="w-full h-full overflow-visible" preserveAspectRatio="none">
                         <!-- Grid lines -->
-                        <line x1="0" y1="45" x2="600" y2="45" stroke="#f1f5f9" stroke-width="1.5"
-                            stroke-dasharray="4 4" />
-                        <line x1="0" y1="90" x2="600" y2="90" stroke="#f1f5f9" stroke-width="1.5"
-                            stroke-dasharray="4 4" />
-                        <line x1="0" y1="135" x2="600" y2="135" stroke="#f1f5f9" stroke-width="1.5"
-                            stroke-dasharray="4 4" />
+                        <line x1="0" y1="45" x2="600" y2="45" stroke="#f1f5f9"
+                            stroke-width="1.5" stroke-dasharray="4 4" />
+                        <line x1="0" y1="90" x2="600" y2="90" stroke="#f1f5f9"
+                            stroke-width="1.5" stroke-dasharray="4 4" />
+                        <line x1="0" y1="135" x2="600" y2="135" stroke="#f1f5f9"
+                            stroke-width="1.5" stroke-dasharray="4 4" />
 
                         <!-- Trend Line -->
-                        <path d="M 30 155 Q 170 130 310 110 T 570 35" stroke="#0e48c1" stroke-width="3.5" fill="none"
-                            stroke-linecap="round" />
+                        <path d="M 30 155 Q 170 130 310 110 T 570 35" stroke="#0e48c1" stroke-width="3.5"
+                            fill="none" stroke-linecap="round" />
 
                         <!-- Data Points -->
-                        <circle cx="30" cy="155" r="5" fill="white" stroke="#0e48c1" stroke-width="2.5" />
-                        <circle cx="210" cy="128" r="5" fill="white" stroke="#0e48c1" stroke-width="2.5" />
-                        <circle cx="390" cy="100" r="5" fill="white" stroke="#0e48c1" stroke-width="2.5" />
-                        <circle cx="570" cy="35" r="7" fill="#0e48c1" stroke="white" stroke-width="2.5" />
+                        <circle cx="30" cy="155" r="5" fill="white" stroke="#0e48c1"
+                            stroke-width="2.5" />
+                        <circle cx="210" cy="128" r="5" fill="white" stroke="#0e48c1"
+                            stroke-width="2.5" />
+                        <circle cx="390" cy="100" r="5" fill="white" stroke="#0e48c1"
+                            stroke-width="2.5" />
+                        <circle cx="570" cy="35" r="7" fill="#0e48c1" stroke="white"
+                            stroke-width="2.5" />
                     </svg>
                 </div>
 
@@ -209,7 +213,8 @@
                     class="text-[13px] font-bold text-[#0e48c1] hover:underline whitespace-nowrap flex items-center gap-1">
                     View All Comments
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                        </path>
                     </svg>
                 </a>
             </div>

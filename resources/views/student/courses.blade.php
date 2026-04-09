@@ -84,12 +84,60 @@
 
                 @php
                     $courses = [
-                        ['dept' => 'Social Sciences', 'title' => 'Advanced Cognitive Psychology', 'desc' => 'Exploration of neural mechanisms underlying perception, memory, and decision-making.', 'instructor' => 'Dr. Elena Rodriguez', 'schedule' => 'Fall 2024 • Mon/Wed 10:00 AM', 'img' => '47'],
-                        ['dept' => 'Life Sciences', 'title' => 'Molecular Biology II: Genetics', 'desc' => 'Advanced study of gene expression, DNA replication, and genetic engineering techniques.', 'instructor' => 'Prof. Marcus Sterling', 'schedule' => 'Fall 2024 • Tue/Thu 1:30 PM', 'img' => '12'],
-                        ['dept' => 'Arts & Design', 'title' => 'Modern Architecture & Urbanism', 'desc' => 'The evolution of structural form from the industrial revolution to contemporary design.', 'instructor' => 'Sarah Jenkins, AIA', 'schedule' => 'Fall 2024 • Friday 9:00 AM', 'img' => '32'],
-                        ['dept' => 'Economics', 'title' => 'Quantitative Macroeconomics', 'desc' => 'Mathematical modeling of economic growth, inflation, and fiscal policy frameworks.', 'instructor' => 'Dr. Robert Chen', 'schedule' => 'Fall 2024 • Mon/Wed 3:00 PM', 'img' => '55'],
-                        ['dept' => 'Humanities', 'title' => 'Global Ethnomusicology', 'desc' => 'Analyzing the social and cultural aspects of music across different world civilizations.', 'instructor' => 'Dr. Aisha Al-Sayed', 'schedule' => 'Fall 2024 • Tue 5:00 PM', 'img' => '22'],
-                        ['dept' => 'Comp Sci / Philosophy', 'title' => 'Ethics in Artificial Intelligence', 'desc' => 'A philosophical inquiry into algorithmic bias, machine ethics and AI governance.', 'instructor' => 'Prof. Lillian Vance', 'schedule' => 'Fall 2024 • Thu 11:00 AM', 'img' => '68'],
+                        [
+                            'dept' => 'Social Sciences',
+                            'title' => 'Advanced Cognitive Psychology',
+                            'desc' =>
+                                'Exploration of neural mechanisms underlying perception, memory, and decision-making.',
+                            'instructor' => 'Dr. Elena Rodriguez',
+                            'schedule' => 'Fall 2024 • Mon/Wed 10:00 AM',
+                            'img' => '47',
+                        ],
+                        [
+                            'dept' => 'Life Sciences',
+                            'title' => 'Molecular Biology II: Genetics',
+                            'desc' =>
+                                'Advanced study of gene expression, DNA replication, and genetic engineering techniques.',
+                            'instructor' => 'Prof. Marcus Sterling',
+                            'schedule' => 'Fall 2024 • Tue/Thu 1:30 PM',
+                            'img' => '12',
+                        ],
+                        [
+                            'dept' => 'Arts & Design',
+                            'title' => 'Modern Architecture & Urbanism',
+                            'desc' =>
+                                'The evolution of structural form from the industrial revolution to contemporary design.',
+                            'instructor' => 'Sarah Jenkins, AIA',
+                            'schedule' => 'Fall 2024 • Friday 9:00 AM',
+                            'img' => '32',
+                        ],
+                        [
+                            'dept' => 'Economics',
+                            'title' => 'Quantitative Macroeconomics',
+                            'desc' =>
+                                'Mathematical modeling of economic growth, inflation, and fiscal policy frameworks.',
+                            'instructor' => 'Dr. Robert Chen',
+                            'schedule' => 'Fall 2024 • Mon/Wed 3:00 PM',
+                            'img' => '55',
+                        ],
+                        [
+                            'dept' => 'Humanities',
+                            'title' => 'Global Ethnomusicology',
+                            'desc' =>
+                                'Analyzing the social and cultural aspects of music across different world civilizations.',
+                            'instructor' => 'Dr. Aisha Al-Sayed',
+                            'schedule' => 'Fall 2024 • Tue 5:00 PM',
+                            'img' => '22',
+                        ],
+                        [
+                            'dept' => 'Comp Sci / Philosophy',
+                            'title' => 'Ethics in Artificial Intelligence',
+                            'desc' =>
+                                'A philosophical inquiry into algorithmic bias, machine ethics and AI governance.',
+                            'instructor' => 'Prof. Lillian Vance',
+                            'schedule' => 'Fall 2024 • Thu 11:00 AM',
+                            'img' => '68',
+                        ],
                     ];
                 @endphp
 
@@ -99,7 +147,8 @@
                         <div class="flex items-start justify-between">
                             <span
                                 class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full uppercase tracking-wide">{{ $course['dept'] }}</span>
-                            <img src="https://i.pravatar.cc/40?img={{ $course['img'] }}" alt="{{ $course['instructor'] }}"
+                            <img src="https://i.pravatar.cc/40?img={{ $course['img'] }}"
+                                alt="{{ $course['instructor'] }}"
                                 class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
                         </div>
                         <div class="flex-1">

@@ -115,9 +115,12 @@
                 <div class="w-full h-[240px] relative mt-4">
                     <svg viewBox="0 0 760 220" class="w-full h-full overflow-visible" preserveAspectRatio="none">
                         <!-- Grid lines -->
-                        <line x1="0" y1="55" x2="760" y2="55" stroke="#f1f5f9" stroke-width="1.5" />
-                        <line x1="0" y1="110" x2="760" y2="110" stroke="#f1f5f9" stroke-width="1.5" />
-                        <line x1="0" y1="165" x2="760" y2="165" stroke="#f1f5f9" stroke-width="1.5" />
+                        <line x1="0" y1="55" x2="760" y2="55" stroke="#f1f5f9"
+                            stroke-width="1.5" />
+                        <line x1="0" y1="110" x2="760" y2="110" stroke="#f1f5f9"
+                            stroke-width="1.5" />
+                        <line x1="0" y1="165" x2="760" y2="165" stroke="#f1f5f9"
+                            stroke-width="1.5" />
 
                         <!-- Area fill -->
                         <path
@@ -131,14 +134,20 @@
 
                         <!-- Data points -->
                         <circle cx="0" cy="200" r="0" fill="#0e48c1" />
-                        <circle cx="190" cy="165" r="5" fill="white" stroke="#0e48c1" stroke-width="2.5" />
-                        <circle cx="330" cy="118" r="5" fill="white" stroke="#0e48c1" stroke-width="2.5" />
-                        <circle cx="430" cy="124" r="5" fill="#cbd5e1" stroke="white" stroke-width="2" />
-                        <circle cx="560" cy="60" r="5" fill="white" stroke="#0e48c1" stroke-width="2.5" />
-                        <circle cx="640" cy="45" r="6" fill="#0e48c1" stroke="white" stroke-width="2.5" />
+                        <circle cx="190" cy="165" r="5" fill="white" stroke="#0e48c1"
+                            stroke-width="2.5" />
+                        <circle cx="330" cy="118" r="5" fill="white" stroke="#0e48c1"
+                            stroke-width="2.5" />
+                        <circle cx="430" cy="124" r="5" fill="#cbd5e1" stroke="white"
+                            stroke-width="2" />
+                        <circle cx="560" cy="60" r="5" fill="white" stroke="#0e48c1"
+                            stroke-width="2.5" />
+                        <circle cx="640" cy="45" r="6" fill="#0e48c1" stroke="white"
+                            stroke-width="2.5" />
 
                         <defs>
-                            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                            <linearGradient id="areaGrad" x1="0" y1="0" x2="0"
+                                y2="1">
                                 <stop offset="0%" stop-color="#0e48c1" stop-opacity="0.5" />
                                 <stop offset="100%" stop-color="#0e48c1" stop-opacity="0" />
                             </linearGradient>

@@ -86,8 +86,7 @@
                                     d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                             </svg>
                         </div>
-                        <span
-                            class="text-[11px] font-bold bg-white/20 text-white px-2.5 py-1 rounded-full">+12% vs
+                        <span class="text-[11px] font-bold bg-white/20 text-white px-2.5 py-1 rounded-full">+12% vs
                             LY</span>
                     </div>
                     <p class="text-blue-200 text-[13px] font-semibold mb-1">Engagement Rate</p>
@@ -128,8 +127,8 @@
                     </select>
                     <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 9l-7 7-7-7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
                         </svg>
                     </div>
                 </div>
@@ -178,8 +177,7 @@
             <div
                 class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_28px_rgb(0,0,0,0.08)] transition-shadow flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <span
-                        class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">PHY402</span>
+                    <span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">PHY402</span>
                     <div class="flex text-amber-400">
                         @for ($i = 0; $i < 5; $i++)
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -209,8 +207,7 @@
             <div
                 class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_28px_rgb(0,0,0,0.08)] transition-shadow flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <span
-                        class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">CS205</span>
+                    <span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">CS205</span>
                     <div class="flex text-amber-400">
                         @for ($i = 0; $i < 4; $i++)
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -244,8 +241,7 @@
             <div
                 class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_28px_rgb(0,0,0,0.08)] transition-shadow flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <span
-                        class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">ECO101</span>
+                    <span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">ECO101</span>
                     <div class="flex text-amber-400">
                         @for ($i = 0; $i < 5; $i++)
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -275,8 +271,7 @@
             <div
                 class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_28px_rgb(0,0,0,0.08)] transition-shadow flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <span
-                        class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">PHY402</span>
+                    <span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">PHY402</span>
                     <div class="flex text-amber-400">
                         @for ($i = 0; $i < 5; $i++)
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -306,8 +301,7 @@
             <div
                 class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_28px_rgb(0,0,0,0.08)] transition-shadow flex flex-col gap-4">
                 <div class="flex items-center justify-between">
-                    <span
-                        class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">CS205</span>
+                    <span class="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">CS205</span>
                     <div class="flex text-amber-400">
                         @for ($i = 0; $i < 3; $i++)
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">

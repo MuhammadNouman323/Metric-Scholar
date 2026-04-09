@@ -26,8 +26,7 @@
         </div>
 
         <!-- Hero Profile Card -->
-        <div
-            class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.04)] mb-8">
+        <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.04)] mb-8">
             <div class="flex flex-col lg:flex-row gap-8">
 
                 <!-- Photo + Info -->
@@ -111,7 +110,8 @@
                     </div>
 
                     <!-- Citations -->
-                    <div class="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col items-center text-center shadow-sm">
+                    <div
+                        class="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col items-center text-center shadow-sm">
                         <div class="text-gray-400 mb-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -124,7 +124,8 @@
                     </div>
 
                     <!-- PhD Advisees -->
-                    <div class="bg-[#fff5f0] border border-orange-100 rounded-2xl p-5 flex flex-col items-center text-center">
+                    <div
+                        class="bg-[#fff5f0] border border-orange-100 rounded-2xl p-5 flex flex-col items-center text-center">
                         <div class="text-orange-400 mb-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -137,7 +138,8 @@
                     </div>
 
                     <!-- Tenure Length -->
-                    <div class="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col items-center text-center shadow-sm">
+                    <div
+                        class="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col items-center text-center shadow-sm">
                         <div class="text-gray-400 mb-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -163,7 +165,8 @@
                 <p>Dr. Julian Academic is a leading figure in the intersection of philosophy and emerging technology.
                     With over two decades of experience, his work focuses on the ethical frameworks required for
                     autonomous systems and the preservation of humanistic values in the digital age. He has served as a
-                    senior advisor to several international ethics committees and is a frequent keynote speaker at global
+                    senior advisor to several international ethics committees and is a frequent keynote speaker at
+                    global
                     technology summits.</p>
                 <p>His research methodology blends classical philosophical inquiry with modern data science, creating a
                     unique cross-disciplinary bridge. Under his leadership, the Humanities & Technology department has
@@ -183,8 +186,8 @@
                         class="text-[13px] font-bold text-[#0e48c1] hover:underline flex items-center gap-1">
                         View All
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 5l7 7-7 7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
                         </svg>
                     </a>
                 </div>

@@ -66,8 +66,8 @@
                 class="lg:col-span-2 bg-white rounded-[2rem] p-7 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-[18px] font-bold text-gray-900">Pending Evaluations</h3>
-                    <span
-                        class="text-[11px] font-bold bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full">2 Due</span>
+                    <span class="text-[11px] font-bold bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full">2
+                        Due</span>
                 </div>
                 <div class="space-y-4">
                     <div class="flex items-center gap-4 p-5 bg-[#f8fafc] rounded-2xl border-l-4 border-[#0e48c1]">
