@@ -1,9 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Auth\Login;
-use App\Http\Controllers\Auth\Logout;
-use App\Http\Controllers\Auth\Register;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
@@ -12,21 +10,22 @@ Route::get('/', function () {
     return view('auth.login');
 })->name('login');
 
-Route::post('/login', Login::class);
+Route::post('/login', [AuthController::class, 'login'])->name('auth.attempt');
 Route::view('/register', 'auth.register')
     ->middleware('guest')
     ->name('register');
-Route::post('/register', Register::class)
+Route::post('/register', [AuthController::class, 'register'])
     ->middleware('guest');
 
 Route::get('/register', function () {
     return view('auth.register');
 });
 
-Route::post('/logout', Logout::class)->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
-Route::get('/admin/users', [AdminController::class, 'users']);
+Route::get('/admin/user', [AdminController::class, 'users'])->name('admin.users');
+Route::post('/admin/user', [AdminController::class, 'storeUser'])->name('admin.users.store');
 Route::get('/admin/students', [AdminController::class, 'students']);
 Route::get('/admin/faculity', [AdminController::class, 'faculty']);
 Route::get('/admin/faculty', [AdminController::class, 'faculty']);

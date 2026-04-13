@@ -64,69 +64,92 @@
                     <p class="text-gray-500 font-medium text-sm lg:text-base">Create an institutional administrator account.</p>
                 </div>
 
-                <form>
+                <form method="POST" action="{{ url('/register') }}">
+                    @csrf
                     <!-- Full Name -->
                     <div class="mb-5 lg:mb-6">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                        <input type="text" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="Dr. Julian Vane">
+                        <input type="text" name="name" value="{{ old('name') }}" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="Dr. Julian Vane">
+                        @error('name')
+                            <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Institutional Email -->
                     <div class="mb-5 lg:mb-6">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Institutional Email</label>
-                        <div class="relative flex items-center bg-gray-50/50 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-600 focus-within:bg-white transition-all border border-transparent focus-within:border-blue-200">
-                            <input type="text" class="flex-1 bg-transparent px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none" placeholder="j.vane">
-                            <span class="pr-5 font-medium text-gray-500 text-sm whitespace-nowrap hidden sm:block">@scholarmetric.edu</span>
-                        </div>
+                        <input type="email" name="email" value="{{ old('email') }}" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="name@scholarmetric.edu">
+                        @error('email')
+                            <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- ID and Department -->
                     <div class="flex flex-col sm:flex-row gap-5 mb-5 lg:mb-6">
                         <div class="flex-1">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Administrator ID</label>
-                            <input type="text" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="ADM-9942">
+                            <input type="text" name="admin_id" value="{{ old('admin_id') }}" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="ADM-9942">
+                            @error('admin_id')
+                                <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="flex-1">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Department/Unit</label>
-                            <input type="text" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="Arts & Sciences">
+                            <input type="text" name="department" value="{{ old('department') }}" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="Arts & Sciences">
+                            @error('department')
+                                <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <!-- Access Level -->
                     <div class="mb-5 lg:mb-6 relative">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Access Level</label>
-                        <select class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all cursor-pointer">
-                            <option>Full Access</option>
-                            <option>Partial Access</option>
-                            <option>Read Only</option>
+                        <select name="access_level" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all cursor-pointer">
+                            <option value="Full Access" @selected(old('access_level', 'Full Access') === 'Full Access')>Full Access</option>
+                            <option value="Partial Access" @selected(old('access_level') === 'Partial Access')>Partial Access</option>
+                            <option value="Read Only" @selected(old('access_level') === 'Read Only')>Read Only</option>
                         </select>
                         <div class="absolute inset-y-0 right-4 top-[30px] flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </div>
+                        @error('access_level')
+                            <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Password -->
                     <div class="mb-6 lg:mb-8 relative">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
                         <div class="relative">
-                            <!-- Since value is given in design as dots, let's just make it blank with placeholder or actual dots. A placeholder is fine. -->
-                            <!-- Or using value="password" if we want to visually simulate the dots. But it's a form, we'll just omit value. -->
-                            <input type="password" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 pr-12 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="••••••••••••">
+                            <input type="password" name="password" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 pr-12 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="••••••••••••">
                             <button type="button" class="absolute inset-y-0 right-4 flex items-center text-gray-500 hover:text-gray-700 p-1 transition-colors">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                             </button>
                         </div>
+                        @error('password')
+                            <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mb-6 lg:mb-8 relative">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+                        <input type="password" name="password_confirmation" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="••••••••••••">
                     </div>
 
                     <!-- Checkbox -->
                     <div class="mb-10 flex items-start">
                         <div class="flex items-center h-5 mt-0.5">
-                            <input id="terms" type="checkbox" class="w-4 h-4 text-blue-700 bg-gray-50 border-gray-300 rounded focus:ring-blue-600 focus:ring-2 cursor-pointer">
+                            <input id="terms" name="terms" type="checkbox" value="1" @checked(old('terms')) class="w-4 h-4 text-blue-700 bg-gray-50 border-gray-300 rounded focus:ring-blue-600 focus:ring-2 cursor-pointer">
                         </div>
                         <div class="ml-3 text-sm">
                             <label for="terms" class="text-gray-600 font-medium cursor-pointer select-none">I agree to the institutional data privacy terms.</label>
                         </div>
                     </div>
+                    @error('terms')
+                        <p class="-mt-8 mb-6 text-sm font-semibold text-red-600">{{ $message }}</p>
+                    @enderror
 
                     <!-- Submit Button -->
                     <button type="submit" class="w-full bg-[#0e48c1] hover:bg-blue-800 text-white font-semibold rounded-xl py-4 transition-colors focus:ring-4 focus:ring-blue-300 focus:outline-none shadow-sm flex items-center justify-center">
