@@ -46,7 +46,8 @@
                     class="{{ request()->is('admin/students') ? 'text-[#0e48c1] bg-blue-50/70 border-l-4 border-[#0e48c1]' : 'hover:bg-gray-100 hover:text-gray-900 border-l-4 border-transparent' }} flex items-center px-8 py-3.5 transition-colors relative">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z">
+                        </path>
                     </svg>
                     Students
                 </a>
@@ -107,15 +108,18 @@
                     </div>
                 </div>
 
-                <a href="#"
-                    class="flex items-center px-3 py-2 text-gray-500 hover:text-gray-900 text-[14px] font-medium transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                        </path>
-                    </svg>
-                    Logout
-                </a>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit"
+                        class="w-full flex items-center px-3 py-2 text-gray-500 hover:text-gray-900 text-[14px] font-medium transition-colors cursor-pointer bg-transparent border-0 text-left">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
+                        </svg>
+                        Logout
+                    </button>
+                </form>
             </div>
         </aside>
 
