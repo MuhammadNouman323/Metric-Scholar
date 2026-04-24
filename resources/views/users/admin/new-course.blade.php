@@ -65,7 +65,7 @@
                     </section>
 
                     <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
-                        <a href="{{ route('admin.courses') }}"
+                        <a href="/admin/courses"
                             class="px-6 py-3 rounded-xl border border-gray-100 bg-white text-[#0e48c1] font-bold text-[13px] hover:bg-gray-50 transition-colors">
                             Cancel
                         </a>

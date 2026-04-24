@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 
 class AdminController extends Controller
 {
@@ -60,5 +61,10 @@ class AdminController extends Controller
     public function reports()
     {
         return view('users.admin.reports');
+    }
+
+    public function newCourse(): View
+    {
+        return view('users.admin.new-course');
     }
 }
