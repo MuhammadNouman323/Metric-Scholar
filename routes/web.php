@@ -30,6 +30,10 @@ Route::get('/admin/students', [AdminController::class, 'students']);
 Route::get('/admin/faculity', [AdminController::class, 'faculty']);
 Route::get('/admin/faculty', [AdminController::class, 'faculty']);
 Route::get('/admin/courses', [AdminController::class, 'courses']);
+// Correct syntax
+Route::get('/admin/course/new', [AdminController::class, 'newCourse']);
+Route::post('/admin/course', [AdminController::class, 'storeCourse']);
+
 Route::get('/admin/reports', [AdminController::class, 'reports']);
 
 Route::get('/faculty/dashboard', [FacultyController::class, 'dashboard']);
