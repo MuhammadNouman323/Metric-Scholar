@@ -8,18 +8,7 @@
                 <p class="text-gray-500 text-[15px] font-medium">Register a single student or faculty member to the
                     institutional database.</p>
             </div>
-            <div>
-                <button
-                    class="flex items-center justify-center gap-2 bg-[#e2e8f0] text-gray-700 px-5 py-3 rounded-xl text-sm font-bold shadow-sm shadow-gray-200/50 hover:bg-[#cbd5e1] hover:text-gray-900 transition-colors whitespace-nowrap group">
-                    <svg class="w-5 h-5 text-[#0e48c1] group-hover:text-[#0c3ca1] transition-colors" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                        </path>
-                    </svg>
-                    Bulk Upload CSV
-                </button>
-            </div>
+            
         </div>
 
         <!-- Main Grid -->
@@ -189,28 +178,6 @@
                         </a>
                     </div>
                 </div>
-
-                <!-- System Tip Widget -->
-                <div
-                    class="bg-[#fcece3] border border-[#fac8b1] rounded-[1.5rem] p-6 flex gap-4 shadow-sm relative overflow-hidden">
-                    <div class="absolute inset-0 bg-white/20 backdrop-blur-[1px]"></div>
-                    <div class="relative z-10 shrink-0 mt-0.5">
-                        <div class="text-[#c55d31] bg-white/60 p-1.5 rounded-full shadow-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-extrabold text-[#c55d31] tracking-widest uppercase mb-1.5">System
-                            Tip</p>
-                        <p class="text-[14px] text-[#933d1c] font-semibold leading-snug">
-                            CSV bulk upload supports up to 5,000 users per batch processing.
-                        </p>
-                    </div>
-                </div>
-
             </div>
         </div>
 

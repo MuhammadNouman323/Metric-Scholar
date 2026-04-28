@@ -65,13 +65,6 @@
                         <span class="text-[13px] font-medium text-gray-500">Senior Professor</span>
                     </div>
                 </a>
-
-                <!-- Submit Evaluation Button -->
-                <a href="#"
-                    class="block w-full bg-[#0e48c1] hover:bg-blue-800 text-white text-center rounded-xl py-3 text-[13px] font-bold mb-4 transition-all shadow-[0_4px_10px_rgba(14,72,193,0.15)] hover:shadow-[0_4px_12px_rgba(14,72,193,0.3)]">
-                    Submit Evaluation
-                </a>
-
                 <a href="#"
                     class="flex items-center px-3 py-2 text-gray-500 hover:text-gray-900 text-[14px] font-semibold transition-colors mb-1">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
