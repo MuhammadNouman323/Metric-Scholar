@@ -8,7 +8,6 @@
                 <p class="text-gray-500 text-[15px] font-medium">Register a single student or faculty member to the
                     institutional database.</p>
             </div>
-            
         </div>
 
         <!-- Main Grid -->
@@ -17,21 +16,34 @@
             <!-- Form Card (Col Span 2) -->
             <div
                 class="xl:col-span-2 bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] h-full flex flex-col">
-                <form class="flex flex-col h-full space-y-8">
+                @if (session('success'))
+                    <div class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('admin.users.store') }}" class="flex flex-col h-full space-y-8">
+                    @csrf
 
                     <!-- Top Row -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Full Name</label>
-                            <input type="text"
+                            <input type="text" name="name" value="{{ old('name') }}"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                 placeholder="Dr. Julian Casablancas">
+                            @error('name')
+                                <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Institutional Email</label>
-                            <input type="email"
+                            <input type="email" name="email" value="{{ old('email') }}"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                 placeholder="julian.c@scholarmetric.edu">
+                            @error('email')
+                                <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
@@ -39,12 +51,11 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                         <div class="relative">
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Role Selection</label>
-                            <select
+                            <select name="role"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
-                                <option>Select user role</option>
-                                <option>Student</option>
-                                <option>Faculty</option>
-                                <option>Admin</option>
+                                <option value="">Select user role</option>
+                                <option value="student" @selected(old('role') === 'student')>Student</option>
+                                <option value="faculty" @selected(old('role') === 'faculty')>Faculty</option>
                             </select>
                             <div class="absolute inset-y-0 right-4 top-[32px] flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor"
@@ -53,16 +64,19 @@
                                         d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </div>
+                            @error('role')
+                                <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="relative">
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Department</label>
-                            <select
+                            <select name="department"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
-                                <option>Assign department</option>
-                                <option>Computer Science</option>
-                                <option>Mathematics</option>
-                                <option>Applied Physics</option>
-                                <option>Bio-Chemistry</option>
+                                <option value="">Assign department</option>
+                                <option value="Computer Science" @selected(old('department') === 'Computer Science')>Computer Science</option>
+                                <option value="Mathematics" @selected(old('department') === 'Mathematics')>Mathematics</option>
+                                <option value="Applied Physics" @selected(old('department') === 'Applied Physics')>Applied Physics</option>
+                                <option value="Bio-Chemistry" @selected(old('department') === 'Bio-Chemistry')>Bio-Chemistry</option>
                             </select>
                             <div class="absolute inset-y-0 right-4 top-[32px] flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor"
@@ -71,6 +85,9 @@
                                         d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </div>
+                            @error('department')
+                                <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
@@ -79,16 +96,15 @@
                         <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Temporary Password</label>
                         <div
                             class="relative flex items-center bg-[#f4f6f8] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#0e48c1] focus-within:bg-white transition-all border border-transparent focus-within:border-blue-200">
-                            <input type="password"
+                            <input type="password" name="password"
                                 class="w-full bg-transparent px-4 py-3.5 pr-28 text-gray-900 font-bold placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-widest text-lg"
-                                placeholder="••••••••••••" value="password123">
-                            <button type="button"
-                                class="absolute right-2 bg-transparent text-[#0e48c1] hover:text-[#0c3ca1] font-bold text-[13px] px-3 py-1.5 rounded transition-colors uppercase tracking-wider">
-                                Generate
-                            </button>
+                                placeholder="••••••••••••">
                         </div>
                         <p class="text-[12px] text-gray-400 font-medium mt-3">User will be prompted to change this
                             password on first login.</p>
+                        @error('password')
+                            <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="flex-grow"></div>
@@ -122,53 +138,21 @@
                     </div>
 
                     <div class="space-y-6">
-                        <!-- User 1 -->
-                        <div class="flex gap-4 items-center">
-                            <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
-                                src="https://i.pravatar.cc/150?img=11" alt="Albert">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-[14px] font-bold text-gray-900 truncate">Dr. Albert Sterling</p>
-                                <p class="text-[12px] text-gray-500 truncate font-medium">Faculty <span
-                                        class="mx-1">•</span> Applied Physics</p>
+                        @forelse ($recentUsers as $recentUser)
+                            <div class="flex gap-4 items-center">
+                                <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
+                                    src="https://i.pravatar.cc/150?u={{ urlencode($recentUser->email) }}"
+                                    alt="{{ $recentUser->name }}">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[14px] font-bold text-gray-900 truncate">{{ $recentUser->name }}</p>
+                                    <p class="text-[12px] text-gray-500 truncate font-medium">{{ ucfirst($recentUser->role) }} <span
+                                            class="mx-1">•</span> {{ $recentUser->department ?: 'N/A' }}</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-gray-400 shrink-0">{{ $recentUser->created_at->diffForHumans() }}</span>
                             </div>
-                            <span class="text-[10px] font-bold text-gray-400 shrink-0">2m ago</span>
-                        </div>
-
-                        <!-- User 2 -->
-                        <div class="flex gap-4 items-center">
-                            <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
-                                src="https://i.pravatar.cc/150?img=12" alt="Elena">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-[14px] font-bold text-gray-900 truncate">Elena Rodriguez</p>
-                                <p class="text-[12px] text-gray-500 truncate font-medium">Student <span
-                                        class="mx-1">•</span> Computer Science</p>
-                            </div>
-                            <span class="text-[10px] font-bold text-gray-400 shrink-0">15m ago</span>
-                        </div>
-
-                        <!-- User 3 -->
-                        <div class="flex gap-4 items-center">
-                            <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
-                                src="https://i.pravatar.cc/150?img=13" alt="Marcus">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-[14px] font-bold text-gray-900 truncate">Marcus Thorne</p>
-                                <p class="text-[12px] text-gray-500 truncate font-medium">Faculty <span
-                                        class="mx-1">•</span> Mathematics</p>
-                            </div>
-                            <span class="text-[10px] font-bold text-gray-400 shrink-0">1h ago</span>
-                        </div>
-
-                        <!-- User 4 -->
-                        <div class="flex gap-4 items-center pb-2">
-                            <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
-                                src="https://i.pravatar.cc/150?img=14" alt="Sarah">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-[14px] font-bold text-gray-900 truncate">Sarah Jenkins</p>
-                                <p class="text-[12px] text-gray-500 truncate font-medium">Student <span
-                                        class="mx-1">•</span> Bio-Chemistry</p>
-                            </div>
-                            <span class="text-[10px] font-bold text-gray-400 shrink-0">3h ago</span>
-                        </div>
+                        @empty
+                            <p class="text-sm text-gray-500 font-medium">No registrations yet.</p>
+                        @endforelse
                     </div>
 
                     <div class="mt-8 pt-4">
@@ -178,6 +162,9 @@
                         </a>
                     </div>
                 </div>
+
+
+
             </div>
         </div>
 

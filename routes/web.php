@@ -30,6 +30,8 @@ Route::get('/admin/students', [AdminController::class, 'students']);
 Route::get('/admin/faculity', [AdminController::class, 'faculty']);
 Route::get('/admin/faculty', [AdminController::class, 'faculty']);
 Route::get('/admin/courses', [AdminController::class, 'courses']);
+Route::get('/admin/departments', [AdminController::class, 'departments'])->name('admin.departments');
+Route::get('/admin/departments/{department}', [AdminController::class, 'department'])->name('admin.departments.show');
 Route::get('/courses/new-course', [AdminController::class, 'newCourse'])->name('admin.courses.newCourse');
 Route::get('/admin/reports', [AdminController::class, 'reports']);
 
