@@ -77,25 +77,25 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div class="rounded-2xl bg-[#f8fafc] p-4 border-b-2 border-[#0e48c1]">
-                                <div class="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400 mb-1">Avg
-                                    GPA</div>
+                                <div class="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400 mb-1">Total
+                                    Faculty</div>
                                 <div class="text-[30px] font-bold text-gray-900 leading-none mb-2">
-                                    {{ $department['pulse']['avgGpa'] }}</div>
-                                <div class="text-xs font-semibold text-emerald-600">+0.04</div>
+                                    {{ $department['pulse']['facultyCount'] }}</div>
+                                <div class="text-xs font-semibold text-emerald-600">Live Count</div>
                             </div>
                             <div class="rounded-2xl bg-[#f8fafc] p-4 border-b-2 border-[#0e48c1]">
                                 <div class="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400 mb-1">
-                                    Feedback Rate</div>
+                                    Total Students</div>
                                 <div class="text-[30px] font-bold text-gray-900 leading-none mb-2">
-                                    {{ $department['pulse']['feedbackRate'] }}</div>
-                                <div class="text-xs font-semibold text-emerald-600">+2%</div>
+                                    {{ $department['pulse']['studentCount'] }}</div>
+                                <div class="text-xs font-semibold text-emerald-600">Live Count</div>
                             </div>
                             <div class="rounded-2xl bg-[#ffe7db] p-4">
                                 <div class="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400 mb-1">
-                                    Pending Reviews</div>
+                                    Added (30 Days)</div>
                                 <div class="text-[30px] font-bold text-gray-900 leading-none mb-2">
-                                    {{ $department['pulse']['pendingReviews'] }}</div>
-                                <div class="text-xs font-semibold text-orange-600">Action Required</div>
+                                    {{ $department['pulse']['recentAdditions'] }}</div>
+                                <div class="text-xs font-semibold text-orange-600">Recent Growth</div>
                             </div>
                         </div>
                     </div>
@@ -109,7 +109,7 @@
                         </div>
 
                         <div class="space-y-5">
-                            @foreach (array_slice($department['faculty'], 0, 2) as $member)
+                            @forelse (array_slice($department['faculty'], 0, 2) as $member)
                                 <div
                                     class="flex items-center justify-between gap-4 border-b border-gray-100 pb-5 last:border-b-0 last:pb-0">
                                     <div class="flex items-center gap-4 min-w-0">
@@ -126,7 +126,9 @@
                                     <span
                                         class="inline-flex rounded-full bg-[#eff4ff] px-3 py-1 text-[11px] font-bold text-[#0e48c1] whitespace-nowrap">{{ $member['status'] }}</span>
                                 </div>
-                            @endforeach
+                            @empty
+                                <p class="text-sm text-gray-500">No faculty members have been added to this department yet.</p>
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -150,7 +152,7 @@
                         <div class="relative pl-4">
                             <div class="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200"></div>
                             <div class="space-y-6">
-                                @foreach ($department['activity'] as $activity)
+                                @forelse ($department['activity'] as $activity)
                                     <div class="relative">
                                         <span class="absolute -left-4 top-1.5 h-3 w-3 rounded-full bg-[#0e48c1]"></span>
                                         <div class="rounded-2xl bg-white p-4 shadow-sm border border-gray-100">
@@ -163,7 +165,9 @@
                                             <p class="text-sm text-gray-500">{{ $activity['detail'] }}</p>
                                         </div>
                                     </div>
-                                @endforeach
+                                @empty
+                                    <p class="text-sm text-gray-500">No recent department activity found.</p>
+                                @endforelse
                             </div>
                         </div>
                     </div>
@@ -179,7 +183,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    @foreach ($department['faculty'] as $member)
+                    @forelse ($department['faculty'] as $member)
                         <div
                             class="rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                             <div class="flex items-start justify-between mb-4">
@@ -220,7 +224,9 @@
                                 <a href="#" class="text-sm font-bold text-[#0e48c1]">View Profile -&gt;</a>
                             </div>
                         </div>
-                    @endforeach
+                    @empty
+                        <p class="text-sm text-gray-500 md:col-span-2 xl:col-span-3">No faculty members found in this department.</p>
+                    @endforelse
                 </div>
             </div>
         @else
@@ -234,7 +240,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        @foreach ($department['students'] as $student)
+                        @forelse ($department['students'] as $student)
                             <div
                                 class="rounded-[1.5rem] border border-gray-100 bg-white p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                                 <div class="flex items-start justify-between mb-4">
@@ -275,7 +281,9 @@
                                     <a href="#" class="text-sm font-bold text-[#0e48c1]">View Profile -&gt;</a>
                                 </div>
                             </div>
-                        @endforeach
+                        @empty
+                            <p class="text-sm text-gray-500 md:col-span-2 xl:col-span-3">No students found in this department.</p>
+                        @endforelse
                     </div>
                 </div>
 
@@ -296,7 +304,7 @@
                     <div class="rounded-[1.75rem] bg-[#f3f4f6] p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                         <h2 class="text-[18px] font-bold text-gray-900 mb-5">Recent Activity</h2>
                         <div class="space-y-4">
-                            @foreach ($department['activity'] as $activity)
+                            @forelse ($department['activity'] as $activity)
                                 <div class="rounded-2xl bg-white p-4 shadow-sm border border-gray-100">
                                     <div class="flex items-center justify-between gap-4 mb-1">
                                         <h3 class="text-sm font-bold text-gray-900">{{ $activity['title'] }}</h3>
@@ -305,7 +313,9 @@
                                     </div>
                                     <p class="text-sm text-gray-500">{{ $activity['detail'] }}</p>
                                 </div>
-                            @endforeach
+                            @empty
+                                <p class="text-sm text-gray-500">No recent department activity found.</p>
+                            @endforelse
                         </div>
                     </div>
                 </div>

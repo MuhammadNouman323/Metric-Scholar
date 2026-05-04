@@ -47,7 +47,7 @@
                     <span class="text-[11px] font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">+12%</span>
                 </div>
                 <div class="text-gray-500 text-[13px] font-bold mb-1">Total Students</div>
-                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">12,482</div>
+                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">{{ number_format($studentCount) }}</div>
             </div>
 
             <!-- Card 2 -->
@@ -65,7 +65,7 @@
                     <span class="text-[11px] font-bold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full">Static</span>
                 </div>
                 <div class="text-gray-500 text-[13px] font-bold mb-1">Total Faculty</div>
-                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">846</div>
+                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">{{ number_format($facultyCount) }}</div>
             </div>
 
             <!-- Card 3 -->

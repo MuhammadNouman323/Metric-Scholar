@@ -4,14 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AdminController extends Controller
 {
     public function dashboard()
     {
-        return view('users.admin.dashboard');
+        $studentCount = User::whereRaw('LOWER(role) = ?', ['student'])->count();
+        $facultyCount = User::whereRaw('LOWER(role) = ?', ['faculty'])->count();
+
+        return view('users.admin.dashboard', compact('studentCount', 'facultyCount'));
     }
 
     public function users()
@@ -58,118 +63,139 @@ class AdminController extends Controller
 
     public function departments()
     {
-        return view('users.admin.departments');
+        $departments = User::query()
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->select('department')
+            ->distinct()
+            ->get()
+            ->map(function (User $user): array {
+                $departmentName = trim((string) $user->department);
+
+                return [
+                    'slug' => Str::slug($departmentName),
+                    'name' => $departmentName,
+                    'facultyCount' => User::query()
+                        ->whereRaw('LOWER(role) = ?', ['faculty'])
+                        ->where('department', $departmentName)
+                        ->count(),
+                    'studentCount' => User::query()
+                        ->whereRaw('LOWER(role) = ?', ['student'])
+                        ->where('department', $departmentName)
+                        ->count(),
+                ];
+            })
+            ->sortBy('name')
+            ->values();
+
+        return view('users.admin.departments', compact('departments'));
     }
 
     public function department(string $department)
     {
         $section = request()->string('section')->toString() ?: 'overview';
 
-        $departmentPages = [
-            'computer-science' => [
-                'slug' => 'computer-science',
-                'name' => 'Computer Science',
-                'departmentCode' => 'ENGINEERING',
-                'established' => 'Est. 1968',
-                'description' => 'Advancing the frontiers of computing through innovative research, rigorous academic programs, and interdisciplinary collaboration to solve complex global challenges.',
-                'facultyCount' => 42,
-                'overview' => 'The Computer Science department combines theory, systems, and applied computing across AI, software engineering, cybersecurity, and data science.',
-                'pulse' => [
-                    'avgGpa' => '3.72',
-                    'feedbackRate' => '88%',
-                    'pendingReviews' => '14',
-                ],
-                'enrollment' => [
-                    ['label' => 'Undergraduate', 'value' => '1,245'],
-                    ['label' => 'Graduate (MS)', 'value' => '320'],
-                    ['label' => 'Doctoral (PhD)', 'value' => '85'],
-                ],
-                'students' => [
-                    ['initials' => 'MU', 'name' => 'Muhammad Umer', 'email' => 'umer@vu.edu.pk', 'program' => 'Computer Science', 'status' => 'Evaluation Pending'],
-                    ['initials' => 'MU', 'name' => 'Muhammad Uzair', 'email' => 'uzair@vu.edu.pk', 'program' => 'Computer Science', 'status' => 'Evaluation Pending'],
-                    ['initials' => 'ZA', 'name' => 'Zaeem', 'email' => 'zaeem@vu.edu.pk', 'program' => 'Computer Science', 'status' => 'Reviewed'],
-                ],
-                'faculty' => [
-                    ['initials' => 'GH', 'name' => 'Dr. Grace Hopper', 'role' => 'Professor, Systems Architecture', 'email' => 'g.hopper@cs.edu', 'office' => 'Turing Hall, Room 402', 'status' => 'Tenured'],
-                    ['initials' => 'AT', 'name' => 'Dr. Alan Turing', 'role' => 'Assoc. Professor, Cryptography', 'email' => 'a.turing@cs.edu', 'office' => 'Lovelace Bldg, Room 210', 'status' => 'Under Review'],
-                ],
-                'activity' => [
-                    ['title' => 'Curriculum updated', 'detail' => 'CS401 added to Spring roster.', 'time' => '2h ago'],
-                    ['title' => 'Review completed', 'detail' => 'Faculty evaluations finalized.', 'time' => '1d ago'],
-                ],
-            ],
-            'bio-chemistry' => [
-                'slug' => 'bio-chemistry',
-                'name' => 'Bio-Chemistry',
-                'departmentCode' => 'SCIENCES',
-                'established' => 'Est. 1974',
-                'description' => 'Leading investigative studies in metabolic pathways, structural biology, and molecular genetics with a strong clinical research focus.',
-                'facultyCount' => 35,
-                'overview' => 'The Bio-Chemistry department supports research in enzymes, molecular medicine, biotechnology, and advanced laboratory diagnostics.',
-                'pulse' => [
-                    'avgGpa' => '3.61',
-                    'feedbackRate' => '84%',
-                    'pendingReviews' => '9',
-                ],
-                'enrollment' => [
-                    ['label' => 'Undergraduate', 'value' => '1,018'],
-                    ['label' => 'Graduate (MS)', 'value' => '214'],
-                    ['label' => 'Doctoral (PhD)', 'value' => '61'],
-                ],
-                'students' => [
-                    ['initials' => 'SA', 'name' => 'Sarah Ahmad', 'email' => 'sarah@vu.edu.pk', 'program' => 'Bio-Chemistry', 'status' => 'Reviewed'],
-                    ['initials' => 'AY', 'name' => 'Ayan Yusuf', 'email' => 'ayan@vu.edu.pk', 'program' => 'Bio-Chemistry', 'status' => 'Evaluation Pending'],
-                    ['initials' => 'NR', 'name' => 'Noor Rahman', 'email' => 'noor@vu.edu.pk', 'program' => 'Bio-Chemistry', 'status' => 'Reviewed'],
-                ],
-                'faculty' => [
-                    ['initials' => 'MC', 'name' => 'Dr. Marie Curie', 'role' => 'Professor, Biophysics', 'email' => 'm.curie@bc.edu', 'office' => 'Helix Tower, Room 308', 'status' => 'Tenured'],
-                    ['initials' => 'RZ', 'name' => 'Dr. Rosalind Z.', 'role' => 'Assoc. Professor, Genomics', 'email' => 'r.z@bc.edu', 'office' => 'Genome Lab, Room 114', 'status' => 'Under Review'],
-                ],
-                'activity' => [
-                    ['title' => 'Lab audit passed', 'detail' => 'All molecular suites cleared.', 'time' => '5h ago'],
-                    ['title' => 'Grant submitted', 'detail' => 'Genetics research funding packet sent.', 'time' => '2d ago'],
-                ],
-            ],
-            'applied-physics' => [
-                'slug' => 'applied-physics',
-                'name' => 'Applied Physics',
-                'departmentCode' => 'SCIENCES',
-                'established' => 'Est. 1959',
-                'description' => 'Exploring quantum materials, condensed matter physics, photonics, and computational modeling for emerging technologies.',
-                'facultyCount' => 28,
-                'overview' => 'Applied Physics emphasizes experimental design, instrumentation, and mathematical modeling across modern materials science.',
-                'pulse' => [
-                    'avgGpa' => '3.54',
-                    'feedbackRate' => '81%',
-                    'pendingReviews' => '11',
-                ],
-                'enrollment' => [
-                    ['label' => 'Undergraduate', 'value' => '864'],
-                    ['label' => 'Graduate (MS)', 'value' => '176'],
-                    ['label' => 'Doctoral (PhD)', 'value' => '42'],
-                ],
-                'students' => [
-                    ['initials' => 'AI', 'name' => 'Areeb Iqbal', 'email' => 'areeb@vu.edu.pk', 'program' => 'Applied Physics', 'status' => 'Reviewed'],
-                    ['initials' => 'FK', 'name' => 'Fatima Khan', 'email' => 'fatima@vu.edu.pk', 'program' => 'Applied Physics', 'status' => 'Evaluation Pending'],
-                    ['initials' => 'HM', 'name' => 'Hassan Malik', 'email' => 'hassan@vu.edu.pk', 'program' => 'Applied Physics', 'status' => 'Reviewed'],
-                ],
-                'faculty' => [
-                    ['initials' => 'MJ', 'name' => 'Dr. Maxwell J.', 'role' => 'Professor, Photonics', 'email' => 'm.j@ap.edu', 'office' => 'Photon Hall, Room 120', 'status' => 'Reviewed'],
-                    ['initials' => 'NK', 'name' => 'Dr. N. K.', 'role' => 'Assoc. Professor, Quantum Systems', 'email' => 'n.k@ap.edu', 'office' => 'Quantum Wing, Room 215', 'status' => 'Under Review'],
-                ],
-                'activity' => [
-                    ['title' => 'Instrument check', 'detail' => 'Spectroscopy lab calibration completed.', 'time' => '3h ago'],
-                    ['title' => 'New seminar', 'detail' => 'Quantum devices workshop announced.', 'time' => '1d ago'],
-                ],
-            ],
-        ];
+        $departmentName = User::query()
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
 
-        abort_unless(array_key_exists($department, $departmentPages), 404);
+        abort_unless($departmentName !== null, 404);
+
+        $departmentUsers = User::query()
+            ->whereIn('role', ['student', 'faculty'])
+            ->where('department', $departmentName)
+            ->latest()
+            ->get();
+
+        $students = $departmentUsers
+            ->where('role', 'student')
+            ->values();
+
+        $faculty = $departmentUsers
+            ->where('role', 'faculty')
+            ->values();
+
+        $departmentPayload = $this->buildDepartmentPayload(
+            departmentName: $departmentName,
+            departmentSlug: $department,
+            students: $students,
+            faculty: $faculty,
+            users: $departmentUsers,
+        );
 
         return view('users.admin.department-detail', [
-            'department' => $departmentPages[$department],
+            'department' => $departmentPayload,
             'section' => in_array($section, ['overview', 'faculty', 'enrollment'], true) ? $section : 'overview',
         ]);
+    }
+
+    /**
+     * @param  Collection<int, User>  $students
+     * @param  Collection<int, User>  $faculty
+     * @param  Collection<int, User>  $users
+     * @return array<string, mixed>
+     */
+    private function buildDepartmentPayload(
+        string $departmentName,
+        string $departmentSlug,
+        Collection $students,
+        Collection $faculty,
+        Collection $users,
+    ): array {
+        $departmentCode = Str::upper(Str::substr(Str::slug($departmentName, ''), 0, 4));
+
+        return [
+            'slug' => $departmentSlug,
+            'name' => $departmentName,
+            'departmentCode' => $departmentCode !== '' ? $departmentCode : 'DEPT',
+            'established' => 'Live Department Data',
+            'description' => 'This department overview is generated from student and faculty accounts created through admin management.',
+            'pulse' => [
+                'facultyCount' => (string) $faculty->count(),
+                'studentCount' => (string) $students->count(),
+                'recentAdditions' => (string) $users->where('created_at', '>=', now()->subDays(30))->count(),
+            ],
+            'enrollment' => [
+                ['label' => 'Total Students', 'value' => number_format($students->count())],
+                ['label' => 'Total Faculty', 'value' => number_format($faculty->count())],
+                ['label' => 'Total Members', 'value' => number_format($users->count())],
+            ],
+            'students' => $students
+                ->map(fn (User $user): array => [
+                    'initials' => Str::of($user->name)->explode(' ')->filter()->take(2)->map(fn (string $part): string => Str::upper(Str::substr($part, 0, 1)))->implode(''),
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'program' => $departmentName,
+                    'status' => 'Active',
+                ])
+                ->values()
+                ->all(),
+            'faculty' => $faculty
+                ->map(fn (User $user): array => [
+                    'initials' => Str::of($user->name)->explode(' ')->filter()->take(2)->map(fn (string $part): string => Str::upper(Str::substr($part, 0, 1)))->implode(''),
+                    'name' => $user->name,
+                    'role' => 'Faculty Member',
+                    'email' => $user->email,
+                    'office' => $departmentName,
+                    'status' => 'Active',
+                ])
+                ->values()
+                ->all(),
+            'activity' => $users
+                ->take(5)
+                ->map(fn (User $user): array => [
+                    'title' => ucfirst($user->role).' account added',
+                    'detail' => $user->name.' was added to '.$departmentName.'.',
+                    'time' => $user->created_at->diffForHumans(),
+                ])
+                ->values()
+                ->all(),
+        ];
     }
 
     public function reports()
