@@ -83,7 +83,7 @@
                     <span class="text-[11px] font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">+4.2%</span>
                 </div>
                 <div class="text-gray-500 text-[13px] font-bold mb-1">Total Courses</div>
-                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">312</div>
+                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">{{ number_format($courseCount) }}</div>
             </div>
 
             <!-- Card 4 -->

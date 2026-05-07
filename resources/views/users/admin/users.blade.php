@@ -8,7 +8,7 @@
                 <p class="text-gray-500 text-[15px] font-medium">Register a single student or faculty member to the
                     institutional database.</p>
             </div>
-            
+
         </div>
 
         <!-- Main Grid -->
@@ -17,9 +17,10 @@
             <!-- Form Card (Col Span 2) -->
             <div
                 class="xl:col-span-2 bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] h-full flex flex-col">
-                
-                @if(session('success'))
-                    <div class="mb-4 bg-green-50 text-green-700 p-4 rounded-xl text-sm font-bold border border-green-100">
+
+                @if (session('success'))
+                    <div
+                        class="mb-4 bg-green-50 text-green-700 p-4 rounded-xl text-sm font-bold border border-green-100">
                         {{ session('success') }}
                     </div>
                 @endif
@@ -33,14 +34,18 @@
                             <input type="text" name="name" value="{{ old('name') }}"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                 placeholder="Dr. Julian Casablancas">
-                            @error('name')<span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>@enderror
+                            @error('name')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Institutional Email</label>
                             <input type="email" name="email" value="{{ old('email') }}"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                 placeholder="julian.c@scholarmetric.edu">
-                            @error('email')<span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>@enderror
+                            @error('email')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
 
@@ -51,8 +56,10 @@
                             <select name="role"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
                                 <option value="">Select user role</option>
-                                <option value="Student" {{ old('role') == 'Student' ? 'selected' : '' }}>Student</option>
-                                <option value="Faculty" {{ old('role') == 'Faculty' ? 'selected' : '' }}>Faculty</option>
+                                <option value="Student" {{ old('role') == 'Student' ? 'selected' : '' }}>Student
+                                </option>
+                                <option value="Faculty" {{ old('role') == 'Faculty' ? 'selected' : '' }}>Faculty
+                                </option>
                                 <option value="Admin" {{ old('role') == 'Admin' ? 'selected' : '' }}>Admin</option>
                             </select>
                             <div class="absolute inset-y-0 right-4 top-[32px] flex items-center pointer-events-none">
@@ -62,17 +69,25 @@
                                         d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </div>
-                            @error('role')<span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>@enderror
+                            @error('role')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
                         <div class="relative">
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Department</label>
                             <select name="department"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
                                 <option value="">Assign department</option>
-                                <option value="Computer Science" {{ old('department') == 'Computer Science' ? 'selected' : '' }}>Computer Science</option>
-                                <option value="Mathematics" {{ old('department') == 'Mathematics' ? 'selected' : '' }}>Mathematics</option>
-                                <option value="Applied Physics" {{ old('department') == 'Applied Physics' ? 'selected' : '' }}>Applied Physics</option>
-                                <option value="Bio-Chemistry" {{ old('department') == 'Bio-Chemistry' ? 'selected' : '' }}>Bio-Chemistry</option>
+                                <option value="Computer Science"
+                                    {{ old('department') == 'Computer Science' ? 'selected' : '' }}>Computer Science
+                                </option>
+                                <option value="Mathematics" {{ old('department') == 'Mathematics' ? 'selected' : '' }}>
+                                    Mathematics</option>
+                                <option value="Applied Physics"
+                                    {{ old('department') == 'Applied Physics' ? 'selected' : '' }}>Applied Physics
+                                </option>
+                                <option value="Bio-Chemistry"
+                                    {{ old('department') == 'Bio-Chemistry' ? 'selected' : '' }}>Bio-Chemistry</option>
                             </select>
                             <div class="absolute inset-y-0 right-4 top-[32px] flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor"
@@ -81,7 +96,9 @@
                                         d="M19 9l-7 7-7-7"></path>
                                 </svg>
                             </div>
-                            @error('department')<span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>@enderror
+                            @error('department')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
                         </div>
                     </div>
 
@@ -93,12 +110,15 @@
                             <input type="password" name="password"
                                 class="w-full bg-transparent px-4 py-3.5 pr-28 text-gray-900 font-bold placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-widest text-lg"
                                 placeholder="••••••••••••" value="password123">
-                            <button type="button" onclick="document.querySelector('input[name=\'password\']').value = Math.random().toString(36).slice(-8);"
+                            <button type="button"
+                                onclick="document.querySelector('input[name=\'password\']').value = Math.random().toString(36).slice(-8);"
                                 class="absolute right-2 bg-transparent text-[#0e48c1] hover:text-[#0c3ca1] font-bold text-[13px] px-3 py-1.5 rounded transition-colors uppercase tracking-wider">
                                 Generate
                             </button>
                         </div>
-                        @error('password')<span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>@enderror
+                        @error('password')
+                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                        @enderror
                         <p class="text-[12px] text-gray-400 font-medium mt-3">User will be prompted to change this
                             password on first login.</p>
                     </div>
@@ -135,19 +155,22 @@
 
                     <div class="space-y-6">
                         @forelse($recentUsers as $user)
-                        <!-- User Card -->
-                        <div class="flex gap-4 items-center">
-                            <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
-                                src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random" alt="{{ $user->name }}">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-[14px] font-bold text-gray-900 truncate">{{ $user->name }}</p>
-                                <p class="text-[12px] text-gray-500 truncate font-medium">{{ $user->role }} <span
-                                        class="mx-1">•</span> {{ $user->department ?? 'N/A' }}</p>
+                            <!-- User Card -->
+                            <div class="flex gap-4 items-center">
+                                <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
+                                    src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random"
+                                    alt="{{ $user->name }}">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[14px] font-bold text-gray-900 truncate">{{ $user->name }}</p>
+                                    <p class="text-[12px] text-gray-500 truncate font-medium">{{ $user->role }} <span
+                                            class="mx-1">•</span> {{ $user->department ?? 'N/A' }}</p>
+                                </div>
+                                <span
+                                    class="text-[10px] font-bold text-gray-400 shrink-0">{{ $user->created_at->diffForHumans() }}</span>
                             </div>
-                            <span class="text-[10px] font-bold text-gray-400 shrink-0">{{ $user->created_at->diffForHumans() }}</span>
-                        </div>
                         @empty
-                        <div class="text-sm text-gray-500 font-medium text-center py-4">No recent registrations found.</div>
+                            <div class="text-sm text-gray-500 font-medium text-center py-4">No recent registrations
+                                found.</div>
                         @endforelse
                     </div>
 
@@ -171,7 +194,7 @@
                             </svg>
                         </div>
                     </div>
-                    
+
                 </div>
 
             </div>

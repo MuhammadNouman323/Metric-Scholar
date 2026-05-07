@@ -32,13 +32,13 @@
                         </svg>
                         View Curriculum
                     </button>
-                    <button
+                    <a href="{{ route('admin.departments.manage', $department['slug']) }}"
                         class="inline-flex items-center gap-2 rounded-xl bg-[#0e48c1] px-4 py-3 text-sm font-bold text-white shadow-[0_4px_12px_rgba(14,72,193,0.2)]">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2" />
                         </svg>
                         Manage Department
-                    </button>
+                    </a>
                 </div>
             </div>
 

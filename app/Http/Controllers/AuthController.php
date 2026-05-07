@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\University;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,6 +61,14 @@ class AuthController extends Controller
         $validated['admin_id'] ??= 'ADM-'.strtoupper((string) str()->random(6));
         $validated['access_level'] ??= 'Full Access';
         $validated['password'] = Hash::make($validated['password']);
+
+        $domain = explode('@', $validated['email'])[1];
+        $university = University::firstOrCreate(
+            ['domain' => $domain],
+            ['name' => ucfirst(explode('.', $domain)[0]).' University']
+        );
+
+        $validated['university_id'] = $university->id;
 
         $user = User::create($validated);
 

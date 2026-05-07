@@ -20,9 +20,7 @@
             @forelse ($departments as $department)
                 <div class="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 rounded-lg bg-[#eef2ff] flex items-center justify-center text-[#0e48c1] text-sm font-bold">
-                            {{ strtoupper(substr($department['name'], 0, 2)) }}
-                        </div>
+                        <x-department-icon :department="$department['name']" class="w-10 h-10" />
                         <span class="text-xs font-medium text-gray-400">{{ number_format($department['facultyCount']) }} Faculty</span>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $department['name'] }}</h3>

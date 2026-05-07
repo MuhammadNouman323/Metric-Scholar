@@ -100,8 +100,8 @@
                     <img src="https://i.pravatar.cc/150?img=60" alt="Dr. Academic"
                         class="w-10 h-10 rounded-full object-cover shadow-sm bg-gray-200">
                     <div class="flex flex-col">
-                        <span class="text-[14px] font-bold text-gray-900 leading-tight">admin</span>
-                        <span class="text-[13px] font-medium text-gray-500">Senior Professor</span>
+                        <span class="text-[14px] font-bold text-gray-900 leading-tight">{{ Auth::user()->name }}</span>
+                        <span class="text-[13px] font-medium text-gray-500">{{ Auth::user()->role }}</span>
                     </div>
                 </div>
 

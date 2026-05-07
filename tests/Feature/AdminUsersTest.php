@@ -73,3 +73,30 @@ test('/admin/departments and detail page show dynamic users created by admin', f
     $enrollmentResponse->assertOk();
     $enrollmentResponse->assertSee('Student Member');
 });
+
+test('/admin/user creation does not reuse the admin primary key as admin_id', function () {
+    $admin = User::factory()->create([
+        'role' => 'admin',
+    ]);
+
+    User::factory()->create([
+        'admin_id' => (string) $admin->id,
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->post('/admin/user', [
+        'name' => 'New Student',
+        'email' => 'new.student@example.com',
+        'role' => 'student',
+        'department' => 'Computer Science',
+        'password' => 'password123',
+    ]);
+
+    $response->assertRedirect();
+
+    $createdUser = User::where('email', 'new.student@example.com')->firstOrFail();
+
+    expect($createdUser->created_by)->toBe($admin->id);
+    expect($createdUser->admin_id)->not->toBe((string) $admin->id);
+});

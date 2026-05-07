@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -13,15 +13,18 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        $studentCount = User::whereRaw('LOWER(role) = ?', ['student'])->count();
-        $facultyCount = User::whereRaw('LOWER(role) = ?', ['faculty'])->count();
+        $tenantId = auth()->user()->university_id;
+        $studentCount = User::where('university_id', $tenantId)->whereRaw('LOWER(role) = ?', ['student'])->count();
+        $facultyCount = User::where('university_id', $tenantId)->whereRaw('LOWER(role) = ?', ['faculty'])->count();
+        $courseCount = Course::all()->count();
 
-        return view('users.admin.dashboard', compact('studentCount', 'facultyCount'));
+        return view('users.admin.dashboard', compact('studentCount', 'facultyCount', 'courseCount'));
     }
 
     public function users()
     {
-        $recentUsers = User::latest()->take(4)->get();
+        $recentUsers = User::where('university_id', auth()->user()->university_id)
+            ->latest()->take(4)->get();
 
         return view('users.admin.admin-user', compact('recentUsers'));
     }
@@ -38,7 +41,9 @@ class AdminController extends Controller
 
         $validated['role'] = strtolower($validated['role']);
         $validated['password'] = Hash::make($validated['password']);
-        $validated['admin_id'] = null;
+        $validated['admin_id'] = $this->generateAdminId();
+        $validated['created_by'] = auth()->id();
+        $validated['university_id'] = auth()->user()->university_id;
         $validated['access_level'] = null;
 
         User::create($validated);
@@ -63,23 +68,28 @@ class AdminController extends Controller
 
     public function departments()
     {
+        $tenantId = auth()->user()->university_id;
+
         $departments = User::query()
+            ->where('university_id', $tenantId)
             ->whereIn('role', ['student', 'faculty'])
             ->whereNotNull('department')
             ->select('department')
             ->distinct()
             ->get()
-            ->map(function (User $user): array {
+            ->map(function (User $user) use ($tenantId): array {
                 $departmentName = trim((string) $user->department);
 
                 return [
                     'slug' => Str::slug($departmentName),
                     'name' => $departmentName,
                     'facultyCount' => User::query()
+                        ->where('university_id', $tenantId)
                         ->whereRaw('LOWER(role) = ?', ['faculty'])
                         ->where('department', $departmentName)
                         ->count(),
                     'studentCount' => User::query()
+                        ->where('university_id', $tenantId)
                         ->whereRaw('LOWER(role) = ?', ['student'])
                         ->where('department', $departmentName)
                         ->count(),
@@ -94,8 +104,10 @@ class AdminController extends Controller
     public function department(string $department)
     {
         $section = request()->string('section')->toString() ?: 'overview';
+        $tenantId = auth()->user()->university_id;
 
         $departmentName = User::query()
+            ->where('university_id', $tenantId)
             ->whereIn('role', ['student', 'faculty'])
             ->whereNotNull('department')
             ->get(['department'])
@@ -107,6 +119,7 @@ class AdminController extends Controller
         abort_unless($departmentName !== null, 404);
 
         $departmentUsers = User::query()
+            ->where('university_id', $tenantId)
             ->whereIn('role', ['student', 'faculty'])
             ->where('department', $departmentName)
             ->latest()
@@ -206,5 +219,171 @@ class AdminController extends Controller
     public function newCourse(): View
     {
         return view('users.admin.new-course');
+    }
+
+    public function manageDepartment(string $department)
+    {
+        $section = request()->string('section')->toString() ?: 'courses';
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+
+        $courses = Course::where('department', $departmentName)->latest()->get();
+
+        return view('users.admin.department-manage', [
+            'departmentName' => $departmentName,
+            'department' => $department,
+            'section' => in_array($section, ['courses', 'faculty', 'enrollment'], true) ? $section : 'courses',
+            'courses' => $courses,
+        ]);
+    }
+
+    public function newDepartmentCourse(string $department): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+
+        return view('users.admin.department-new-course', [
+            'departmentName' => $departmentName,
+            'department' => $department,
+        ]);
+    }
+
+    public function storeDepartmentCourse(Request $request, string $department)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', 'unique:courses,code'],
+            'semester' => ['nullable', 'string', 'max:255'],
+            'credit_hours' => ['nullable', 'integer', 'min:1', 'max:8'],
+        ]);
+
+        $validated['department'] = $departmentName;
+
+        Course::create($validated);
+
+        return redirect()->route('admin.departments.manage', ['department' => $department, 'section' => 'courses'])
+            ->with('success', 'Course created successfully.');
+    }
+
+    public function editDepartmentCourse(string $department, Course $course): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+        abort_unless($course->department === $departmentName, 404);
+
+        return view('users.admin.department-edit-course', [
+            'departmentName' => $departmentName,
+            'department' => $department,
+            'course' => $course,
+        ]);
+    }
+
+    public function updateDepartmentCourse(Request $request, string $department, Course $course)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+        abort_unless($course->department === $departmentName, 404);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', 'unique:courses,code,'.$course->id],
+            'semester' => ['nullable', 'string', 'max:255'],
+            'credit_hours' => ['nullable', 'integer', 'min:1', 'max:8'],
+        ]);
+
+        $course->update($validated);
+
+        return redirect()->route('admin.departments.manage', ['department' => $department, 'section' => 'courses'])
+            ->with('success', 'Course updated successfully.');
+    }
+
+    public function destroyDepartmentCourse(string $department, Course $course)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+        abort_unless($course->department === $departmentName, 404);
+
+        $course->delete();
+
+        return redirect()->route('admin.departments.manage', ['department' => $department, 'section' => 'courses'])
+            ->with('success', 'Course deleted successfully.');
+    }
+
+    private function generateAdminId(): string
+    {
+        do {
+            $adminId = 'ADM-'.strtoupper((string) Str::random(6));
+        } while (User::where('admin_id', $adminId)->exists());
+
+        return $adminId;
     }
 }
