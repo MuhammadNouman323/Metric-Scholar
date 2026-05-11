@@ -106,7 +106,7 @@
                         <div class="mb-6 relative">
                             <div class="flex justify-between items-center mb-2">
                                 <label class="block text-sm font-bold text-gray-700">Password</label>
-                                <a href="#" class="text-sm font-bold text-[#0e48c1] hover:underline">Forgot Password?</a>
+                                <a id="forgot-password-link" href="{{ route('password.request') }}" class="text-sm font-bold text-[#0e48c1] hover:underline">Forgot Password?</a>
                             </div>
                             <div class="relative flex items-center bg-[#f8fafc] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#0e48c1] focus-within:bg-white transition-all border border-transparent focus-within:border-blue-200">
                                 <div class="pl-4 text-gray-400">
@@ -149,15 +149,18 @@
                     <script>
                         (function () {
                             const registerLink = document.getElementById('register-link');
+                            const forgotLink = document.getElementById('forgot-password-link');
                             const roleInputs = document.querySelectorAll('input[name="role"]');
 
-                            function toggleRegisterLink() {
+                            function toggleAdminOnlyElements() {
                                 const selected = document.querySelector('input[name="role"]:checked');
-                                registerLink.style.display = (selected && selected.value === 'admin') ? 'block' : 'none';
+                                const isAdmin = selected && selected.value === 'admin';
+                                registerLink.style.display = isAdmin ? 'block' : 'none';
+                                forgotLink.style.display = isAdmin ? 'inline' : 'none';
                             }
 
-                            roleInputs.forEach(input => input.addEventListener('change', toggleRegisterLink));
-                            toggleRegisterLink();
+                            roleInputs.forEach(input => input.addEventListener('change', toggleAdminOnlyElements));
+                            toggleAdminOnlyElements();
                         })();
                     </script>
                 </div>

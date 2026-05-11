@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -218,7 +219,33 @@ class AdminController extends Controller
 
     public function newCourse(): View
     {
-        return view('users.admin.new-course');
+        $tenantId = auth()->user()->university_id;
+
+        $departments = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->select('department')
+            ->distinct()
+            ->orderBy('department')
+            ->pluck('department');
+
+        return view('users.admin.new-course', compact('departments'));
+    }
+
+    public function storeCourse(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', 'unique:courses,code'],
+            'department' => ['required', 'string', 'max:255'],
+            'semester' => ['nullable', 'string', 'max:255'],
+            'credit_hours' => ['nullable', 'integer', 'min:1', 'max:8'],
+        ]);
+
+        Course::create($validated);
+
+        return redirect()->route('admin.courses')->with('success', 'Course created successfully.');
     }
 
     public function manageDepartment(string $department)

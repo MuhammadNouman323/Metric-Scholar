@@ -23,13 +23,18 @@ Route::get('/register', function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
 Route::get('/admin/user', [AdminController::class, 'users'])->name('admin.users');
 Route::post('/admin/user', [AdminController::class, 'storeUser'])->name('admin.users.store');
 Route::get('/admin/students', [AdminController::class, 'students']);
 Route::get('/admin/faculity', [AdminController::class, 'faculty']);
 Route::get('/admin/faculty', [AdminController::class, 'faculty']);
-Route::get('/admin/courses', [AdminController::class, 'courses']);
+Route::get('/admin/courses', [AdminController::class, 'courses'])->name('admin.courses');
+Route::get('/admin/courses/new', [AdminController::class, 'newCourse'])->name('admin.courses.newCourse');
+Route::post('/admin/courses/new', [AdminController::class, 'storeCourse'])->name('admin.courses.store');
 Route::get('/admin/departments', [AdminController::class, 'departments'])->name('admin.departments');
 Route::get('/admin/departments/{department}', [AdminController::class, 'department'])->name('admin.departments.show');
 Route::get('/admin/departments/{department}/manage', [AdminController::class, 'manageDepartment'])->name('admin.departments.manage');
@@ -38,7 +43,7 @@ Route::post('/admin/departments/{department}/courses/new', [AdminController::cla
 Route::get('/admin/departments/{department}/courses/{course}/edit', [AdminController::class, 'editDepartmentCourse'])->name('admin.departments.courses.edit');
 Route::put('/admin/departments/{department}/courses/{course}', [AdminController::class, 'updateDepartmentCourse'])->name('admin.departments.courses.update');
 Route::delete('/admin/departments/{department}/courses/{course}', [AdminController::class, 'destroyDepartmentCourse'])->name('admin.departments.courses.destroy');
-Route::get('/courses/new-course', [AdminController::class, 'newCourse'])->name('admin.courses.newCourse');
+
 Route::get('/admin/reports', [AdminController::class, 'reports']);
 
 Route::get('/faculty/dashboard', [FacultyController::class, 'dashboard']);
