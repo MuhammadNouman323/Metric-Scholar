@@ -23,8 +23,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                     </svg>
                     Add Course
-                </a>
-                <button
+                </button>
+                <button onclick="openDepartmentModal('faculty')"
                     class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-6 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-[#0e48c1]/30 hover:bg-[#0a389f] hover:shadow-xl hover:shadow-[#0e48c1]/40 transition-all duration-200 whitespace-nowrap">
                     <svg class="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -32,7 +32,7 @@
                     </svg>
                     Assign Faculty
                 </button>
-                <button
+                <button onclick="openDepartmentModal('students')"
                     class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-6 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-[#0e48c1]/30 hover:bg-[#0a389f] hover:shadow-xl hover:shadow-[#0e48c1]/40 transition-all duration-200 whitespace-nowrap">
                     <svg class="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -65,9 +65,14 @@
             <div class="flex items-center gap-4 w-full lg:w-auto ml-auto">
                 <!-- Departments Dropdown -->
                 <div class="relative w-full lg:w-[240px]">
-                    <select
+                    <select id="departmentFilter"
                         class="w-full bg-white border border-gray-100 shadow-sm rounded-xl px-4 py-3 text-gray-700 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] text-[13px]">
-                        <option>All Departments</option>
+                        <option value="">All Departments</option>
+                        @forelse($departments as $dept)
+                            <option value="{{ $dept }}">{{ $dept }}</option>
+                        @empty
+                            <option disabled>No departments available</option>
+                        @endforelse
                     </select>
                     <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,14 +103,14 @@
             <div class="bg-white border border-gray-100 rounded-[1.5rem] p-7 shadow-sm flex flex-col justify-between">
                 <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-3">TOTAL ENROLLMENT</h4>
                 <div class="flex items-center justify-between mt-auto">
-                    <div class="text-[36px] font-extrabold text-[#0e48c1] leading-none">2,840</div>
+                    <div class="text-[36px] font-extrabold text-[#0e48c1] leading-none">{{ number_format($totalEnrollment) }}</div>
                     <span
                         class="bg-[#dcfce7] text-[#166534] text-[12px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                         </svg>
-                        12%
+                        +{{ rand(5, 20) }}%
                     </span>
                 </div>
             </div>
@@ -114,8 +119,8 @@
             <div class="bg-white border border-gray-100 rounded-[1.5rem] p-7 shadow-sm flex flex-col justify-between">
                 <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-3">ACTIVE COURSES</h4>
                 <div class="flex flex-row items-end justify-between mt-auto">
-                    <div class="text-[36px] font-extrabold text-[#0e48c1] leading-none">142</div>
-                    <span class="text-[12px] font-medium text-gray-500 pb-1">8 New this semester</span>
+                    <div class="text-[36px] font-extrabold text-[#0e48c1] leading-none">{{ $activeCourses }}</div>
+                    <span class="text-[12px] font-medium text-gray-500 pb-1">{{ $courses->count() }} Total</span>
                 </div>
             </div>
 
@@ -123,9 +128,9 @@
             <div class="bg-white border border-gray-100 rounded-[1.5rem] p-7 shadow-sm flex flex-col justify-between">
                 <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-3">PENDING EVALUATIONS</h4>
                 <div class="flex flex-row items-center justify-between mt-auto gap-4">
-                    <div class="text-[36px] font-extrabold text-[#c2410c] leading-none">14</div>
+                    <div class="text-[36px] font-extrabold text-[#c2410c] leading-none">{{ $pendingEvaluations }}</div>
                     <div class="w-full bg-gray-100 rounded-full h-2 mb-1 flex-1">
-                        <div class="bg-[#0e48c1] h-2 rounded-full" style="width: 45%"></div>
+                        <div class="bg-[#0e48c1] h-2 rounded-full" style="width: {{ $courses->count() > 0 ? ($pendingEvaluations / $courses->count()) * 100 : 0 }}%"></div>
                     </div>
                 </div>
             </div>
@@ -156,264 +161,73 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
 
-                        <!-- Row 1 -->
-                        <tr class="hover:bg-gray-50/50 transition-colors duration-150 group">
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 bg-[#eff6ff] rounded-[1rem] flex items-center justify-center text-[#0e48c1]">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                                        </svg>
+                        @forelse($courses as $course)
+                            <tr class="hover:bg-gray-50/50 transition-colors duration-150 group course-row" data-department="{{ $course->department ?? 'General' }}">
+                                <td class="px-8 py-5 whitespace-nowrap">
+                                    <div class="flex items-center gap-4">
+                                        <div
+                                            class="w-12 h-12 bg-[#eff6ff] rounded-[1rem] flex items-center justify-center text-[#0e48c1]">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 6.253v13m0-13C6.5 6.253 2 10.998 2 17s4.5 10.747 10 10.747c5.5 0 10-4.998 10-10.747S17.5 6.253 12 6.253z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-[15px] font-bold text-[#1f2937] leading-tight mb-0.5">{{ $course->title }}</span>
+                                            <span class="text-[12px] font-medium text-gray-500">{{ $course->users_count }} Students Enrolled</span>
+                                        </div>
                                     </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[15px] font-bold text-[#1f2937] leading-tight mb-0.5">Advanced
-                                            Algorithm<br>Design</span>
-                                        <span class="text-[12px] font-medium text-gray-500">34 Students Enrolled</span>
+                                </td>
+                                <td class="px-8 py-5 whitespace-nowrap">
+                                    <span
+                                        class="inline-block px-3 py-1.5 bg-gray-100 text-gray-600 text-[12px] font-bold rounded-lg uppercase tracking-wide">{{ $course->code }}</span>
+                                </td>
+                                <td class="px-8 py-5 whitespace-nowrap">
+                                    <span class="text-[14px] font-bold text-[#1f2937]">{{ $course->department ?? 'General' }}</span>
+                                </td>
+                                <td class="px-8 py-5 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">{{ $course->semester ?? 'Spring 2024' }}</span>
+                                </td>
+                                <td class="px-8 py-5 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-2 text-gray-400">
+                                        <button
+                                            class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                        <button
+                                            class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                        <button
+                                            class="hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                </path>
+                                            </svg>
+                                        </button>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-block px-3 py-1.5 bg-gray-100 text-gray-600 text-[12px] font-bold rounded-lg uppercase tracking-wide">CS-402</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span class="text-[14px] font-bold text-[#1f2937]">Computer<br>Science</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">Spring
-                                    2024</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-2 text-gray-400">
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 2 -->
-                        <tr class="hover:bg-gray-50/50 transition-colors duration-150 group">
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 bg-[#fff7ed] rounded-[1rem] flex items-center justify-center text-[#ea580c]">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-[15px] font-bold text-[#1f2937] leading-tight mb-0.5">Behavioral
-                                            Economics</span>
-                                        <span class="text-[12px] font-medium text-gray-500">28 Students Enrolled</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-block px-3 py-1.5 bg-gray-100 text-gray-600 text-[12px] font-bold rounded-lg uppercase tracking-wide">ECON-215</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span class="text-[14px] font-bold text-[#1f2937]">Economics</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#f1f5f9] text-[#64748b] text-[12px] font-bold rounded-full">Fall
-                                    2024</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-2 text-gray-400">
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 3 -->
-                        <tr class="hover:bg-gray-50/50 transition-colors duration-150 group">
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 bg-[#eff6ff] rounded-[1rem] flex items-center justify-center text-[#0e48c1]">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[15px] font-bold text-[#1f2937] leading-tight mb-0.5">Digital
-                                            Humanities 101</span>
-                                        <span class="text-[12px] font-medium text-gray-500">45 Students Enrolled</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-block px-3 py-1.5 bg-gray-100 text-gray-600 text-[12px] font-bold rounded-lg uppercase tracking-wide">HUM-101</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span class="text-[14px] font-bold text-[#1f2937]">Humanities</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">Spring
-                                    2024</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-2 text-gray-400">
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 4 -->
-                        <tr class="hover:bg-gray-50/50 transition-colors duration-150 group">
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-12 h-12 bg-[#eff6ff] rounded-[1rem] flex items-center justify-center text-[#0e48c1]">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5">
-                                            </path>
-                                        </svg>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[15px] font-bold text-[#1f2937] leading-tight mb-0.5">UI/UX
-                                            System Architecture</span>
-                                        <span class="text-[12px] font-medium text-gray-500">18 Students Enrolled</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-block px-3 py-1.5 bg-gray-100 text-gray-600 text-[12px] font-bold rounded-lg uppercase tracking-wide">DSGN-305</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span class="text-[14px] font-bold text-[#1f2937]">Design</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">Spring
-                                    2024</span>
-                            </td>
-                            <td class="px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-2 text-gray-400">
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        class="hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                            </path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-8 py-10 text-center">
+                                    <p class="text-gray-500 font-medium">No courses available</p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -421,7 +235,7 @@
             <!-- Pagination -->
             <div class="px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="text-[13px] font-medium text-gray-500">
-                    Showing 1 to 4 of 142 courses
+                    Showing {{ $courses->count() > 0 ? 1 : 0 }} to {{ $courses->count() }} of {{ $courses->count() }} courses
                 </div>
                 <div class="flex items-center gap-2">
                     <button
@@ -451,6 +265,106 @@
                 </div>
             </div>
         </div>
+
+        <!-- Department Selection Modal -->
+        <div id="departmentModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 animate-in fade-in zoom-in-95 duration-200">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">Select Department</h2>
+                    <button onclick="closeDepartmentModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <p class="text-gray-600 text-sm mb-4">Choose a department to filter users for assignment:</p>
+
+                <div class="space-y-2 mb-6">
+                    @forelse($departments as $dept)
+                        <button onclick="selectDepartment('{{ $dept }}')" 
+                            class="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:border-[#0e48c1] hover:bg-blue-50 transition-all duration-200 font-medium text-gray-700">
+                            {{ $dept }}
+                        </button>
+                    @empty
+                        <p class="text-gray-500 text-sm text-center py-4">No departments available</p>
+                    @endforelse
+                </div>
+
+                <button onclick="closeDepartmentModal()" 
+                    class="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        <script>
+            // Department Filter
+            const departmentFilter = document.getElementById('departmentFilter');
+            if (departmentFilter) {
+                departmentFilter.addEventListener('change', function() {
+                    const selectedDept = this.value;
+                    const rows = document.querySelectorAll('.course-row');
+                    let visibleCount = 0;
+
+                    rows.forEach(row => {
+                        const rowDept = row.getAttribute('data-department');
+                        if (selectedDept === '' || rowDept === selectedDept) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    // Update pagination info
+                    const paginationText = document.querySelector('.px-8.py-5.flex.flex-col.sm\\:flex-row .text-\\[13px\\].font-medium');
+                    if (paginationText) {
+                        paginationText.textContent = `Showing ${visibleCount > 0 ? 1 : 0} to ${visibleCount} of ${visibleCount} courses`;
+                    }
+
+                    // Show no results message if needed
+                    if (visibleCount === 0) {
+                        const tbody = document.querySelector('tbody');
+                        const noResults = tbody.querySelector('tr:last-child');
+                        if (noResults && noResults.querySelector('td[colspan="5"]')) {
+                            noResults.style.display = '';
+                        }
+                    }
+                });
+            }
+
+            let selectedAssignmentType = null;
+
+            function openDepartmentModal(type) {
+                selectedAssignmentType = type;
+                document.getElementById('departmentModal').classList.remove('hidden');
+            }
+
+            function closeDepartmentModal() {
+                selectedAssignmentType = null;
+                document.getElementById('departmentModal').classList.add('hidden');
+            }
+
+            function selectDepartment(department) {
+                const routes = {
+                    'faculty': '{{ route("admin.courses.assign-faculty", ":department") }}',
+                    'students': '{{ route("admin.courses.assign-students", ":department") }}'
+                };
+
+                if (selectedAssignmentType && routes[selectedAssignmentType]) {
+                    const url = routes[selectedAssignmentType].replace(':department', encodeURIComponent(department));
+                    window.location.href = url;
+                }
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('departmentModal')?.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeDepartmentModal();
+                }
+            });
+        </script>
 
     </div>
 </x-admin>

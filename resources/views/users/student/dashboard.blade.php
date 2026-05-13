@@ -5,7 +5,7 @@
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-5">
             <div>
                 <p class="text-[13px] text-gray-400 font-medium mb-1">Fall 2024 Semester</p>
-                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Welcome back, Muhammad 👋</h1>
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Welcome back, {{ $student->name }} 👋</h1>
             </div>
             <div class="flex items-center gap-3">
                 <div class="relative hidden sm:block">
@@ -47,7 +47,7 @@
             </div>
             <div class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                 <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Active Courses</p>
-                <p class="text-[34px] font-bold text-gray-900 leading-none mb-1">6</p>
+                <p class="text-[34px] font-bold text-gray-900 leading-none mb-1">{{ $activeCourses }}</p>
                 <p class="text-[12px] font-medium text-gray-400">This semester</p>
             </div>
             <div class="bg-[#fff5f0] rounded-[1.5rem] p-6 border border-orange-100 shadow-[0_4px_16px_rgb(0,0,0,0.03)]">

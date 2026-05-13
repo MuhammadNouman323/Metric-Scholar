@@ -33,13 +33,6 @@
                     </svg>
                     Dashboard
                 </a>
-                <a href="/admin/departments"
-                    class="{{ request()->is('admin/departments') ? 'text-[#0e48c1] bg-blue-50/70 border-l-4 border-[#0e48c1]' : 'hover:bg-gray-100 hover:text-gray-900 border-l-4 border-transparent' }} flex items-center px-8 py-3.5 transition-colors relative">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <svg fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M22,11H17V6a1,1,0,0,0-.293-.707l-4-4a1,1,0,0,0-1.414,0l-4,4A1,1,0,0,0,7,6v5H2a1,1,0,0,0-1,1V22a1,1,0,0,0,1,1H22a1,1,0,0,0,1-1V12A1,1,0,0,0,22,11ZM3,13H7v8H3Zm6-1V6.414l3-3,3,3V21H13.5V19.5a1.5,1.5,0,0,0-3,0V21H9Zm12,9H17V13h4ZM4,14H6v2H4Zm0,4H6v2H4Zm16-2H18V14h2Zm0,4H18V18h2ZM10.5,7.5A1.5,1.5,0,1,1,12,9,1.5,1.5,0,0,1,10.5,7.5Z"></path></g></svg>
-                    </svg>
-                    Departments
-                </a>
                 <a href="/admin/user"
                     class="{{ request()->is('admin/user') ? 'text-[#0e48c1] bg-blue-50/70 border-l-4 border-[#0e48c1]' : 'hover:bg-gray-100 hover:text-gray-900 border-l-4 border-transparent' }} flex items-center px-8 py-3.5 transition-colors relative">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,6 +41,13 @@
                         </path>
                     </svg>
                     Users
+                </a>
+                <a href="/admin/departments"
+                    class="{{ request()->is('admin/departments') ? 'text-[#0e48c1] bg-blue-50/70 border-l-4 border-[#0e48c1]' : 'hover:bg-gray-100 hover:text-gray-900 border-l-4 border-transparent' }} flex items-center px-8 py-3.5 transition-colors relative">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M22,11H17V6a1,1,0,0,0-.293-.707l-4-4a1,1,0,0,0-1.414,0l-4,4A1,1,0,0,0,7,6v5H2a1,1,0,0,0-1,1V22a1,1,0,0,0,1,1H22a1,1,0,0,0,1-1V12A1,1,0,0,0,22,11ZM3,13H7v8H3Zm6-1V6.414l3-3,3,3V21H13.5V19.5a1.5,1.5,0,0,0-3,0V21H9Zm12,9H17V13h4ZM4,14H6v2H4Zm0,4H6v2H4Zm16-2H18V14h2Zm0,4H18V18h2ZM10.5,7.5A1.5,1.5,0,1,1,12,9,1.5,1.5,0,0,1,10.5,7.5Z"></path></g></svg>
+                    </svg>
+                    Departments
                 </a>
                 <a href="/admin/students"
                     class="{{ request()->is('admin/students') ? 'text-[#0e48c1] bg-blue-50/70 border-l-4 border-[#0e48c1]' : 'hover:bg-gray-100 hover:text-gray-900 border-l-4 border-transparent' }} flex items-center px-8 py-3.5 transition-colors relative">

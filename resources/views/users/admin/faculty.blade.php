@@ -18,9 +18,14 @@
                             </path>
                         </svg>
                     </div>
-                    <select
+                    <select id="departmentFilterFaculty"
                         class="w-full md:w-[220px] bg-[#f4f6f8] border border-transparent rounded-xl pl-10 pr-10 py-3.5 text-gray-700 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white text-[14px]">
-                        <option>All Departments</option>
+                        <option value="">All Departments</option>
+                        @forelse($departments as $dept)
+                            <option value="{{ $dept }}">{{ $dept }}</option>
+                        @empty
+                            <option disabled>No departments available</option>
+                        @endforelse
                     </select>
                     <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,7 +35,7 @@
                     </div>
                 </div>
 
-                <button
+                <a href="/admin/user"
                     class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-6 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-[#0e48c1]/30 hover:bg-[#0a389f] hover:shadow-xl hover:shadow-[#0e48c1]/40 transition-all duration-200 whitespace-nowrap">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -38,7 +43,7 @@
                         </path>
                     </svg>
                     Add Faculty
-                </button>
+                </a>
             </div>
         </div>
 
@@ -58,7 +63,7 @@
                     <span class="bg-[#dcfce7] text-[#166534] text-[11px] font-bold px-2.5 py-1 rounded-full">+4%</span>
                 </div>
                 <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1">TOTAL FACULTY</h4>
-                <div class="text-[28px] font-extrabold text-gray-900 leading-none">1,284</div>
+                <div class="text-[28px] font-extrabold text-gray-900 leading-none">{{ $totalFaculty }}</div>
             </div>
 
             <!-- Pending Reviews -->
@@ -75,7 +80,7 @@
                     <span class="bg-[#ffedd5] text-[#c2410c] text-[11px] font-bold px-2.5 py-1 rounded-full">High</span>
                 </div>
                 <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1">PENDING REVIEWS</h4>
-                <div class="text-[28px] font-extrabold text-gray-900 leading-none">42</div>
+                <div class="text-[28px] font-extrabold text-gray-900 leading-none">{{ $pendingReviews }}</div>
             </div>
 
             <!-- Active Courses -->
@@ -91,7 +96,7 @@
                     </div>
                 </div>
                 <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1">ACTIVE COURSES</h4>
-                <div class="text-[28px] font-extrabold text-gray-900 leading-none">3,120</div>
+                <div class="text-[28px] font-extrabold text-gray-900 leading-none">{{ $activeCourses }}</div>
             </div>
 
             <!-- Tenured Staff -->
@@ -107,7 +112,7 @@
                     </div>
                 </div>
                 <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1">TENURED STAFF</h4>
-                <div class="text-[28px] font-extrabold text-gray-900 leading-none">68%</div>
+                <div class="text-[28px] font-extrabold text-gray-900 leading-none">{{ $tenuredPercentage }}%</div>
             </div>
         </div>
 
@@ -157,209 +162,57 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        <tr class="hover:bg-blue-50/40 transition-colors duration-150 group">
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="text-[13px] font-medium text-gray-500">FAC-2024-001</div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-3">
-                                    <img class="w-10 h-10 rounded-full object-cover"
-                                        src="https://i.pravatar.cc/150?img=47" alt="Dr. Elena Rodriguez">
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-[14px] font-bold text-gray-900 group-hover:text-[#0e48c1] transition-colors cursor-pointer">Dr.
-                                            Elena Rodriguez</span>
-                                        <span
-                                            class="text-[12px] font-medium text-gray-500">elena.rod@scholarmetric.edu</span>
+                        @forelse($faculties as $faculty)
+                            <tr class="hover:bg-blue-50/40 transition-colors duration-150 group faculty-row" data-department="{{ $faculty->department ?? 'General' }}">
+                                <td class="px-6 md:px-8 py-5 whitespace-nowrap">
+                                    <div class="text-[13px] font-medium text-gray-500">FAC-{{ $faculty->id }}</div>
+                                </td>
+                                <td class="px-6 md:px-8 py-5 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <img class="w-10 h-10 rounded-full object-cover"
+                                            src="https://i.pravatar.cc/150?img={{ rand(0, 70) }}" alt="{{ $faculty->name }}">
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="text-[14px] font-bold text-gray-900 group-hover:text-[#0e48c1] transition-colors cursor-pointer">{{ $faculty->name }}</span>
+                                            <span
+                                                class="text-[12px] font-medium text-gray-500">{{ $faculty->email }}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <span class="text-[14px] font-medium text-gray-700">Associate Professor</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">Computer
-                                    Science</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-center">
-                                <span class="text-[14px] font-bold text-gray-900">4</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-3">
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                            </path>
-                                        </svg></button>
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-blue-50/40 transition-colors duration-150 group">
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="text-[13px] font-medium text-gray-500">FAC-2024-042</div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-3">
-                                    <div
-                                        class="w-10 h-10 rounded-full bg-[#ffedd5] text-[#c2410c] flex items-center justify-center font-bold text-[14px]">
-                                        JM</div>
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-[14px] font-bold text-gray-900 group-hover:text-[#0e48c1] transition-colors cursor-pointer">Prof.
-                                            Julian Mark</span>
-                                        <span
-                                            class="text-[12px] font-medium text-gray-500">j.mark@scholarmetric.edu</span>
+                                </td>
+                                <td class="px-6 md:px-8 py-5 whitespace-nowrap text-[14px] font-medium text-gray-700">
+                                    {{ $faculty->designation ?? 'Faculty' }}
+                                </td>
+                                <td class="px-6 md:px-8 py-5 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">{{ $faculty->department ?? 'General' }}</span>
+                                </td>
+                                <td class="px-6 md:px-8 py-5 whitespace-nowrap text-center">
+                                    <span class="text-[14px] font-bold text-gray-900">{{ $faculty->courses_count ?? 0 }}</span>
+                                </td>
+                                <td class="px-6 md:px-8 py-5 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ route('admin.faculty.assign-courses', $faculty->id) }}"
+                                            title="Assign Courses"
+                                            class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
+                                                class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></a>
+                                        <button
+                                            class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
+                                                class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                                                </path>
+                                            </svg></button>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-[14px] font-medium text-gray-700">
-                                Head of Department
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#ffedd5] text-[#9a3412] text-[12px] font-bold rounded-full">Mathematics</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-center">
-                                <span class="text-[14px] font-bold text-gray-900">2</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-3">
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                            </path>
-                                        </svg></button>
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-blue-50/40 transition-colors duration-150 group">
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="text-[13px] font-medium text-gray-500">FAC-2023-118</div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-3">
-                                    <img class="w-10 h-10 rounded-full object-cover"
-                                        src="https://i.pravatar.cc/150?img=44" alt="Dr. Sarah Jenkins">
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-[14px] font-bold text-gray-900 group-hover:text-[#0e48c1] transition-colors cursor-pointer">Dr.
-                                            Sarah Jenkins</span>
-                                        <span
-                                            class="text-[12px] font-medium text-gray-500">s.jenkins@scholarmetric.edu</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-[14px] font-medium text-gray-700">
-                                Senior Lecturer
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#e2e8f0] text-[#475569] text-[12px] font-bold rounded-full">Physics
-                                    & Astronomy</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-center">
-                                <span class="text-[14px] font-bold text-gray-900">5</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-3">
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                            </path>
-                                        </svg></button>
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-blue-50/40 transition-colors duration-150 group">
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="text-[13px] font-medium text-gray-500">FAC-2024-009</div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <div class="flex items-center gap-3">
-                                    <img class="w-10 h-10 rounded-full object-cover"
-                                        src="https://i.pravatar.cc/150?img=11" alt="Dr. Aris Varma">
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-[14px] font-bold text-gray-900 group-hover:text-[#0e48c1] transition-colors cursor-pointer">Dr.
-                                            Aris Varma</span>
-                                        <span
-                                            class="text-[12px] font-medium text-gray-500">a.varma@scholarmetric.edu</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-[14px] font-medium text-gray-700">
-                                Assistant Professor
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">Economics</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-center">
-                                <span class="text-[14px] font-bold text-gray-900">3</span>
-                            </td>
-                            <td class="px-6 md:px-8 py-5 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-3">
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                            </path>
-                                        </svg></button>
-                                    <button
-                                        class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
-                                            class="w-5 h-5" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                                            </path>
-                                        </svg></button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 md:px-8 py-10 text-center">
+                                    <p class="text-gray-500 font-medium">No faculty members available</p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -368,8 +221,8 @@
             <div
                 class="px-6 md:px-8 py-5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="text-[13px] font-medium text-gray-500">
-                    Showing <span class="font-bold text-gray-900">1-4</span> of <span
-                        class="font-bold text-gray-900">1,284</span> faculty members
+                    Showing <span class="font-bold text-gray-900">{{ $faculties->count() > 0 ? 1 : 0 }}-{{ $faculties->count() }}</span> of <span
+                        class="font-bold text-gray-900">{{ $totalFaculty }}</span> faculty members
                 </div>
                 <div class="flex items-center gap-2">
                     <button
@@ -462,6 +315,34 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            // Department Filter
+            const deptFilterFaculty = document.getElementById('departmentFilterFaculty');
+            if (deptFilterFaculty) {
+                deptFilterFaculty.addEventListener('change', function() {
+                    const selectedDept = this.value;
+                    const rows = document.querySelectorAll('.faculty-row');
+                    let visibleCount = 0;
+
+                    rows.forEach(row => {
+                        const rowDept = row.getAttribute('data-department');
+                        if (selectedDept === '' || rowDept === selectedDept) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    // Update pagination info
+                    const paginationSpans = document.querySelectorAll('.px-6.md\\:px-8.py-5.border-t .font-bold');
+                    if (paginationSpans.length >= 2) {
+                        paginationSpans[0].textContent = `${visibleCount > 0 ? 1 : 0}-${visibleCount}`;
+                    }
+                });
+            }
+        </script>
 
     </div>
 </x-admin>

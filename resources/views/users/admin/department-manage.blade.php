@@ -207,74 +207,43 @@
                     </div>
                     <input type="text" placeholder="Search Faculty..." class="bg-gray-50 border border-gray-100 text-gray-900 text-sm font-medium rounded-xl focus:ring-[#0e48c1] focus:border-[#0e48c1] block w-full pl-10 p-3 shadow-sm">
                 </div>
-                <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0e48c1] px-5 py-3 text-sm font-bold text-white shadow-[0_4px_12px_rgba(14,72,193,0.2)] whitespace-nowrap w-full md:w-auto">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                    </svg>
-                    + Assign Course
-                </button>
             </div>
 
             <div class="space-y-4">
-                <!-- Faculty Card 1 -->
+                @forelse($facultyMembers as $member)
+                @php
+                    $initials = collect(explode(' ', $member->name))->filter()->take(2)->map(fn ($p) => strtoupper(substr($p, 0, 1)))->implode('');
+                    $colorSets = [['bg-[#eff4ff]', 'text-[#0e48c1]'], ['bg-gray-100', 'text-gray-600'], ['bg-[#0e48c1]', 'text-white']];
+                    [$bgColor, $textColor] = $colorSets[$loop->index % count($colorSets)];
+                @endphp
                 <div class="bg-[#f8fafc] border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-[#eff4ff] flex items-center justify-center text-[#0e48c1] font-bold text-lg shrink-0">
-                            AT
+                        <div class="w-12 h-12 rounded-full {{ $bgColor }} flex items-center justify-center {{ $textColor }} font-bold text-lg shrink-0">
+                            {{ $initials }}
                         </div>
                         <div>
-                            <h3 class="text-[17px] font-bold text-gray-900">Dr. Alan Turing</h3>
-                            <p class="text-sm font-medium text-gray-500">Professor, Computer Science</p>
+                            <h3 class="text-[17px] font-bold text-gray-900">{{ $member->name }}</h3>
+                            <p class="text-sm font-medium text-gray-500">{{ $member->department ?? 'Faculty' }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-4 w-full md:w-auto">
                         <div class="flex gap-2 flex-wrap flex-1 md:flex-initial">
-                            <span class="inline-flex items-center justify-center px-3 py-1 bg-[#e2e8f0] text-gray-600 text-xs font-bold rounded-md">CS-402</span>
-                            <span class="inline-flex items-center justify-center px-3 py-1 bg-[#e2e8f0] text-gray-600 text-xs font-bold rounded-md">CS-410</span>
+                            @forelse($member->courses as $assignedCourse)
+                                <span class="inline-flex items-center justify-center px-3 py-1 bg-[#e2e8f0] text-gray-600 text-xs font-bold rounded-md">{{ $assignedCourse->code }}</span>
+                            @empty
+                                <span class="text-xs font-medium text-gray-400 italic">No courses assigned</span>
+                            @endforelse
                         </div>
-                        <button class="px-4 py-1.5 bg-[#e2e8f0] hover:bg-gray-300 text-[#0e48c1] font-bold text-sm rounded-lg transition-colors">Reassign</button>
+                        <a href="{{ route('admin.departments.faculty.assign-courses', [$department, $member]) }}" class="px-4 py-1.5 bg-[#0e48c1] hover:bg-[#0a389f] text-white font-bold text-sm rounded-lg transition-colors whitespace-nowrap">Assign Courses</a>
                     </div>
                 </div>
-
-                <!-- Faculty Card 2 -->
-                <div class="bg-[#f8fafc] border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-lg shrink-0">
-                            GH
-                        </div>
-                        <div>
-                            <h3 class="text-[17px] font-bold text-gray-900">Dr. Grace Hopper</h3>
-                            <p class="text-sm font-medium text-gray-500">Associate Professor</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-4 w-full md:w-auto">
-                        <div class="flex gap-2 flex-wrap flex-1 md:flex-initial">
-                            <span class="inline-flex items-center justify-center px-3 py-1 bg-[#e2e8f0] text-gray-600 text-xs font-bold rounded-md">CS-101</span>
-                            <span class="inline-flex items-center justify-center px-3 py-1 bg-[#e2e8f0] text-gray-600 text-xs font-bold rounded-md">CS-250</span>
-                        </div>
-                        <button class="px-4 py-1.5 bg-[#e2e8f0] hover:bg-gray-300 text-[#0e48c1] font-bold text-sm rounded-lg transition-colors">Reassign</button>
-                    </div>
+                @empty
+                <div class="bg-[#f8fafc] border border-gray-100 rounded-2xl p-8 text-center">
+                    <p class="text-sm font-medium text-gray-500">No faculty members found for this department.</p>
                 </div>
-
-                <!-- Faculty Card 3 -->
-                <div class="bg-[#f8fafc] border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-[#0e48c1] flex items-center justify-center text-white font-bold text-lg shrink-0">
-                            JD
-                        </div>
-                        <div>
-                            <h3 class="text-[17px] font-bold text-gray-900">Prof. John Doe</h3>
-                            <p class="text-sm font-medium text-gray-500">Adjunct Faculty</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-4 w-full md:w-auto">
-                        <div class="flex gap-2 flex-wrap flex-1 md:flex-initial justify-end md:justify-start">
-                            <span class="inline-flex items-center justify-center px-3 py-1 bg-[#e2e8f0] text-gray-600 text-xs font-bold rounded-md">CS-305</span>
-                        </div>
-                        <button class="px-4 py-1.5 bg-[#e2e8f0] hover:bg-gray-300 text-[#0e48c1] font-bold text-sm rounded-lg transition-colors">Reassign</button>
-                    </div>
-                </div>
+                @endforelse
             </div>
+
 
         @elseif ($section === 'enrollment')
             <!-- Student Enrollment -->
@@ -312,25 +281,30 @@
                     </div>
                 </div>
 
-                <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0e48c1] px-5 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(14,72,193,0.2)] whitespace-nowrap w-full md:w-auto">
+                <a href="{{ route('admin.departments.enrollment.assign-courses', $department) }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0e48c1] px-5 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(14,72,193,0.2)] hover:bg-[#0a389f] transition-colors whitespace-nowrap w-full md:w-auto">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m-3-3v6m-9-3a3 3 0 116 0 3 3 0 01-6 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                     </svg>
-                    + Enroll Student
-                </button>
+                    + Assign Course
+                </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Student Card 1 -->
+                @forelse($students as $student)
+                @php
+                    $initials = collect(explode(' ', $student->name))->filter()->take(2)->map(fn ($p) => strtoupper(substr($p, 0, 1)))->implode('');
+                    $colorSets = [['bg-white', 'text-gray-500', 'border'], ['bg-[#0e48c1]', 'text-white', '']];
+                    [$bgColor, $textColor, $borderClass] = $colorSets[$loop->index % count($colorSets)];
+                @endphp
                 <div class="bg-[#f3f4f6] border border-gray-100 rounded-[1.5rem] p-5">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-500 font-bold text-sm shrink-0 border border-gray-200">
-                                EV
+                            <div class="w-10 h-10 rounded-full {{ $bgColor }} flex items-center justify-center {{ $textColor }} font-bold text-sm shrink-0 {{ $borderClass ? 'border border-gray-200' : '' }}">
+                                {{ $initials }}
                             </div>
                             <div>
-                                <h3 class="text-base font-bold text-gray-900">Eleanor Vance</h3>
-                                <p class="text-xs font-medium text-gray-500">ID: CS-2024-089</p>
+                                <h3 class="text-base font-bold text-gray-900">{{ $student->name }}</h3>
+                                <p class="text-xs font-medium text-gray-500">{{ $student->email }}</p>
                             </div>
                         </div>
                         <span class="inline-flex items-center justify-center px-2.5 py-0.5 bg-[#e0e7ff] text-[#0e48c1] text-[10px] font-bold rounded-full">Active</span>
@@ -338,58 +312,19 @@
                     <div class="mt-2">
                         <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">ENROLLED COURSES</p>
                         <div class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">CS101</span>
-                            <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">MATH205</span>
-                            <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">PHY110</span>
+                            @forelse($student->courses as $course)
+                                <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">{{ $course->code }}</span>
+                            @empty
+                                <span class="text-xs font-medium text-gray-400 italic">No courses enrolled</span>
+                            @endforelse
                         </div>
                     </div>
                 </div>
-
-                <!-- Student Card 2 -->
-                <div class="bg-[#f3f4f6] border border-gray-100 rounded-[1.5rem] p-5">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-500 font-bold text-sm shrink-0 border border-gray-200">
-                                MT
-                            </div>
-                            <div>
-                                <h3 class="text-base font-bold text-gray-900">Marcus Thorne</h3>
-                                <p class="text-xs font-medium text-gray-500">ID: CS-2023-142</p>
-                            </div>
-                        </div>
-                        <span class="inline-flex items-center justify-center px-2.5 py-0.5 bg-gray-200 text-gray-600 text-[10px] font-bold rounded-full">Completed</span>
-                    </div>
-                    <div class="mt-2">
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">ENROLLED COURSES</p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">CS305</span>
-                            <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">CS410</span>
-                        </div>
-                    </div>
+                @empty
+                <div class="col-span-full bg-white border border-gray-100 rounded-2xl p-8 text-center">
+                    <p class="text-sm font-medium text-gray-500">No students found for this department.</p>
                 </div>
-
-                <!-- Student Card 3 -->
-                <div class="bg-[#f3f4f6] border border-gray-100 rounded-[1.5rem] p-5">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-[#0e48c1] flex items-center justify-center text-white font-bold text-sm shrink-0">
-                                SJ
-                            </div>
-                            <div>
-                                <h3 class="text-base font-bold text-gray-900">Sarah Jenkins</h3>
-                                <p class="text-xs font-medium text-gray-500">ID: CS-2024-012</p>
-                            </div>
-                        </div>
-                        <span class="inline-flex items-center justify-center px-2.5 py-0.5 bg-[#e0e7ff] text-[#0e48c1] text-[10px] font-bold rounded-full">Active</span>
-                    </div>
-                    <div class="mt-2">
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">ENROLLED COURSES</p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">CS101</span>
-                            <span class="inline-flex items-center justify-center px-2 py-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded">ENG105</span>
-                        </div>
-                    </div>
-                </div>
+                @endforelse
             </div>
         @endif
 

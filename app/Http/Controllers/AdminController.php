@@ -54,17 +54,127 @@ class AdminController extends Controller
 
     public function students()
     {
-        return view('users.admin.students');
+        $tenantId = auth()->user()->university_id;
+        $students = User::where('university_id', $tenantId)
+            ->where('role', 'student')
+            ->with('courses')
+            ->withCount('courses')
+            ->paginate(10);
+
+        $departments = User::where('university_id', $tenantId)
+            ->distinct()
+            ->pluck('department');
+
+        $totalStudents = User::where('university_id', $tenantId)
+            ->where('role', 'student')
+            ->count();
+
+        return view('users.admin.students', [
+            'students' => $students,
+            'departments' => $departments,
+            'totalStudents' => $totalStudents,
+        ]);
     }
 
     public function faculty()
     {
-        return view('users.admin.faculty');
+        $tenantId = auth()->user()->university_id;
+
+        $faculties = User::where('university_id', $tenantId)
+            ->whereRaw('LOWER(role) = ?', ['faculty'])
+            ->with('courses')
+            ->latest()
+            ->paginate(10);
+
+        $totalFaculty = User::where('university_id', $tenantId)->whereRaw('LOWER(role) = ?', ['faculty'])->count();
+        $activeCourses = Course::withCount('users')->count();
+        $pendingReviews = 0; // Can be configured based on your logic
+        $tenuredPercentage = 65; // Can be calculated from data
+
+        $departments = User::where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->select('department')
+            ->distinct()
+            ->get()
+            ->map(fn ($user) => trim((string) $user->department))
+            ->values();
+
+        return view('users.admin.faculty', compact('faculties', 'totalFaculty', 'activeCourses', 'departments', 'pendingReviews', 'tenuredPercentage'));
+    }
+
+    public function assignCourses(User $faculty)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+
+        $departmentSlug = Str::slug($faculty->department ?? '');
+
+        // Fetch courses for the faculty's department
+        $availableCourses = Course::where('department', $faculty->department)->get();
+
+        // Fetch currently assigned courses for Spring 2024
+        $assignedCourses = $faculty->courses()->wherePivot('term', 'Spring 2024')->get();
+
+        return view('users.admin.faculty-assign-courses', compact('faculty', 'availableCourses', 'assignedCourses', 'departmentSlug'));
+    }
+
+    public function storeCourseAssignments(Request $request, User $faculty)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+
+        $validated = $request->validate([
+            'assigned_courses' => ['nullable', 'array'],
+            'assigned_courses.*' => ['exists:courses,id'],
+        ]);
+
+        $courseIds = $validated['assigned_courses'] ?? [];
+
+        // Sync the courses with the specific term
+        $syncData = [];
+        foreach ($courseIds as $courseId) {
+            $syncData[$courseId] = ['term' => 'Spring 2024'];
+        }
+
+        $faculty->courses()->wherePivot('term', 'Spring 2024')->detach();
+        $faculty->courses()->attach($syncData);
+
+        return redirect()->back()->with('success', 'Course assignments updated successfully.');
     }
 
     public function courses()
     {
-        return view('users.admin.courses');
+        $tenantId = auth()->user()->university_id;
+
+        $departments = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->select('department')
+            ->distinct()
+            ->get()
+            ->map(fn ($user) => trim((string) $user->department))
+            ->values();
+
+        $courses = Course::query()
+            ->withCount('users')
+            ->latest()
+            ->get();
+
+        $totalEnrollment = $courses->sum('users_count');
+        $activeCourses = $courses->count();
+        $pendingEvaluations = $courses->where('status', 'pending')->count();
+
+        return view('users.admin.courses', [
+            'departments' => $departments,
+            'courses' => $courses,
+            'totalEnrollment' => $totalEnrollment,
+            'activeCourses' => $activeCourses,
+            'pendingEvaluations' => $pendingEvaluations,
+        ]);
     }
 
     public function departments()
@@ -212,6 +322,133 @@ class AdminController extends Controller
         ];
     }
 
+    public function assignDepartmentCourses(string $department, User $faculty): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+        abort_unless($faculty->department === $departmentName, 404);
+
+        $availableCourses = Course::where('department', $departmentName)->get();
+        $assignedCourses = $faculty->courses()->get();
+
+        return view('users.admin.department-assign-courses', [
+            'departmentName' => $departmentName,
+            'department' => $department,
+            'faculty' => $faculty,
+            'availableCourses' => $availableCourses,
+            'assignedCourses' => $assignedCourses,
+        ]);
+    }
+
+    public function storeDepartmentCourseAssignments(Request $request, string $department, User $faculty)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+        abort_unless($faculty->department === $departmentName, 404);
+
+        $validated = $request->validate([
+            'assigned_courses' => ['nullable', 'array'],
+            'assigned_courses.*' => ['exists:courses,id'],
+        ]);
+
+        $courseIds = $validated['assigned_courses'] ?? [];
+        $faculty->courses()->sync($courseIds);
+
+        return redirect()
+            ->route('admin.departments.manage', ['department' => $department, 'section' => 'faculty'])
+            ->with('success', 'Course assignments updated successfully.');
+    }
+
+    public function assignEnrollmentCourses(string $department): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+
+        $students = User::where('university_id', $tenantId)
+            ->where('department', $departmentName)
+            ->where('role', 'student')
+            ->with('courses')
+            ->get();
+
+        $availableCourses = Course::where('department', $departmentName)->get();
+
+        return view('users.admin.department-assign-enrollment', [
+            'departmentName' => $departmentName,
+            'department' => $department,
+            'students' => $students,
+            'availableCourses' => $availableCourses,
+        ]);
+    }
+
+    public function storeEnrollmentCourseAssignments(Request $request, string $department)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = User::query()
+            ->where('university_id', $tenantId)
+            ->whereIn('role', ['student', 'faculty'])
+            ->whereNotNull('department')
+            ->get(['department'])
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $department);
+
+        abort_unless($departmentName !== null, 404);
+
+        $validated = $request->validate([
+            'student_id' => ['required', 'exists:users,id'],
+            'assigned_courses' => ['nullable', 'array'],
+            'assigned_courses.*' => ['exists:courses,id'],
+        ]);
+
+        $student = User::findOrFail($validated['student_id']);
+        abort_unless($student->university_id === $tenantId && strtolower($student->role) === 'student', 404);
+        abort_unless($student->department === $departmentName, 404);
+
+        $courseIds = $validated['assigned_courses'] ?? [];
+        $student->courses()->sync($courseIds);
+
+        return redirect()
+            ->route('admin.departments.manage', ['department' => $department, 'section' => 'enrollment'])
+            ->with('success', 'Course enrollment updated successfully.');
+    }
+
     public function reports()
     {
         return view('users.admin.reports');
@@ -266,12 +503,28 @@ class AdminController extends Controller
         abort_unless($departmentName !== null, 404);
 
         $courses = Course::where('department', $departmentName)->latest()->get();
+        $facultyMembers = User::query()
+            ->where('university_id', $tenantId)
+            ->whereRaw('LOWER(role) = ?', ['faculty'])
+            ->where('department', $departmentName)
+            ->with('courses')
+            ->latest()
+            ->get();
+        $students = User::query()
+            ->where('university_id', $tenantId)
+            ->where('role', 'student')
+            ->where('department', $departmentName)
+            ->with('courses')
+            ->latest()
+            ->get();
 
         return view('users.admin.department-manage', [
             'departmentName' => $departmentName,
             'department' => $department,
             'section' => in_array($section, ['courses', 'faculty', 'enrollment'], true) ? $section : 'courses',
             'courses' => $courses,
+            'facultyMembers' => $facultyMembers,
+            'students' => $students,
         ]);
     }
 
@@ -412,5 +665,91 @@ class AdminController extends Controller
         } while (User::where('admin_id', $adminId)->exists());
 
         return $adminId;
+    }
+
+    public function assignFacultyToCourses(?string $department = null): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $query = User::where('university_id', $tenantId)
+            ->whereRaw('LOWER(role) = ?', ['faculty'])
+            ->with('courses');
+
+        if ($department) {
+            $query->where('department', $department);
+        }
+
+        $faculty = $query->latest()->get();
+
+        $courses = Course::latest()->get();
+
+        return view('users.admin.courses-assign-faculty', [
+            'faculty' => $faculty,
+            'courses' => $courses,
+            'selectedDepartment' => $department,
+        ]);
+    }
+
+    public function storeFacultyAssignments(Request $request)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $validated = $request->validate([
+            'faculty_id' => ['required', 'exists:users,id'],
+            'assigned_courses' => ['nullable', 'array'],
+            'assigned_courses.*' => ['exists:courses,id'],
+        ]);
+
+        $faculty = User::findOrFail($validated['faculty_id']);
+        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+
+        $courseIds = $validated['assigned_courses'] ?? [];
+        $faculty->courses()->sync($courseIds);
+
+        return redirect()->route('admin.courses')
+            ->with('success', 'Faculty course assignment updated successfully.');
+    }
+
+    public function assignStudentsToCourses(?string $department = null): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $query = User::where('university_id', $tenantId)
+            ->where('role', 'student')
+            ->with('courses');
+
+        if ($department) {
+            $query->where('department', $department);
+        }
+
+        $students = $query->latest()->get();
+
+        $courses = Course::latest()->get();
+
+        return view('users.admin.courses-assign-students', [
+            'students' => $students,
+            'courses' => $courses,
+            'selectedDepartment' => $department,
+        ]);
+    }
+
+    public function storeStudentAssignments(Request $request)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $validated = $request->validate([
+            'student_id' => ['required', 'exists:users,id'],
+            'assigned_courses' => ['nullable', 'array'],
+            'assigned_courses.*' => ['exists:courses,id'],
+        ]);
+
+        $student = User::findOrFail($validated['student_id']);
+        abort_unless($student->university_id === $tenantId && strtolower($student->role) === 'student', 404);
+
+        $courseIds = $validated['assigned_courses'] ?? [];
+        $student->courses()->sync($courseIds);
+
+        return redirect()->route('admin.courses')
+            ->with('success', 'Student course assignment updated successfully.');
     }
 }

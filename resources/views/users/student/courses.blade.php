@@ -63,98 +63,38 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                     <p class="text-[12px] text-gray-400 font-medium mb-1">Total Credits</p>
-                    <p class="text-[28px] font-bold text-gray-900 leading-none">18.5</p>
+                    <p class="text-[28px] font-bold text-gray-900 leading-none">{{ $totalCredits }}</p>
                 </div>
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                     <p class="text-[12px] text-gray-400 font-medium mb-1">Current GPA</p>
-                    <p class="text-[28px] font-bold text-gray-900 leading-none">3.82</p>
+                    <p class="text-[28px] font-bold text-gray-900 leading-none">{{ $currentGPA }}</p>
                 </div>
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                     <p class="text-[12px] text-gray-400 font-medium mb-1">Active Courses</p>
-                    <p class="text-[28px] font-bold text-gray-900 leading-none">6</p>
+                    <p class="text-[28px] font-bold text-gray-900 leading-none">{{ $activeCourses }}</p>
                 </div>
                 <div class="bg-[#fff5f0] rounded-2xl p-5 border border-orange-100 shadow-sm">
                     <p class="text-[12px] text-orange-500 font-bold mb-1">Pending Feedback</p>
-                    <p class="text-[28px] font-bold text-gray-900 leading-none">2</p>
+                    <p class="text-[28px] font-bold text-gray-900 leading-none">{{ $pendingFeedback }}</p>
                 </div>
             </div>
 
             <!-- Course Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
-                @php
-                    $courses = [
-                        [
-                            'dept' => 'Social Sciences',
-                            'title' => 'Advanced Cognitive Psychology',
-                            'desc' =>
-                                'Exploration of neural mechanisms underlying perception, memory, and decision-making.',
-                            'instructor' => 'Dr. Elena Rodriguez',
-                            'schedule' => 'Fall 2024 • Mon/Wed 10:00 AM',
-                            'img' => '47',
-                        ],
-                        [
-                            'dept' => 'Life Sciences',
-                            'title' => 'Molecular Biology II: Genetics',
-                            'desc' =>
-                                'Advanced study of gene expression, DNA replication, and genetic engineering techniques.',
-                            'instructor' => 'Prof. Marcus Sterling',
-                            'schedule' => 'Fall 2024 • Tue/Thu 1:30 PM',
-                            'img' => '12',
-                        ],
-                        [
-                            'dept' => 'Arts & Design',
-                            'title' => 'Modern Architecture & Urbanism',
-                            'desc' =>
-                                'The evolution of structural form from the industrial revolution to contemporary design.',
-                            'instructor' => 'Sarah Jenkins, AIA',
-                            'schedule' => 'Fall 2024 • Friday 9:00 AM',
-                            'img' => '32',
-                        ],
-                        [
-                            'dept' => 'Economics',
-                            'title' => 'Quantitative Macroeconomics',
-                            'desc' =>
-                                'Mathematical modeling of economic growth, inflation, and fiscal policy frameworks.',
-                            'instructor' => 'Dr. Robert Chen',
-                            'schedule' => 'Fall 2024 • Mon/Wed 3:00 PM',
-                            'img' => '55',
-                        ],
-                        [
-                            'dept' => 'Humanities',
-                            'title' => 'Global Ethnomusicology',
-                            'desc' =>
-                                'Analyzing the social and cultural aspects of music across different world civilizations.',
-                            'instructor' => 'Dr. Aisha Al-Sayed',
-                            'schedule' => 'Fall 2024 • Tue 5:00 PM',
-                            'img' => '22',
-                        ],
-                        [
-                            'dept' => 'Comp Sci / Philosophy',
-                            'title' => 'Ethics in Artificial Intelligence',
-                            'desc' =>
-                                'A philosophical inquiry into algorithmic bias, machine ethics and AI governance.',
-                            'instructor' => 'Prof. Lillian Vance',
-                            'schedule' => 'Fall 2024 • Thu 11:00 AM',
-                            'img' => '68',
-                        ],
-                    ];
-                @endphp
-
-                @foreach ($courses as $course)
+                @forelse($courses as $course)
                     <div
                         class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_28px_rgb(0,0,0,0.08)] transition-shadow flex flex-col gap-4">
                         <div class="flex items-start justify-between">
                             <span
-                                class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full uppercase tracking-wide">{{ $course['dept'] }}</span>
-                            <img src="https://i.pravatar.cc/40?img={{ $course['img'] }}"
-                                alt="{{ $course['instructor'] }}"
+                                class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full uppercase tracking-wide">{{ $course->department ?? 'General' }}</span>
+                            <img src="https://i.pravatar.cc/40?img={{ rand(0, 70) }}"
+                                alt="{{ $course->title }}"
                                 class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-[15px] font-bold text-[#0e48c1] mb-2 leading-snug">{{ $course['title'] }}
-                            </h4>
-                            <p class="text-[13px] text-gray-500 leading-relaxed">{{ $course['desc'] }}</p>
+                            <h4 class="text-[15px] font-bold text-[#0e48c1] mb-2 leading-snug">{{ $course->title }}</h4>
+                            <p class="text-[13px] text-gray-500 leading-relaxed">{{ $course->description ?? 'Course description not available' }}</p>
                         </div>
                         <div class="space-y-1.5">
                             <div class="flex items-center gap-2 text-[12px] text-gray-500 font-medium">
@@ -164,7 +104,7 @@
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
                                     </path>
                                 </svg>
-                                {{ $course['instructor'] }}
+                                {{ $course->faculty->isNotEmpty() ? $course->faculty->first()->name : 'TBA' }}
                             </div>
                             <div class="flex items-center gap-2 text-[12px] text-gray-500 font-medium">
                                 <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor"
@@ -173,7 +113,7 @@
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                     </path>
                                 </svg>
-                                {{ $course['schedule'] }}
+                                Fall 2024 • Course {{ $course->code ?? 'N/A' }}
                             </div>
                         </div>
                         <div class="flex gap-2 pt-1 border-t border-gray-50">
@@ -183,7 +123,11 @@
                                 class="flex-1 bg-[#0e48c1] text-white text-[12px] font-bold py-2.5 rounded-xl hover:bg-blue-800 transition-colors text-center">Feedback</a>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-500 font-medium">You are not enrolled in any courses yet.</p>
+                    </div>
+                @endforelse
 
             </div>
         </div>
