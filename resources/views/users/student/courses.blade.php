@@ -52,10 +52,7 @@
                         </svg>
                         Filter
                     </button>
-                    <button
-                        class="flex items-center gap-2 bg-[#0e48c1] text-white px-5 py-2.5 rounded-xl text-[13px] font-bold hover:bg-blue-800 transition-colors shadow-sm">
-                        <span class="text-lg leading-none">+</span> Enroll in Course
-                    </button>
+                    
                 </div>
             </div>
 
@@ -67,7 +64,7 @@
                 </div>
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                     <p class="text-[12px] text-gray-400 font-medium mb-1">Current GPA</p>
-                    <p class="text-[28px] font-bold text-gray-900 leading-none">{{ $currentGPA }}</p>
+                    <p class="text-[28px] font-bold text-gray-900 leading-none">N/A</p>
                 </div>
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                     <p class="text-[12px] text-gray-400 font-medium mb-1">Active Courses</p>
@@ -119,7 +116,7 @@
                         <div class="flex gap-2 pt-1 border-t border-gray-50">
                             <button
                                 class="flex-1 border border-gray-200 text-gray-700 text-[12px] font-bold py-2.5 rounded-xl hover:bg-gray-50 transition-colors">Details</button>
-                            <a href="/student/feedback"
+                            <a href="{{ route('student.feedback', $course->id) }}"
                                 class="flex-1 bg-[#0e48c1] text-white text-[12px] font-bold py-2.5 rounded-xl hover:bg-blue-800 transition-colors text-center">Feedback</a>
                         </div>
                     </div>

@@ -57,15 +57,15 @@
                     <div>
                         <span
                             class="inline-block text-[10px] font-bold text-[#0e48c1] bg-blue-50 px-3 py-1 rounded-full uppercase tracking-wider mb-3">Current
-                            Student</span>
-                        <h2 class="text-[32px] font-bold text-gray-900 tracking-tight mb-3">Muhammad Saad</h2>
+                            {{ ucfirst(auth()->user()->role) }}</span>
+                        <h2 class="text-[32px] font-bold text-gray-900 tracking-tight mb-3">{{ auth()->user()->name }}</h2>
                         <div class="flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-gray-500 font-medium">
                             <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-gray-400" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2">
                                     </path>
-                                </svg> ID: 88209311</span>
+                                </svg> ID: {{ auth()->user()->university_id }}</span>
                             <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-gray-400" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -73,13 +73,13 @@
                                     </path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg> Computer Science</span>
+                                </svg> {{ auth()->user()->department }}</span>
                             <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-gray-400" fill="none"
                                     stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                     </path>
-                                </svg> Enrolled Sept 2022</span>
+                                </svg> Enrolled {{ auth()->user()->created_at->format('M Y') }}</span>
                         </div>
                     </div>
                 </div>
@@ -100,8 +100,8 @@
                                     </path>
                                 </svg></div>
                             <p class="text-[11px] text-gray-400 font-medium mb-1">Current GPA</p>
-                            <p class="text-[24px] font-bold text-gray-900 leading-none mb-1">3.82</p>
-                            <p class="text-[11px] font-semibold text-emerald-600">↑ 0.15 from last semester</p>
+                            <p class="text-[24px] font-bold text-gray-900 leading-none mb-1">N/A</p>
+                            <p class="text-[11px] font-semibold text-gray-400">Not tracked yet</p>
                         </div>
                         <div class="bg-[#f8fafc] rounded-2xl p-4">
                             <div class="text-[#0e48c1] mb-2"><svg class="w-5 h-5" fill="none" stroke="currentColor"
@@ -110,11 +110,10 @@
                                         d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
                                     </path>
                                 </svg></div>
-                            <p class="text-[11px] text-gray-400 font-medium mb-1">Credits Earned</p>
-                            <p class="text-[24px] font-bold text-gray-900 leading-none mb-2">78<span
-                                    class="text-[14px] text-gray-300">/120</span></p>
+                            <p class="text-[11px] text-gray-400 font-medium mb-1">Credits Enrolled</p>
+                            <p class="text-[24px] font-bold text-gray-900 leading-none mb-2">{{ $totalCredits }}</p>
                             <div class="w-full h-1.5 bg-gray-200 rounded-full">
-                                <div class="h-1.5 bg-[#0e48c1] rounded-full" style="width:65%"></div>
+                                <div class="h-1.5 bg-[#0e48c1] rounded-full" style="width:100%"></div>
                             </div>
                         </div>
                         <div class="bg-[#f8fafc] rounded-2xl p-4">
@@ -125,8 +124,8 @@
                                     </path>
                                 </svg></div>
                             <p class="text-[11px] text-gray-400 font-medium mb-1">Feedback Activity</p>
-                            <p class="text-[24px] font-bold text-gray-900 leading-none mb-1">94%</p>
-                            <p class="text-[11px] font-semibold text-orange-500">Exceptional Contributor</p>
+                            <p class="text-[24px] font-bold text-gray-900 leading-none mb-1">{{ $feedbackRate }}%</p>
+                            <p class="text-[11px] font-semibold text-orange-500">{{ $feedbackRate >= 80 ? 'Exceptional Contributor' : ($feedbackRate >= 50 ? 'Good Contributor' : 'Needs Improvement') }}</p>
                         </div>
                     </div>
                 </div>
@@ -236,51 +235,39 @@
                     </svg></button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <!-- Card 1 - Submitted -->
-                <div class="bg-white rounded-[1.5rem] p-5 border border-gray-100 shadow-sm flex gap-4">
-                    <div
-                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-800 shrink-0 flex items-center justify-center text-white text-[10px] font-bold text-center p-2">
-                        PSYCOLOGY COURSE</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between gap-2 mb-1">
-                            <p class="text-[11px] font-bold text-[#0e48c1]">PSY-402</p>
-                            <span
-                                class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">Submitted</span>
-                        </div>
-                        <p class="text-[14px] font-bold text-gray-900 mb-1">Cognitive Neuroscience</p>
-                        <p class="text-[12px] text-gray-500 italic mb-3">"The curriculum depth in neural..."</p>
-                        <div class="flex items-center gap-3 text-[11px] text-gray-400 font-medium">
-                            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg> 2 days ago</span>
-                            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
-                                    </path>
-                                </svg> Anonymous</span>
+                @forelse($submissions as $submission)
+                    <div class="bg-white rounded-[1.5rem] p-5 border border-gray-100 shadow-sm flex gap-4">
+                        <div
+                            class="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-800 shrink-0 flex items-center justify-center text-white text-[10px] font-bold text-center p-2">
+                            {{ strtoupper(substr($submission->course->title, 0, 10)) }}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-2 mb-1">
+                                <p class="text-[11px] font-bold text-[#0e48c1]">{{ $submission->course->code }}</p>
+                                <span
+                                    class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">Submitted</span>
+                            </div>
+                            <p class="text-[14px] font-bold text-gray-900 mb-1">{{ $submission->course->title }}</p>
+                            <p class="text-[12px] text-gray-500 italic mb-3">"{{ Str::limit($submission->comments, 40) }}"</p>
+                            <div class="flex items-center gap-3 text-[11px] text-gray-400 font-medium">
+                                <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg> {{ $submission->created_at->diffForHumans() }}</span>
+                                <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                        </path>
+                                    </svg> Anonymous</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- Card 2 - Pending -->
-                <div class="bg-white rounded-[1.5rem] p-5 border border-gray-100 shadow-sm flex gap-4">
-                    <div
-                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-900 shrink-0 flex items-center justify-center text-white text-[10px] font-bold text-center p-2">
-                        STATS COURSE</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between gap-2 mb-1">
-                            <p class="text-[11px] font-bold text-[#0e48c1]">STA-201</p>
-                            <span
-                                class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">Pending</span>
-                        </div>
-                        <p class="text-[14px] font-bold text-gray-900 mb-1">Behavioral Statistics</p>
-                        <p class="text-[12px] text-gray-400 mb-3">Awaiting your feedback for the final...</p>
-                        <a href="/student/feedback" class="text-[12px] font-bold text-[#0e48c1] hover:underline">Start
-                            Evaluation →</a>
+                @empty
+                    <div class="col-span-2 p-6 text-center border border-dashed border-gray-200 rounded-2xl">
+                        <p class="text-gray-500">No evaluation history available.</p>
                     </div>
-                </div>
+                @endforelse
             </div>
         </div>
     </div>

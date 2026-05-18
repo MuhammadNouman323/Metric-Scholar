@@ -59,11 +59,11 @@
                 <!-- Profile card -->
                 <a href="/student/profile"
                     class="flex items-center gap-3 bg-[#f1f5f9] rounded-2xl p-3 mb-3 hover:bg-blue-50 transition-colors">
-                    <img src="https://i.pravatar.cc/150?img=60" alt="Dr. Academic"
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=0e48c1&color=fff" alt="{{ auth()->user()->name }}"
                         class="w-9 h-9 rounded-full object-cover shadow-sm bg-gray-200">
                     <div class="flex flex-col">
-                        <span class="text-[13px] font-bold text-gray-900 leading-tight">Dr. Academic</span>
-                        <span class="text-[11px] font-medium text-gray-500">Senior Professor</span>
+                        <span class="text-[13px] font-bold text-gray-900 leading-tight">{{ auth()->user()->name }}</span>
+                        <span class="text-[11px] font-medium text-gray-500 capitalize">{{ auth()->user()->role }}</span>
                     </div>
                 </a>
 

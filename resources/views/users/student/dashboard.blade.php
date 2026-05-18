@@ -34,15 +34,14 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <div class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                 <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Current GPA</p>
-                <p class="text-[34px] font-bold text-gray-900 leading-none mb-1">3.82</p>
-                <p class="text-[12px] font-semibold text-emerald-600">↑ 0.15 from last semester</p>
+                <p class="text-[34px] font-bold text-gray-900 leading-none mb-1">N/A</p>
+                <p class="text-[12px] font-semibold text-gray-400">Not tracked yet</p>
             </div>
             <div class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
-                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Credits Earned</p>
-                <p class="text-[34px] font-bold text-gray-900 leading-none mb-2">78<span
-                        class="text-[18px] text-gray-300">/120</span></p>
+                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Credits Enrolled</p>
+                <p class="text-[34px] font-bold text-gray-900 leading-none mb-2">{{ $student->courses()->sum('credit_hours') }}</p>
                 <div class="w-full h-1.5 bg-gray-100 rounded-full">
-                    <div class="h-1.5 bg-[#0e48c1] rounded-full" style="width: 65%"></div>
+                    <div class="h-1.5 bg-[#0e48c1] rounded-full" style="width: 100%"></div>
                 </div>
             </div>
             <div class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
@@ -52,7 +51,7 @@
             </div>
             <div class="bg-[#fff5f0] rounded-[1.5rem] p-6 border border-orange-100 shadow-[0_4px_16px_rgb(0,0,0,0.03)]">
                 <p class="text-[11px] font-bold text-orange-400 uppercase tracking-widest mb-3">Pending Feedback</p>
-                <p class="text-[34px] font-bold text-gray-900 leading-none mb-1">2</p>
+                <p class="text-[34px] font-bold text-gray-900 leading-none mb-1">{{ $pendingFeedback }}</p>
                 <a href="/student/feedback" class="text-[12px] font-bold text-orange-500 hover:underline">Complete now
                     →</a>
             </div>
@@ -66,38 +65,29 @@
                 class="lg:col-span-2 bg-white rounded-[2rem] p-7 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-[18px] font-bold text-gray-900">Pending Evaluations</h3>
-                    <span class="text-[11px] font-bold bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full">2
-                        Due</span>
+                    <span class="text-[11px] font-bold bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full">{{ $pendingFeedback }} Due</span>
                 </div>
                 <div class="space-y-4">
-                    <div class="flex items-center gap-4 p-5 bg-[#f8fafc] rounded-2xl border-l-4 border-[#0e48c1]">
-                        <div class="flex-1">
-                            <p class="text-[11px] font-bold text-gray-400 mb-1">CS-205 • SEM 2</p>
-                            <p class="text-[16px] font-bold text-gray-900">Information Security</p>
-                            <p class="text-[12px] text-gray-400 font-medium mt-0.5">NAHIL MAHMOOD</p>
+                    @forelse($pendingEvaluations as $course)
+                        <div class="flex items-center gap-4 p-5 bg-[#f8fafc] rounded-2xl border-l-4 border-[#0e48c1]">
+                            <div class="flex-1">
+                                <p class="text-[11px] font-bold text-gray-400 mb-1">{{ $course->code }} • {{ $course->semester ?? 'Current Sem' }}</p>
+                                <p class="text-[16px] font-bold text-gray-900">{{ $course->title }}</p>
+                                <p class="text-[12px] text-gray-400 font-medium mt-0.5">{{ $course->faculty->first()?->name ?? 'TBA' }}</p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <p class="text-[11px] font-bold text-gray-400 mb-2">Needs Feedback</p>
+                                <a href="{{ route('student.feedback', $course->id) }}"
+                                    class="inline-block bg-[#0e48c1] text-white text-[12px] font-bold px-4 py-2 rounded-xl hover:bg-blue-800 transition-colors">
+                                    Evaluate →
+                                </a>
+                            </div>
                         </div>
-                        <div class="text-right shrink-0">
-                            <p class="text-[11px] font-bold text-red-500 mb-2">⏰ Closes in 2 days</p>
-                            <a href="/student/feedback"
-                                class="inline-block bg-[#0e48c1] text-white text-[12px] font-bold px-4 py-2 rounded-xl hover:bg-blue-800 transition-colors">
-                                Evaluate →
-                            </a>
+                    @empty
+                        <div class="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                            <p class="text-gray-500 font-medium">All caught up! No pending evaluations.</p>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-4 p-5 bg-[#f8fafc] rounded-2xl border-l-4 border-gray-200">
-                        <div class="flex-1">
-                            <p class="text-[11px] font-bold text-gray-400 mb-1">MTH-501 • SEM 2</p>
-                            <p class="text-[16px] font-bold text-gray-900">Linear Algebra</p>
-                            <p class="text-[12px] text-gray-400 font-medium mt-0.5">Dr. Junaid Zaidi</p>
-                        </div>
-                        <div class="text-right shrink-0">
-                            <p class="text-[11px] font-bold text-gray-400 mb-2">⏱ Closes in 14 days</p>
-                            <a href="/student/feedback"
-                                class="inline-block bg-[#0e48c1] text-white text-[12px] font-bold px-4 py-2 rounded-xl hover:bg-blue-800 transition-colors">
-                                Evaluate →
-                            </a>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
             </div>
 
@@ -105,19 +95,23 @@
             <div class="space-y-4">
                 <div class="bg-[#0e48c1] rounded-[2rem] p-7 text-white">
                     <p class="text-blue-200 text-[13px] font-semibold mb-2">Feedback Activity</p>
-                    <p class="text-[42px] font-bold leading-none mb-1">94%</p>
-                    <p class="text-blue-200 text-[12px] font-medium">Exceptional Contributor</p>
+                    <p class="text-[42px] font-bold leading-none mb-1">{{ $feedbackRate }}%</p>
+                    <p class="text-blue-200 text-[12px] font-medium">{{ $feedbackRate >= 80 ? 'Exceptional Contributor' : ($feedbackRate >= 50 ? 'Good Contributor' : 'Needs Improvement') }}</p>
                     <div class="mt-4 w-full h-1.5 bg-white/20 rounded-full">
-                        <div class="h-1.5 bg-white rounded-full" style="width: 94%"></div>
+                        <div class="h-1.5 bg-white rounded-full" style="width: {{ $feedbackRate }}%"></div>
                     </div>
                 </div>
                 <div class="bg-white rounded-[2rem] p-7 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                     <p class="text-[13px] font-bold text-gray-500 mb-4">Recent Submission</p>
-                    <p class="text-[14px] font-bold text-gray-900 mb-1">Cognitive Neuroscience</p>
-                    <p class="text-[12px] text-gray-400">PSY-402 · 2 days ago</p>
-                    <span
-                        class="inline-block mt-3 text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full">✓
-                        Submitted</span>
+                    @if($recentSubmission)
+                        <p class="text-[14px] font-bold text-gray-900 mb-1">{{ $recentSubmission->course->title }}</p>
+                        <p class="text-[12px] text-gray-400">{{ $recentSubmission->course->code }} · {{ $recentSubmission->created_at->diffForHumans() }}</p>
+                        <span
+                            class="inline-block mt-3 text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full">✓
+                            Submitted</span>
+                    @else
+                        <p class="text-[12px] text-gray-400">No submissions yet</p>
+                    @endif
                 </div>
             </div>
         </div>

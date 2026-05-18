@@ -61,8 +61,9 @@ Route::get('/faculty/feedback', [FacultyController::class, 'feedback']);
 Route::get('/faculty/analytics', [FacultyController::class, 'analytics']);
 Route::get('/faculty/profile', [FacultyController::class, 'profile']);
 
-Route::get('/student/dashboard', [StudentController::class, 'dashboard']);
-Route::get('/student/courses', [StudentController::class, 'courses']);
-Route::get('/student/feedback', [StudentController::class, 'feedback']);
-Route::get('/student/feedback/history', [StudentController::class, 'feedbackHistory']);
-Route::get('/student/profile', [StudentController::class, 'profile']);
+Route::get('/student/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
+Route::get('/student/courses', [StudentController::class, 'courses'])->name('student.courses');
+Route::get('/student/feedback/{course?}', [StudentController::class, 'feedback'])->name('student.feedback');
+Route::post('/student/feedback', [StudentController::class, 'storeFeedback'])->name('student.feedback.store');
+Route::get('/student/feedback-history', [StudentController::class, 'feedbackHistory'])->name('student.feedback.history');
+Route::get('/student/profile', [StudentController::class, 'profile'])->name('student.profile');
