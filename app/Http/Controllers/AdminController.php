@@ -15,9 +15,9 @@ class AdminController extends Controller
     public function dashboard()
     {
         $tenantId = auth()->user()->university_id;
-        $studentCount = User::where('university_id', $tenantId)->whereRaw('LOWER(role) = ?', ['student'])->count();
-        $facultyCount = User::where('university_id', $tenantId)->whereRaw('LOWER(role) = ?', ['faculty'])->count();
-        $courseCount = Course::all()->count();
+        $studentCount = User::where('university_id', $tenantId)->where('role', 'student')->count();
+        $facultyCount = User::where('university_id', $tenantId)->where('role', 'faculty')->count();
+        $courseCount = Course::count();
 
         return view('users.admin.dashboard', compact('studentCount', 'facultyCount', 'courseCount'));
     }
@@ -81,12 +81,12 @@ class AdminController extends Controller
         $tenantId = auth()->user()->university_id;
 
         $faculties = User::where('university_id', $tenantId)
-            ->whereRaw('LOWER(role) = ?', ['faculty'])
+            ->where('role', 'faculty')
             ->with('courses')
             ->latest()
             ->paginate(10);
 
-        $totalFaculty = User::where('university_id', $tenantId)->whereRaw('LOWER(role) = ?', ['faculty'])->count();
+        $totalFaculty = User::where('university_id', $tenantId)->where('role', 'faculty')->count();
         $activeCourses = Course::withCount('users')->count();
         $pendingReviews = 0; // Can be configured based on your logic
         $tenuredPercentage = 65; // Can be calculated from data
@@ -181,33 +181,24 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departments = User::query()
+        $roleCounts = User::query()
             ->where('university_id', $tenantId)
             ->whereIn('role', ['student', 'faculty'])
             ->whereNotNull('department')
-            ->select('department')
-            ->distinct()
-            ->get()
-            ->map(function (User $user) use ($tenantId): array {
-                $departmentName = trim((string) $user->department);
+            ->selectRaw('department, role, COUNT(*) as count')
+            ->groupBy('department', 'role')
+            ->get();
 
-                return [
-                    'slug' => Str::slug($departmentName),
-                    'name' => $departmentName,
-                    'facultyCount' => User::query()
-                        ->where('university_id', $tenantId)
-                        ->whereRaw('LOWER(role) = ?', ['faculty'])
-                        ->where('department', $departmentName)
-                        ->count(),
-                    'studentCount' => User::query()
-                        ->where('university_id', $tenantId)
-                        ->whereRaw('LOWER(role) = ?', ['student'])
-                        ->where('department', $departmentName)
-                        ->count(),
-                ];
-            })
-            ->sortBy('name')
-            ->values();
+        $departments = $roleCounts->pluck('department')->unique()->map(function (?string $department) use ($roleCounts): array {
+            $departmentName = trim((string) $department);
+
+            return [
+                'slug' => Str::slug($departmentName),
+                'name' => $departmentName,
+                'facultyCount' => $roleCounts->where('department', $department)->where('role', 'faculty')->sum('count'),
+                'studentCount' => $roleCounts->where('department', $department)->where('role', 'student')->sum('count'),
+            ];
+        })->sortBy('name')->values();
 
         return view('users.admin.departments', compact('departments'));
     }
@@ -217,15 +208,7 @@ class AdminController extends Controller
         $section = request()->string('section')->toString() ?: 'overview';
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
 
@@ -326,15 +309,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
         abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
@@ -356,15 +331,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
         abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
@@ -387,15 +354,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
 
@@ -419,15 +378,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
 
@@ -490,22 +441,14 @@ class AdminController extends Controller
         $section = request()->string('section')->toString() ?: 'courses';
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
 
         $courses = Course::where('department', $departmentName)->latest()->get();
         $facultyMembers = User::query()
             ->where('university_id', $tenantId)
-            ->whereRaw('LOWER(role) = ?', ['faculty'])
+            ->where('role', 'faculty')
             ->where('department', $departmentName)
             ->with('courses')
             ->latest()
@@ -532,15 +475,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
 
@@ -554,15 +489,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
 
@@ -585,15 +512,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
         abort_unless($course->department === $departmentName, 404);
@@ -609,15 +528,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
         abort_unless($course->department === $departmentName, 404);
@@ -639,15 +550,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $departmentName = User::query()
-            ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
-            ->whereNotNull('department')
-            ->get(['department'])
-            ->pluck('department')
-            ->map(fn (?string $value): string => trim((string) $value))
-            ->filter()
-            ->first(fn (string $value): bool => Str::slug($value) === $department);
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
         abort_unless($course->department === $departmentName, 404);
@@ -672,7 +575,7 @@ class AdminController extends Controller
         $tenantId = auth()->user()->university_id;
 
         $query = User::where('university_id', $tenantId)
-            ->whereRaw('LOWER(role) = ?', ['faculty'])
+            ->where('role', 'faculty')
             ->with('courses');
 
         if ($department) {
@@ -751,5 +654,17 @@ class AdminController extends Controller
 
         return redirect()->route('admin.courses')
             ->with('success', 'Student course assignment updated successfully.');
+    }
+
+    private function resolveDepartmentNameBySlug(string $slug, string $tenantId): ?string
+    {
+        return User::query()
+            ->where('university_id', $tenantId)
+            ->whereNotNull('department')
+            ->distinct()
+            ->pluck('department')
+            ->map(fn (?string $value): string => trim((string) $value))
+            ->filter()
+            ->first(fn (string $value): bool => Str::slug($value) === $slug);
     }
 }

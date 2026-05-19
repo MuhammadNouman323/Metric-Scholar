@@ -11,18 +11,20 @@ class StudentController extends Controller
     public function dashboard()
     {
         $student = auth()->user();
+        $student->loadCount('feedbacks');
+
         $enrolledCourses = $student->courses()->with('faculty')->get();
         $activeCourses = $enrolledCourses->count();
-        
-        $submittedFeedbackCount = $student->feedbacks()->count();
+
+        $submittedFeedbackCount = $student->feedbacks_count;
         $pendingFeedback = max(0, $activeCourses - $submittedFeedbackCount);
-        
+
         $feedbackRate = $activeCourses > 0 ? round(($submittedFeedbackCount / $activeCourses) * 100) : 0;
-        
+
         // Find courses without feedback
         $submittedCourseIds = $student->feedbacks()->pluck('course_id')->toArray();
         $pendingEvaluations = $enrolledCourses->whereNotIn('id', $submittedCourseIds)->take(5);
-        
+
         $recentSubmission = $student->feedbacks()->with('course')->latest()->first();
 
         return view('users.student.dashboard', [
@@ -39,10 +41,11 @@ class StudentController extends Controller
     {
         $student = auth()->user();
         $courses = $student->courses()->with('faculty')->paginate(10);
-        $activeCourses = $student->courses()->count();
+        $activeCourses = $courses->total();
         $totalCredits = $student->courses()->sum('credit_hours') ?? 0;
-        
-        $submittedFeedbackCount = $student->feedbacks()->count();
+
+        $student->loadCount('feedbacks');
+        $submittedFeedbackCount = $student->feedbacks_count;
         $pendingFeedback = max(0, $activeCourses - $submittedFeedbackCount);
 
         return view('users.student.courses', [
@@ -59,14 +62,14 @@ class StudentController extends Controller
         $student = auth()->user();
         $enrolledCourses = $student->courses()->with('faculty')->get();
         $submittedCourseIds = $student->feedbacks()->pluck('course_id')->toArray();
-        
+
         $pendingCourses = $enrolledCourses->whereNotIn('id', $submittedCourseIds);
-        
+
         // If no course specified, pick the first pending one if available
-        if (!$course && $pendingCourses->count() > 0) {
+        if (! $course && $pendingCourses->count() > 0) {
             $course = $pendingCourses->first();
         }
-        
+
         $hasSubmitted = false;
         if ($course) {
             $hasSubmitted = in_array($course->id, $submittedCourseIds);
@@ -83,7 +86,7 @@ class StudentController extends Controller
     public function storeFeedback(Request $request)
     {
         $student = auth()->user();
-        
+
         $validated = $request->validate([
             'course_id' => 'required|exists:courses,id',
             'clarity' => 'required|integer|min:1|max:5',
@@ -92,19 +95,19 @@ class StudentController extends Controller
             'fairness' => 'required|integer|min:1|max:5',
             'comments' => 'nullable|string|max:2000',
         ]);
-        
+
         // Ensure student is enrolled in this course
-        if (!$student->courses()->where('courses.id', $validated['course_id'])->exists()) {
+        if (! $student->courses()->where('courses.id', $validated['course_id'])->exists()) {
             return back()->withErrors(['course_id' => 'You are not enrolled in this course.']);
         }
-        
+
         // Ensure student hasn't already submitted feedback for this course
         if ($student->feedbacks()->where('course_id', $validated['course_id'])->exists()) {
             return back()->withErrors(['course_id' => 'You have already submitted feedback for this course.']);
         }
-        
+
         $student->feedbacks()->create($validated);
-        
+
         return redirect()->route('student.feedback.history')->with('success', 'Thank you! Your feedback has been submitted successfully.');
     }
 
@@ -112,7 +115,7 @@ class StudentController extends Controller
     {
         $student = auth()->user();
         $submissions = $student->feedbacks()->with('course')->latest()->get();
-        
+
         $enrolledCourses = $student->courses;
         $activeCourses = $enrolledCourses->count();
         $pendingFeedback = max(0, $activeCourses - $submissions->count());
@@ -128,13 +131,14 @@ class StudentController extends Controller
     public function profile()
     {
         $student = auth()->user();
-        
+        $student->loadCount('feedbacks');
+
         $activeCourses = $student->courses()->count();
         $totalCredits = $student->courses()->sum('credit_hours') ?? 0;
-        
-        $submittedFeedbackCount = $student->feedbacks()->count();
+
+        $submittedFeedbackCount = $student->feedbacks_count;
         $feedbackRate = $activeCourses > 0 ? round(($submittedFeedbackCount / $activeCourses) * 100) : 0;
-        
+
         $submissions = $student->feedbacks()->with('course')->latest()->take(5)->get();
 
         return view('users.student.profile', [
