@@ -247,13 +247,13 @@
                                     class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">Submitted</span>
                             </div>
                             <p class="text-[14px] font-bold text-gray-900 mb-1">{{ $submission->course->title }}</p>
-                            <p class="text-[12px] text-gray-500 italic mb-3">"{{ Str::limit($submission->comments, 40) }}"</p>
+                            <p class="text-[12px] text-gray-500 italic mb-3">Feedback submitted anonymously.</p>
                             <div class="flex items-center gap-3 text-[11px] text-gray-400 font-medium">
                                 <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none"
                                         stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg> {{ $submission->created_at->diffForHumans() }}</span>
+                                    </svg> {{ $submission->updated_at->diffForHumans() }}</span>
                                 <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none"
                                         stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

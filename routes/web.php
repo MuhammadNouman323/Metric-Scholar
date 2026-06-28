@@ -29,6 +29,12 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name(
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
 Route::get('/admin/user', [AdminController::class, 'users'])->name('admin.users');
 Route::post('/admin/user', [AdminController::class, 'storeUser'])->name('admin.users.store');
+Route::get('/admin/user/{user}/edit', [AdminController::class, 'editUser'])->name('admin.users.edit');
+Route::put('/admin/user/{user}', [AdminController::class, 'updateUser'])->name('admin.users.update');
+Route::get('/admin/user/{user}/recovery', [AdminController::class, 'recoveryUser'])->name('admin.users.recovery');
+Route::post('/admin/user/{user}/recovery/email', [AdminController::class, 'sendRecoveryEmail'])->name('admin.users.recovery.email');
+Route::post('/admin/user/{user}/recovery/password', [AdminController::class, 'updateTemporaryPassword'])->name('admin.users.recovery.password');
+Route::post('/admin/user/{user}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.users.toggle-status');
 Route::get('/admin/students', [AdminController::class, 'students']);
 Route::get('/admin/faculity', [AdminController::class, 'faculty']);
 Route::get('/admin/faculty', [AdminController::class, 'faculty']);

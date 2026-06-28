@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
@@ -656,7 +658,92 @@ class AdminController extends Controller
             ->with('success', 'Student course assignment updated successfully.');
     }
 
-    private function resolveDepartmentNameBySlug(string $slug, string $tenantId): ?string
+    public function editUser(User $user): View
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+
+        $departments = User::where('university_id', $tenantId)
+            ->whereNotNull('department')
+            ->distinct()
+            ->pluck('department');
+
+        return view('users.admin.edit', compact('user', 'departments'));
+    }
+
+    public function updateUser(Request $request, User $user): RedirectResponse
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'role' => ['required', 'in:student,faculty,admin'],
+            'department' => ['required', 'string', 'max:255'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $validated['role'] = strtolower($validated['role']);
+        $validated['is_active'] = $request->boolean('is_active', true);
+
+        $user->update($validated);
+
+        $redirectRoute = $user->role === 'faculty' ? '/admin/faculty' : '/admin/students';
+
+        return redirect($redirectRoute)->with('success', 'User profile updated successfully.');
+    }
+
+    public function toggleStatus(Request $request, User $user): JsonResponse
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+
+        $user->update([
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'is_active' => $user->is_active,
+        ]);
+    }
+
+    public function recoveryUser(User $user): View
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+
+        return view('users.admin.recovery', compact('user'));
+    }
+
+    public function sendRecoveryEmail(User $user): RedirectResponse
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+
+        return back()->with('success', 'A secure password recovery link has been sent to '.$user->email);
+    }
+
+    public function updateTemporaryPassword(Request $request, User $user): RedirectResponse
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+
+        $validated = $request->validate([
+            'password' => ['required', 'string', 'min:14'],
+            'force_change' => ['nullable', 'boolean'],
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+            'password_change_required' => $request->boolean('force_change'),
+        ]);
+
+        return redirect()->route('admin.users.edit', $user)->with('success', 'Temporary password updated successfully. Make sure to communicate it to the user.');
+    }
+
+    private function resolveDepartmentNameBySlug(string $slug, ?string $tenantId): ?string
     {
         return User::query()
             ->where('university_id', $tenantId)

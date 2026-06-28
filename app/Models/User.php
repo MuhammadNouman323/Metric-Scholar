@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'department', 'admin_id', 'access_level', 'university_id', 'created_by'])]
+#[Fillable(['name', 'email', 'password', 'role', 'department', 'admin_id', 'access_level', 'university_id', 'created_by', 'is_active', 'password_change_required'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -30,6 +30,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'password_change_required' => 'boolean',
         ];
     }
 
@@ -53,8 +55,13 @@ class User extends Authenticatable
         return $this->belongsToMany(Course::class)->withPivot('term')->withTimestamps();
     }
 
-    public function feedbacks(): HasMany
+    public function feedbackAccess(): HasMany
     {
-        return $this->hasMany(Feedback::class);
+        return $this->hasMany(FeedbackAccess::class);
+    }
+
+    public function facultyFeedbacks(): HasMany
+    {
+        return $this->hasMany(Feedback::class, 'faculty_id');
     }
 }

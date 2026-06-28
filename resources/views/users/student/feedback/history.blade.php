@@ -129,13 +129,10 @@
                                         <p class="text-[14px] font-bold text-gray-900">{{ $submission->course->title }}</p>
                                         <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Submitted</span>
                                     </div>
-                                    <p class="text-[11px] text-gray-400 font-medium mb-3">Submitted on {{ $submission->created_at->format('M j, Y') }}</p>
-                                    @if($submission->comments)
-                                        <p class="text-[13px] text-gray-600 italic mb-3">"{{ Str::limit($submission->comments, 100) }}"</p>
-                                    @endif
+                                    <p class="text-[11px] text-gray-400 font-medium mb-3">Submitted on {{ $submission->updated_at->format('M j, Y') }}</p>
                                     <div class="flex gap-3 text-[11px] font-bold text-[#0e48c1]">
                                         <span class="flex items-center gap-1">
-                                            Overall: {{ number_format(($submission->clarity + $submission->materials + $submission->responsiveness + $submission->fairness) / 4, 1) }} / 5.0
+                                            Feedback is fully anonymous and unlinked from your account.
                                         </span>
                                     </div>
                                 </div>

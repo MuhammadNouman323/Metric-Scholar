@@ -158,19 +158,19 @@
                                 </td>
                                 <td class="px-6 py-6 whitespace-nowrap">
                                     <div class="flex items-center gap-2">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm"></span>
-                                        <span class="text-[13px] font-bold text-gray-900">Active</span>
+                                        <span class="w-2.5 h-2.5 rounded-full {{ $student->is_active ? 'bg-emerald-500' : 'bg-gray-400' }} shadow-sm"></span>
+                                        <span class="text-[13px] font-bold text-gray-900">{{ $student->is_active ? 'Active' : 'Inactive' }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-6 whitespace-nowrap text-right">
                                     <div class="flex items-center justify-end gap-3">
-                                        <button
+                                        <a href="{{ route('admin.users.edit', $student) }}"
                                             class="p-1.5 text-[#0e48c1] hover:bg-blue-100 rounded-lg transition-colors duration-150"><svg
                                                 class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
                                                 </path>
-                                            </svg></button>
+                                            </svg></a>
                                         <button
                                             class="p-1.5 text-red-500 hover:bg-red-100 rounded-lg transition-colors duration-150"><svg
                                                 class="w-5 h-5" fill="none" stroke="currentColor"
