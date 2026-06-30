@@ -45,7 +45,7 @@
                 <a href="/admin/departments"
                     class="{{ request()->is('admin/departments') ? 'text-[#0e48c1] bg-blue-50/70 border-l-4 border-[#0e48c1]' : 'hover:bg-gray-100 hover:text-gray-900 border-l-4 border-transparent' }} flex items-center px-8 py-3.5 transition-colors relative">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <svg fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M22,11H17V6a1,1,0,0,0-.293-.707l-4-4a1,1,0,0,0-1.414,0l-4,4A1,1,0,0,0,7,6v5H2a1,1,0,0,0-1,1V22a1,1,0,0,0,1,1H22a1,1,0,0,0,1-1V12A1,1,0,0,0,22,11ZM3,13H7v8H3Zm6-1V6.414l3-3,3,3V21H13.5V19.5a1.5,1.5,0,0,0-3,0V21H9Zm12,9H17V13h4ZM4,14H6v2H4Zm0,4H6v2H4Zm16-2H18V14h2Zm0,4H18V18h2ZM10.5,7.5A1.5,1.5,0,1,1,12,9,1.5,1.5,0,0,1,10.5,7.5Z"></path></g></svg>
+                        <svg   xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M22,11H17V6a1,1,0,0,0-.293-.707l-4-4a1,1,0,0,0-1.414,0l-4,4A1,1,0,0,0,7,6v5H2a1,1,0,0,0-1,1V22a1,1,0,0,0,1,1H22a1,1,0,0,0,1-1V12A1,1,0,0,0,22,11ZM3,13H7v8H3Zm6-1V6.414l3-3,3,3V21H13.5V19.5a1.5,1.5,0,0,0-3,0V21H9Zm12,9H17V13h4ZM4,14H6v2H4Zm0,4H6v2H4Zm16-2H18V14h2Zm0,4H18V18h2ZM10.5,7.5A1.5,1.5,0,1,1,12,9,1.5,1.5,0,0,1,10.5,7.5Z"></path></g></svg>
                     </svg>
                     Departments
                 </a>
@@ -90,10 +90,23 @@
 
             <!-- Bottom Section -->
             <div class="px-6 pb-8 border-t border-gray-100 pt-6 shrink-0">
-                <button
+                
+                <a href="/admin/evaluations/new"
                     class="w-full bg-[#0e48c1] hover:bg-blue-800 text-white rounded-xl py-3.5 text-sm font-bold mb-5 transition-all hover:shadow-[0_4px_12px_rgba(14,72,193,0.3)] shadow-[0_4px_10px_rgba(14,72,193,0.15)] flex items-center justify-center gap-2 transform active:scale-[0.98]">
-                    <span class="text-lg leading-none"></span> Genrate Report
-                </button>
+                    <span class="text-lg leading-none"></span> New Evaluation
+                </a>
+                @if(!request()->is('admin/evaluations/new'))
+                <!-- Profile -->
+                <div class="flex items-center gap-3 bg-[#f1f5f9] rounded-2xl p-3 mb-6">
+                    <img src="https://i.pravatar.cc/150?img=60" alt="Dr. Academic"
+                        class="w-10 h-10 rounded-full object-cover shadow-sm bg-gray-200">
+                    <div class="flex flex-col">
+                        <span class="text-[14px] font-bold text-gray-900 leading-tight">{{ Auth::user()->name }}</span>
+                        <span class="text-[13px] font-medium text-gray-500">{{ Auth::user()->role }}</span>
+                    </div>
+                </div>
+                @endif
+
 
                 <!-- Profile -->
                 <div class="flex items-center gap-3 bg-[#f1f5f9] rounded-2xl p-3 mb-6">
@@ -102,6 +115,7 @@
                     <div class="flex flex-col">
                         <span class="text-[14px] font-bold text-gray-900 leading-tight">{{ Auth::user()->name }}</span>
                         <span class="text-[13px] font-medium text-gray-500">{{ Auth::user()->role }}</span>
+                        <span class="text-[13px] font-medium text-gray-500">{{ Auth::user()->email }}</span>
                     </div>
                 </div>
 

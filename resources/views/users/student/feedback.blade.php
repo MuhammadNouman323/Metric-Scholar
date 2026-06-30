@@ -97,7 +97,7 @@
                         <div class="shrink-0">
                             <select id="course_select"
                                 class="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-gray-700 focus:ring-2 focus:ring-[#0e48c1]/20 focus:border-[#0e48c1] outline-none shadow-sm"
-                                onchange="window.location.href='/student/feedback/'+this.value">
+                                onchange="loadCourseDetails(this.value)">
                                 @foreach ($pendingCourses as $c)
                                     <option value="{{ $c->id }}"
                                         {{ $course && $course->id == $c->id ? 'selected' : '' }}>
@@ -116,28 +116,28 @@
                         $facultyInitials = $faculty ? strtoupper(substr($faculty->name, 0, 2)) : 'NA';
                         $displayRating = $avgRating ?? null;
                     @endphp
-                    <div
+                    <div id="faculty-card"
                         class="bg-gradient-to-r from-[#0e48c1] to-[#1a5fd6] rounded-2xl p-6 mb-6 text-white flex flex-col sm:flex-row sm:items-center gap-5">
                         <div class="flex items-center gap-4 flex-1">
-                            <div
+                            <div id="faculty-initials"
                                 class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center font-bold text-xl shrink-0 backdrop-blur-sm">
                                 {{ $facultyInitials }}
                             </div>
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <p class="font-bold text-[17px]">{{ $faculty?->name ?? 'TBA' }}</p>
+                                    <p id="faculty-name" class="font-bold text-[17px]">{{ $faculty?->name ?? 'TBA' }}</p>
                                     @if ($faculty?->designation)
-                                        <span
+                                        <span id="faculty-designation"
                                             class="text-[11px] font-semibold bg-white/20 px-2 py-0.5 rounded-full">{{ $faculty->designation }}</span>
                                     @else
-                                        <span
+                                        <span id="faculty-designation"
                                             class="text-[11px] font-semibold bg-white/20 px-2 py-0.5 rounded-full">Instructor</span>
                                     @endif
                                 </div>
-                                <p class="text-white/70 text-[13px] mt-0.5">
+                                <p id="faculty-department" class="text-white/70 text-[13px] mt-0.5">
                                     {{ $faculty?->department ?? $course->department ?? 'Department' }}</p>
                                 <div class="flex items-center gap-3 mt-2 flex-wrap">
-                                    <span
+                                    <span id="course-title"
                                         class="flex items-center gap-1.5 text-[12px] font-medium bg-white/15 px-2.5 py-1 rounded-full">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -147,7 +147,7 @@
                                         </svg>
                                         {{ $course->code }} — {{ $course->title }}
                                     </span>
-                                    <span
+                                    <span id="course-semester"
                                         class="flex items-center gap-1.5 text-[12px] font-medium bg-white/15 px-2.5 py-1 rounded-full">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -161,22 +161,19 @@
                             </div>
                         </div>
 
-                        @if ($displayRating)
-                            <div class="shrink-0 text-center bg-white/15 rounded-xl px-5 py-3 backdrop-blur-sm">
-                                <p class="text-[28px] font-black leading-none">{{ number_format($displayRating, 1) }}
-                                </p>
-                                <div class="flex gap-0.5 justify-center mt-1">
-                                    @for ($s = 1; $s <= 5; $s++)
-                                        <svg class="w-3.5 h-3.5 {{ $s <= round($displayRating) ? 'text-yellow-400' : 'text-white/30' }} fill-current"
-                                            viewBox="0 0 24 24">
-                                            <path
-                                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                        </svg>
-                                    @endfor
-                                </div>
-                                <p class="text-[10px] text-white/60 mt-1 font-medium">Avg. Rating</p>
+                        <div id="avg-rating-block" class="shrink-0 text-center bg-white/15 rounded-xl px-5 py-3 backdrop-blur-sm {{ !$displayRating ? 'hidden' : '' }}">
+                            <p id="avg-rating-value" class="text-[28px] font-black leading-none">{{ number_format($displayRating ?? 0, 1) }}</p>
+                            <div id="avg-rating-stars" class="flex gap-0.5 justify-center mt-1">
+                                @for ($s = 1; $s <= 5; $s++)
+                                    <svg class="w-3.5 h-3.5 {{ $s <= round($displayRating ?? 0) ? 'text-yellow-400' : 'text-white/30' }} fill-current"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    </svg>
+                                @endfor
                             </div>
-                        @endif
+                            <p class="text-[10px] text-white/60 mt-1 font-medium">Avg. Rating</p>
+                        </div>
                     </div>
                 @endif
 
@@ -220,11 +217,21 @@
                             </svg>
                         @endfor
                     </div>
-                    <div class="flex justify-between mt-3 px-1">
-                        @foreach (['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'] as $label)
-                            <span class="text-[11px] text-gray-400 font-medium">{{ $label }}</span>
-                        @endforeach
-                    </div>
+                    <div class="flex justify-center gap-3 mt-3">
+    @foreach ([
+        ['star' => 1, 'label' => 'Poor'],
+        ['star' => 2, 'label' => 'Fair'],
+        ['star' => 3, 'label' => 'Good'],
+        ['star' => 4, 'label' => 'Very Good'],
+        ['star' => 5, 'label' => 'Excellent']
+    ] as $item)
+        <div class="w-10 text-center">
+            <span class="text-[11px] text-gray-500 font-medium leading-tight block">
+                {{ $item['label'] }}
+            </span>
+        </div>
+    @endforeach
+</div>
                 </div>
 
                 {{-- 6-criteria grid --}}
@@ -319,7 +326,7 @@
                     <div class="flex flex-wrap gap-3" id="recommendation-buttons">
                         @foreach ([['value' => 'yes_definitely', 'label' => 'Yes, definitely'], ['value' => 'neutral', 'label' => 'Neutral'], ['value' => 'not_really', 'label' => 'Not really']] as $option)
                             <button type="button"
-                                class="rec-btn px-5 py-2 rounded-full border border-gray-200 text-[13px] font-semibold text-gray-600 hover:border-[#0e48c1] hover:text-[#0e48c1] transition-all duration-150"
+                                class="rec-btn px-5 py-2 rounded-full border border-gray-200 text-[13px] font-semibold text-gray-600 hover:border-[#0e48c1] hover:text-[#fffff] transition-all duration-150"
                                 data-value="{{ $option['value'] }}">
                                 {{ $option['label'] }}
                             </button>
@@ -367,6 +374,15 @@
                         </svg>
                         Submit Evaluation
                     </button>
+                </div>
+                <div id="already-submitted-overlay" class="hidden text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm mt-6">
+                    <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-2">Feedback Already Submitted</h2>
+                    <p class="text-gray-500">You have already evaluated this course.</p>
                 </div>
             </form>
         @endif
@@ -544,10 +560,11 @@
             document.getElementById('save-draft-btn')?.addEventListener('click', saveDraft);
             restoreDraft();
 
-            // ── Form validation ────────────────────────────────────────────
+            // ── Form validation & AJAX Submission ─────────────────────────
             const form = document.getElementById('feedback-form');
             if (form) {
-                form.addEventListener('submit', function(e) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
                     const required = ['overall_rating', 'clarity', 'materials', 'responsiveness',
                         'fairness', 'practical', 'organization'
                     ];
@@ -556,17 +573,125 @@
                         return !el || el.value === '0';
                     });
                     if (missing.length > 0) {
-                        e.preventDefault();
                         alert(
                             'Please rate all ' + required.length +
                             ' criteria (including Overall) before submitting.'
                         );
                         return;
                     }
-                    // Clear draft after successful submit attempt
-                    localStorage.removeItem(DRAFT_KEY);
+
+                    const submitBtn = document.getElementById('submit-btn');
+                    const originalBtnContent = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Submitting...';
+                    submitBtn.disabled = true;
+
+                    try {
+                        const formData = new FormData(form);
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            localStorage.removeItem(DRAFT_KEY);
+                            window.location.href = data.redirect || '{{ route("student.feedback.history") }}';
+                        } else {
+                            alert(data.message || 'An error occurred. Please try again.');
+                            submitBtn.innerHTML = originalBtnContent;
+                            submitBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        alert('Network error. Please try again.');
+                        submitBtn.innerHTML = originalBtnContent;
+                        submitBtn.disabled = false;
+                    }
                 });
             }
         });
+
+        // ── Dynamic Course Fetching ────────────────────────────────────
+        async function loadCourseDetails(courseId) {
+            if (!courseId) return;
+            
+            try {
+                const response = await fetch(`/student/feedback/api/course-details/${courseId}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch course details');
+                
+                const data = await response.json();
+                
+                // Update faculty card UI
+                if (data.instructor) {
+                    const name = data.instructor.name;
+                    const initials = name.substring(0, 2).toUpperCase();
+                    document.getElementById('faculty-initials').textContent = initials;
+                    document.getElementById('faculty-name').textContent = name;
+                    document.getElementById('faculty-designation').textContent = data.instructor.designation || 'Instructor';
+                    document.getElementById('faculty-department').textContent = data.instructor.department || data.course.department || 'Department';
+                } else {
+                    document.getElementById('faculty-initials').textContent = 'NA';
+                    document.getElementById('faculty-name').textContent = 'TBA';
+                    document.getElementById('faculty-designation').textContent = 'Instructor';
+                    document.getElementById('faculty-department').textContent = data.course.department || 'Department';
+                }
+
+                // Update course details
+                document.getElementById('course-title').innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg> ${data.course.code} — ${data.course.title}`;
+                document.getElementById('course-semester').innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ${data.course.semester || 'Current Semester'}`;
+
+                // Update token
+                const tokenInput = document.querySelector('input[name="token"]');
+                if (tokenInput && data.feedbackToken) {
+                    tokenInput.value = data.feedbackToken;
+                }
+
+                // Handle already submitted state dynamically
+                const submitBtn = document.getElementById('submit-btn');
+                const saveDraftBtn = document.getElementById('save-draft-btn');
+                const overlay = document.getElementById('already-submitted-overlay');
+                
+                if (data.hasSubmitted) {
+                    submitBtn.disabled = true;
+                    saveDraftBtn.disabled = true;
+                    overlay.classList.remove('hidden');
+                } else {
+                    submitBtn.disabled = false;
+                    saveDraftBtn.disabled = false;
+                    overlay.classList.add('hidden');
+                }
+
+                // Update average rating
+                const ratingBlock = document.getElementById('avg-rating-block');
+                if (data.avgRating !== null) {
+                    ratingBlock.classList.remove('hidden');
+                    document.getElementById('avg-rating-value').textContent = Number(data.avgRating).toFixed(1);
+                    
+                    const starsContainer = document.getElementById('avg-rating-stars');
+                    let starsHtml = '';
+                    for (let s = 1; s <= 5; s++) {
+                        const colorClass = s <= Math.round(data.avgRating) ? 'text-yellow-400' : 'text-white/30';
+                        starsHtml += `<svg class="w-3.5 h-3.5 ${colorClass} fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>`;
+                    }
+                    starsContainer.innerHTML = starsHtml;
+                } else {
+                    ratingBlock.classList.add('hidden');
+                }
+
+                // Optional: update localStorage Draft Key for the new course
+                // DRAFT_KEY = 'feedback_draft_' + courseId;
+                // restoreDraft();
+
+            } catch (error) {
+                console.error('Error fetching course details:', error);
+            }
+        }
     </script>
 </x-student>

@@ -60,6 +60,9 @@ Route::get('/admin/departments/{department}/courses/{course}/edit', [AdminContro
 Route::put('/admin/departments/{department}/courses/{course}', [AdminController::class, 'updateDepartmentCourse'])->name('admin.departments.courses.update');
 Route::delete('/admin/departments/{department}/courses/{course}', [AdminController::class, 'destroyDepartmentCourse'])->name('admin.departments.courses.destroy');
 
+Route::get('/admin/evaluations', [AdminController::class, 'evaluations'])->name('admin.evaluations');
+Route::get('/admin/evaluations/new', [AdminController::class, 'newEvaluation'])->name('admin.evaluations.new');
+
 Route::get('/admin/reports', [AdminController::class, 'reports']);
 
 Route::get('/faculty/dashboard', [FacultyController::class, 'dashboard']);
@@ -69,7 +72,9 @@ Route::get('/faculty/profile', [FacultyController::class, 'profile']);
 
 Route::get('/student/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
 Route::get('/student/courses', [StudentController::class, 'courses'])->name('student.courses');
+Route::get('/student/feedback/api/course-details/{course}', [StudentController::class, 'getCourseDetails'])->name('student.feedback.api.course-details');
 Route::get('/student/feedback/{course?}', [StudentController::class, 'feedback'])->name('student.feedback');
 Route::post('/student/feedback', [StudentController::class, 'storeFeedback'])->name('student.feedback.store');
 Route::get('/student/feedback-history', [StudentController::class, 'feedbackHistory'])->name('student.feedback.history');
 Route::get('/student/profile', [StudentController::class, 'profile'])->name('student.profile');
+Route::get('/student/teachers', [StudentController::class, 'teachers'])->name('student.teachers');

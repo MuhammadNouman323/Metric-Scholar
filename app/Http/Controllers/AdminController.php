@@ -402,6 +402,55 @@ class AdminController extends Controller
             ->with('success', 'Course enrollment updated successfully.');
     }
 
+    public function evaluations()
+    {
+        return view('users.admin.evaluations.index');
+    }
+
+    public function newEvaluation()
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departments = User::where('university_id', $tenantId)
+            ->where('role', 'faculty')
+            ->whereNotNull('department')
+            ->selectRaw('department, COUNT(*) as faculty_count')
+            ->groupBy('department')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => trim((string) $item->department),
+                    'count' => $item->faculty_count,
+                ];
+            });
+
+        $faculty = User::where('university_id', $tenantId)
+            ->where('role', 'faculty')
+            ->with('courses')
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'department' => trim((string) $user->department),
+                    'avatar' => 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+                    'courses' => $user->courses->map(function ($course) {
+                        return [
+                            'code' => $course->code,
+                            'title' => $course->title,
+                        ];
+                    }),
+                    'last_evaluation' => now()->subDays(rand(10, 200))->format('M d, Y'),
+                ];
+            });
+
+        return view('users.admin.evaluations.new', [
+            'departments' => $departments,
+            'faculty' => $faculty,
+        ]);
+    }
+
     public function reports()
     {
         return view('users.admin.reports');

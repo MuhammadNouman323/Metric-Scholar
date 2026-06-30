@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessAnonymousFeedback;
 use App\Models\Course;
 use App\Models\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
@@ -158,9 +158,7 @@ class StudentController extends Controller
         // Mark as submitted
         $access->update(['submitted' => true]);
 
-        // Insert anonymous feedback
-        Feedback::create([
-            'anonymous_token' => Str::uuid()->toString(),
+        $feedbackData = [
             'course_id' => $courseId,
             'faculty_id' => $payload['faculty_id'] ?? null,
             'clarity' => $validated['clarity'],
@@ -170,13 +168,74 @@ class StudentController extends Controller
             'practical' => $validated['practical'],
             'organization' => $validated['organization'],
             'overall_rating' => $validated['overall_rating'],
-            'comments' => $validated['comments'],
-            'what_worked_well' => $validated['what_worked_well'],
-            'what_could_improve' => $validated['what_could_improve'],
-            'recommendation' => $validated['recommendation'],
-        ]);
+            'comments' => $validated['comments'] ?? null,
+            'what_worked_well' => $validated['what_worked_well'] ?? null,
+            'what_could_improve' => $validated['what_could_improve'] ?? null,
+            'recommendation' => $validated['recommendation'] ?? null,
+        ];
+
+        ProcessAnonymousFeedback::dispatch($feedbackData)
+            ->delay(now()->addMinutes(rand(5, 60)));
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Thank you! Your feedback has been submitted successfully and anonymously.',
+                'redirect' => route('student.feedback.history'),
+            ]);
+        }
 
         return redirect()->route('student.feedback.history')->with('success', 'Thank you! Your feedback has been submitted successfully and anonymously.');
+    }
+
+    public function getCourseDetails(Course $course)
+    {
+        $student = auth()->user();
+
+        // Check if student is enrolled in this course
+        if (! $student->courses()->where('course_id', $course->id)->exists()) {
+            return response()->json(['error' => 'Not enrolled in this course'], 403);
+        }
+
+        $course->load(['faculty' => fn ($q) => $q->where('role', 'faculty')]);
+        $instructor = $course->faculty->first();
+
+        // Check if already submitted
+        $hasSubmitted = $student->feedbackAccess()->where('course_id', $course->id)->where('submitted', true)->exists();
+
+        $feedbackToken = null;
+        if (! $hasSubmitted) {
+            $feedbackToken = Crypt::encryptString(json_encode([
+                'user_id' => $student->id,
+                'course_id' => $course->id,
+                'faculty_id' => $instructor?->id,
+            ]));
+        }
+
+        $avgRating = null;
+        if ($instructor) {
+            $avgRating = Feedback::where('faculty_id', $instructor->id)
+                ->selectRaw('ROUND(AVG((clarity + materials + responsiveness + fairness) / 4.0), 1) as avg')
+                ->value('avg');
+        }
+
+        return response()->json([
+            'course' => [
+                'id' => $course->id,
+                'code' => $course->code,
+                'title' => $course->title,
+                'department' => $course->department,
+                'semester' => $course->semester,
+            ],
+            'instructor' => $instructor ? [
+                'name' => $instructor->name,
+                'designation' => $instructor->designation,
+                'department' => $instructor->department,
+            ] : null,
+            'hasSubmitted' => $hasSubmitted,
+            'feedbackToken' => $feedbackToken,
+            'avgRating' => $avgRating,
+        ]);
     }
 
     public function feedbackHistory()
@@ -217,6 +276,43 @@ class StudentController extends Controller
             'totalCredits' => $totalCredits,
             'feedbackRate' => $feedbackRate,
             'submissions' => $submissions,
+        ]);
+    }
+
+    public function teachers()
+    {
+        $student = auth()->user();
+
+        // Eager load courses and their assigned teachers
+        $courses = $student->courses()->with(['faculty' => fn ($q) => $q->where('role', 'faculty')])->get();
+
+        $teachersMap = [];
+        $departments = collect();
+
+        foreach ($courses as $course) {
+            foreach ($course->faculty as $teacher) {
+                if (! isset($teachersMap[$teacher->id])) {
+                    $teacher->teaching_courses = collect([$course]);
+                    $teachersMap[$teacher->id] = $teacher;
+                } else {
+                    $teachersMap[$teacher->id]->teaching_courses->push($course);
+                }
+                if ($teacher->department) {
+                    $departments->push($teacher->department);
+                } elseif ($course->department) {
+                    $departments->push($course->department);
+                }
+            }
+        }
+
+        $teachers = collect(array_values($teachersMap));
+        $uniqueDepartmentsCount = $departments->unique()->count();
+        $totalTeachersCount = $teachers->count();
+
+        return view('users.student.teachers', [
+            'teachers' => $teachers,
+            'uniqueDepartmentsCount' => $uniqueDepartmentsCount,
+            'totalTeachersCount' => $totalTeachersCount,
         ]);
     }
 }
