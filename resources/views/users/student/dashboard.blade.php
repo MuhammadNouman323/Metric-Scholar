@@ -80,25 +80,29 @@
                     <span class="text-[11px] font-bold bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full">{{ $pendingFeedback }} Due</span>
                 </div>
                 <div class="space-y-4">
-                    @forelse($pendingEvaluations as $course)
+                    @forelse($pendingEvaluations as $token)
                         <div class="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-[#f8fafc] rounded-2xl border-l-4 border-[#0e48c1]">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1.5">
-                                    <span class="text-[11px] font-bold text-gray-400">{{ $course->code }}</span>
+                                    <span class="text-[11px] font-bold text-gray-400">{{ $token->course->code }}</span>
                                     <span class="text-gray-300">•</span>
-                                    <span class="text-[11px] font-bold text-gray-400">{{ $course->semester ?? 'Fall 2024' }}</span>
+                                    <span class="text-[11px] font-bold text-gray-400">{{ $token->evaluation->semester ?? 'Fall 2024' }}</span>
                                     <span class="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md ml-2">Pending</span>
                                 </div>
-                                <p class="text-[16px] font-bold text-gray-900 mb-1">{{ $course->title }}</p>
-                                <p class="text-[12px] text-gray-500 font-medium">Faculty: <span class="text-gray-900">{{ $course->faculty->first()?->name ?? 'TBA' }}</span> • {{ $course->faculty->first()?->department ?? 'Department N/A' }}</p>
+                                <p class="text-[16px] font-bold text-gray-900 mb-1">{{ $token->course->title }}</p>
+                                <p class="text-[12px] text-gray-500 font-medium">Faculty: <span class="text-gray-900">{{ $token->faculty->name ?? 'TBA' }}</span> • {{ $token->faculty->department ?? 'Department N/A' }}</p>
                             </div>
                             <div class="text-left sm:text-right shrink-0 mt-2 sm:mt-0">
-                                @php $daysLeft = ($course->id % 5) + 2; @endphp
+                                @php 
+                                    $endDate = \Carbon\Carbon::parse($token->evaluation->end_date);
+                                    $daysLeft = now()->diffInDays($endDate, false); 
+                                    $daysLeft = $daysLeft < 0 ? 0 : $daysLeft;
+                                @endphp
                                 <p class="text-[12px] font-bold {{ $daysLeft <= 3 ? 'text-red-500' : 'text-gray-500' }} mb-2">
                                     <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     {{ $daysLeft }} days left
                                 </p>
-                                <a href="{{ route('student.feedback', $course->id) }}"
+                                <a href="{{ route('student.feedback', ['token' => $token->token]) }}"
                                     class="inline-block bg-[#0e48c1] text-white text-[12px] font-bold px-4 py-2 rounded-xl hover:bg-blue-800 transition-colors">
                                     Evaluate →
                                 </a>

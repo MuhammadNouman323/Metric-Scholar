@@ -30,6 +30,9 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        // track last activity for session expiration
+        $request->session()->put('last_activity', now()->timestamp);
+
         /** @var User $user */
         $user = $request->user();
 
@@ -76,6 +79,7 @@ class AuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $request->session()->put('last_activity', now()->timestamp);
 
         return redirect('/admin/dashboard');
     }

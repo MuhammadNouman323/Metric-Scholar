@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\User;
+use App\Services\EvaluationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -407,48 +408,149 @@ class AdminController extends Controller
         return view('users.admin.evaluations.index');
     }
 
-    public function newEvaluation()
+    public function newEvaluationStep1(Request $request)
     {
+        $evaluationData = $request->session()->get('evaluation_wizard_step1', []);
+
+        return view('users.admin.evaluations.step1', compact('evaluationData'));
+    }
+
+    public function storeEvaluationStep1(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'semester' => 'required|string|max:255',
+            'evaluation_type' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'is_anonymous' => 'boolean',
+            'allow_faculty_response' => 'boolean',
+            'send_reminder' => 'boolean',
+        ]);
+
+        $request->session()->put('evaluation_wizard_step1', $validated);
+
+        return redirect()->route('admin.evaluations.new.step2');
+    }
+
+    public function newEvaluationStep2(Request $request)
+    {
+        if (! $request->session()->has('evaluation_wizard_step1')) {
+            return redirect()->route('admin.evaluations.new.step1');
+        }
+
         $tenantId = auth()->user()->university_id;
 
         $departments = User::where('university_id', $tenantId)
-            ->where('role', 'faculty')
             ->whereNotNull('department')
-            ->selectRaw('department, COUNT(*) as faculty_count')
-            ->groupBy('department')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'name' => trim((string) $item->department),
-                    'count' => $item->faculty_count,
-                ];
-            });
+            ->distinct()
+            ->pluck('department');
+
+        $selectionData = $request->session()->get('evaluation_wizard_step2', []);
+
+        return view('users.admin.evaluations.step2', compact('departments', 'selectionData'));
+    }
+
+    public function getFacultyCoursesForEvaluation(Request $request)
+    {
+        $tenantId = auth()->user()->university_id;
+        $department = $request->query('department');
 
         $faculty = User::where('university_id', $tenantId)
             ->where('role', 'faculty')
-            ->with('courses')
+            ->where('department', $department)
+            ->with(['courses' => function ($query) {
+                $query->withCount(['users as students_count' => function ($q) {
+                    $q->where('role', 'student');
+                }]);
+            }])
             ->get()
             ->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'email' => $user->email,
                     'department' => trim((string) $user->department),
-                    'avatar' => 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
                     'courses' => $user->courses->map(function ($course) {
                         return [
+                            'id' => $course->id,
                             'code' => $course->code,
                             'title' => $course->title,
+                            'credit_hours' => $course->credit_hours,
+                            'students_count' => $course->students_count,
                         ];
                     }),
-                    'last_evaluation' => now()->subDays(rand(10, 200))->format('M d, Y'),
                 ];
             });
 
-        return view('users.admin.evaluations.new', [
-            'departments' => $departments,
-            'faculty' => $faculty,
+        return response()->json(['faculty' => $faculty]);
+    }
+
+    public function storeEvaluationStep2(Request $request)
+    {
+        $validated = $request->validate([
+            'department' => 'required|string',
+            'selected_faculty' => 'required|array',
+            'selected_courses' => 'required|array',
         ]);
+
+        $request->session()->put('evaluation_wizard_step2', $validated);
+
+        return redirect()->route('admin.evaluations.new.step3');
+    }
+
+    public function newEvaluationStep3(Request $request)
+    {
+        if (! $request->session()->has('evaluation_wizard_step1') || ! $request->session()->has('evaluation_wizard_step2')) {
+            return redirect()->route('admin.evaluations.new.step1');
+        }
+
+        $step1 = $request->session()->get('evaluation_wizard_step1');
+        $step2 = $request->session()->get('evaluation_wizard_step2');
+
+        $faculty = User::whereIn('id', $step2['selected_faculty'])->get();
+        $courses = Course::withCount(['users as students_count' => function ($q) {
+            $q->where('role', 'student');
+        }])->whereIn('id', $step2['selected_courses'])->get();
+
+        $totalEligibleStudents = $courses->sum('students_count');
+
+        return view('users.admin.evaluations.step3', compact('step1', 'step2', 'faculty', 'courses', 'totalEligibleStudents'));
+    }
+
+    public function publishEvaluation(Request $request, EvaluationService $evaluationService)
+    {
+        if (! $request->session()->has('evaluation_wizard_step1') || ! $request->session()->has('evaluation_wizard_step2')) {
+            return redirect()->route('admin.evaluations.new.step1');
+        }
+
+        $step1 = $request->session()->get('evaluation_wizard_step1');
+        $step2 = $request->session()->get('evaluation_wizard_step2');
+
+        $step1['created_by'] = auth()->id();
+
+        // Build course to faculty mapping based on selected courses
+        $courseFacultyMapping = [];
+        $tenantId = auth()->user()->university_id;
+
+        // We need to map each selected course to its faculty
+        $facultyCourses = User::where('university_id', $tenantId)
+            ->whereIn('id', $step2['selected_faculty'])
+            ->with('courses')
+            ->get();
+
+        foreach ($facultyCourses as $faculty) {
+            foreach ($faculty->courses as $course) {
+                if (in_array($course->id, $step2['selected_courses'])) {
+                    $courseFacultyMapping[$course->id] = $faculty->id;
+                }
+            }
+        }
+
+        $evaluationService->publishEvaluation($step1, $step2['selected_faculty'], $courseFacultyMapping);
+
+        $request->session()->forget(['evaluation_wizard_step1', 'evaluation_wizard_step2']);
+
+        return redirect()->route('admin.evaluations')->with('success', 'Evaluation cycle published successfully. Tokens have been generated for eligible students.');
     }
 
     public function reports()

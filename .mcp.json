@@ -1,9 +1,8 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "wsl.exe",
+            "command": "/home/nomi/.config/herd-lite/bin/php",
             "args": [
-                "/home/nomi/.config/herd-lite/bin/php",
                 "/home/nomi/scholar_metric/artisan",
                 "boost:mcp"
             ]

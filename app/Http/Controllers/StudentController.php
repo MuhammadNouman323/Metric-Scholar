@@ -2,34 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\ProcessAnonymousFeedback;
 use App\Models\Course;
 use App\Models\Feedback;
+use App\Models\FeedbackAnswer;
+use App\Repositories\FeedbackRepository;
+use App\Services\GeminiModerationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 
 class StudentController extends Controller
 {
     public function dashboard()
     {
         $student = auth()->user();
-        $student->loadCount(['feedbackAccess as feedbacks_count' => function ($query) {
-            $query->where('submitted', true);
-        }]);
 
         $enrolledCourses = $student->courses()->with('faculty')->get();
         $activeCourses = $enrolledCourses->count();
 
-        $submittedFeedbackCount = $student->feedbacks_count;
-        $pendingFeedback = max(0, $activeCourses - $submittedFeedbackCount);
+        // Get tokens for the student
+        $allTokens = $student->feedbackTokens()->with(['evaluation', 'course', 'faculty'])->get();
 
-        $feedbackRate = $activeCourses > 0 ? round(($submittedFeedbackCount / $activeCourses) * 100) : 0;
+        $submittedFeedbackCount = $allTokens->where('is_used', true)->count();
+        $pendingFeedback = $allTokens->where('is_used', false)->count();
 
-        // Find courses without feedback
-        $submittedCourseIds = $student->feedbackAccess()->where('submitted', true)->pluck('course_id')->toArray();
-        $pendingEvaluations = $enrolledCourses->whereNotIn('id', $submittedCourseIds)->take(5);
+        $totalEvaluations = $allTokens->count();
+        $feedbackRate = $totalEvaluations > 0 ? round(($submittedFeedbackCount / $totalEvaluations) * 100) : 0;
 
-        $recentSubmission = $student->feedbackAccess()->with('course')->where('submitted', true)->latest('updated_at')->first();
+        $pendingEvaluations = $allTokens->where('is_used', false)->take(5);
+
+        $recentSubmission = $allTokens->where('is_used', true)->sortByDesc('used_at')->first();
 
         return view('users.student.dashboard', [
             'student' => $student,
@@ -49,11 +49,7 @@ class StudentController extends Controller
         $activeCourses = $courses->total();
         $totalCredits = $student->courses()->sum('credit_hours') ?? 0;
 
-        $student->loadCount(['feedbackAccess as feedbacks_count' => function ($query) {
-            $query->where('submitted', true);
-        }]);
-        $submittedFeedbackCount = $student->feedbacks_count;
-        $pendingFeedback = max(0, $activeCourses - $submittedFeedbackCount);
+        $pendingFeedback = $student->feedbackTokens()->where('is_used', false)->count();
 
         return view('users.student.courses', [
             'student' => $student,
@@ -64,63 +60,52 @@ class StudentController extends Controller
         ]);
     }
 
-    public function feedback(?Course $course = null)
+    public function feedback(Request $request, ?Course $course = null)
     {
         $student = auth()->user();
-        $enrolledCourses = $student->courses()->with(['faculty' => fn ($q) => $q->where('role', 'faculty')])->get();
-        $submittedCourseIds = $student->feedbackAccess()->where('submitted', true)->pluck('course_id')->toArray();
+        $pendingTokens = $student->feedbackTokens()->with(['evaluation', 'course', 'faculty'])->where('is_used', false)->get();
 
-        $pendingCourses = $enrolledCourses->whereNotIn('id', $submittedCourseIds);
-
-        // If no course specified, pick the first pending one if available
-        if (! $course && $pendingCourses->count() > 0) {
-            $course = $pendingCourses->first();
-            // Ensure faculty is loaded with role filter on the resolved course
-            $course->load(['faculty' => fn ($q) => $q->where('role', 'faculty')]);
+        // Find the specific token to use
+        $activeToken = null;
+        if ($request->has('token')) {
+            $activeToken = $pendingTokens->firstWhere('token', $request->query('token'));
         } elseif ($course) {
-            $course->load(['faculty' => fn ($q) => $q->where('role', 'faculty')]);
+            $activeToken = $pendingTokens->firstWhere('course_id', $course->id);
+        } else {
+            $activeToken = $pendingTokens->first();
         }
+
+        $courseModel = $activeToken ? $activeToken->course : $course;
+        $instructor = $activeToken ? $activeToken->faculty : ($courseModel ? $courseModel->faculty->first() : null);
 
         $hasSubmitted = false;
-        if ($course) {
-            $hasSubmitted = in_array($course->id, $submittedCourseIds);
-        }
-
-        $instructor = $course?->faculty->first();
-
-        $feedbackToken = null;
-        if ($course && ! $hasSubmitted) {
-            $feedbackToken = Crypt::encryptString(json_encode([
-                'user_id' => $student->id,
-                'course_id' => $course->id,
-                'faculty_id' => $instructor?->id,
-            ]));
+        if ($courseModel && ! $activeToken) {
+            // Check if they used a token for this course
+            $hasSubmitted = $student->feedbackTokens()->where('course_id', $courseModel->id)->where('is_used', true)->exists();
         }
 
         $avgRating = null;
         if ($instructor) {
-            $avgRating = Feedback::where('faculty_id', $instructor->id)
-                ->selectRaw('ROUND(AVG((clarity + materials + responsiveness + fairness) / 4.0), 1) as avg')
-                ->value('avg');
+            $avgRating = FeedbackAnswer::whereHas('feedback', function ($q) use ($instructor) {
+                $q->where('faculty_id', $instructor->id);
+            })->where('question_id', 'overall_rating')->avg('rating');
+            $avgRating = round($avgRating, 1);
         }
 
         return view('users.student.feedback', [
-            'course' => $course,
+            'course' => $courseModel,
             'instructor' => $instructor,
-            'enrolledCourses' => $enrolledCourses,
-            'pendingCourses' => $pendingCourses,
+            'pendingTokens' => $pendingTokens,
+            'activeToken' => $activeToken,
             'hasSubmitted' => $hasSubmitted,
-            'feedbackToken' => $feedbackToken,
             'avgRating' => $avgRating,
         ]);
     }
 
-    public function storeFeedback(Request $request)
+    public function storeFeedback(Request $request, FeedbackRepository $feedbackRepository)
     {
-        $student = auth()->user();
-
         $validated = $request->validate([
-            'token' => 'required|string',
+            'token' => 'required|string|exists:feedback_tokens,token',
             'clarity' => 'required|integer|min:1|max:5',
             'materials' => 'required|integer|min:1|max:5',
             'responsiveness' => 'required|integer|min:1|max:5',
@@ -134,53 +119,42 @@ class StudentController extends Controller
             'recommendation' => 'nullable|in:yes_definitely,neutral,not_really',
         ]);
 
-        try {
-            $payload = json_decode(Crypt::decryptString($validated['token']), true);
-        } catch (\Exception $e) {
-            return back()->withErrors(['token' => 'Invalid or expired evaluation session.']);
+        $tokenModel = $feedbackRepository->findToken($validated['token']);
+
+        if (! $tokenModel || $tokenModel->is_used) {
+            return back()->withErrors(['token' => 'Invalid or already used evaluation token.']);
         }
 
-        if ($payload['user_id'] !== $student->id) {
-            return back()->withErrors(['token' => 'Unauthorized evaluation attempt.']);
-        }
-
-        $courseId = $payload['course_id'];
-
-        $access = $student->feedbackAccess()->firstOrCreate(
-            ['course_id' => $courseId],
-            ['submitted' => false]
-        );
-
-        if ($access->submitted) {
-            return back()->withErrors(['course_id' => 'You have already submitted feedback for this course.']);
-        }
-
-        // Mark as submitted
-        $access->update(['submitted' => true]);
-
+        // Save anonymous feedback
         $feedbackData = [
-            'course_id' => $courseId,
-            'faculty_id' => $payload['faculty_id'] ?? null,
-            'clarity' => $validated['clarity'],
-            'materials' => $validated['materials'],
-            'responsiveness' => $validated['responsiveness'],
-            'fairness' => $validated['fairness'],
-            'practical' => $validated['practical'],
-            'organization' => $validated['organization'],
-            'overall_rating' => $validated['overall_rating'],
-            'comments' => $validated['comments'] ?? null,
-            'what_worked_well' => $validated['what_worked_well'] ?? null,
-            'what_could_improve' => $validated['what_could_improve'] ?? null,
-            'recommendation' => $validated['recommendation'] ?? null,
+            'evaluation_id' => $tokenModel->evaluation_id,
+            'faculty_id' => $tokenModel->faculty_id,
+            'course_id' => $tokenModel->course_id,
         ];
 
-        ProcessAnonymousFeedback::dispatch($feedbackData)
-            ->delay(now()->addMinutes(rand(5, 60)));
+        $answersData = [
+            'clarity' => ['rating' => $validated['clarity']],
+            'materials' => ['rating' => $validated['materials']],
+            'responsiveness' => ['rating' => $validated['responsiveness']],
+            'fairness' => ['rating' => $validated['fairness']],
+            'practical' => ['rating' => $validated['practical']],
+            'organization' => ['rating' => $validated['organization']],
+            'overall_rating' => ['rating' => $validated['overall_rating']],
+            'comments' => ['text_answer' => $validated['comments'] ?? null],
+            'what_worked_well' => ['text_answer' => $validated['what_worked_well'] ?? null],
+            'what_could_improve' => ['text_answer' => $validated['what_could_improve'] ?? null],
+            'recommendation' => ['text_answer' => $validated['recommendation'] ?? null],
+        ];
+
+        // Mark token as used BEFORE dispatching or saving to prevent race conditions
+        $feedbackRepository->markTokenAsUsed($tokenModel);
+
+        $feedbackRepository->saveFeedback($feedbackData, $answersData);
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Thank you! Your feedback has been submitted successfully and anonymously.',
+                'message' => 'Thank you! Your feedback has been submitted successfully and completely anonymously.',
                 'redirect' => route('student.feedback.history'),
             ]);
         }
@@ -192,31 +166,21 @@ class StudentController extends Controller
     {
         $student = auth()->user();
 
-        // Check if student is enrolled in this course
-        if (! $student->courses()->where('course_id', $course->id)->exists()) {
-            return response()->json(['error' => 'Not enrolled in this course'], 403);
+        // Check if student has an active token for this course
+        $activeToken = $student->feedbackTokens()->with(['faculty'])->where('course_id', $course->id)->where('is_used', false)->first();
+
+        if (! $activeToken) {
+            return response()->json(['error' => 'No pending evaluation for this course'], 403);
         }
 
-        $course->load(['faculty' => fn ($q) => $q->where('role', 'faculty')]);
-        $instructor = $course->faculty->first();
-
-        // Check if already submitted
-        $hasSubmitted = $student->feedbackAccess()->where('course_id', $course->id)->where('submitted', true)->exists();
-
-        $feedbackToken = null;
-        if (! $hasSubmitted) {
-            $feedbackToken = Crypt::encryptString(json_encode([
-                'user_id' => $student->id,
-                'course_id' => $course->id,
-                'faculty_id' => $instructor?->id,
-            ]));
-        }
+        $instructor = $activeToken->faculty;
 
         $avgRating = null;
         if ($instructor) {
-            $avgRating = Feedback::where('faculty_id', $instructor->id)
-                ->selectRaw('ROUND(AVG((clarity + materials + responsiveness + fairness) / 4.0), 1) as avg')
-                ->value('avg');
+            $avgRating = FeedbackAnswer::whereHas('feedback', function ($q) use ($instructor) {
+                $q->where('faculty_id', $instructor->id);
+            })->where('question_id', 'overall_rating')->avg('rating');
+            $avgRating = round($avgRating, 1);
         }
 
         return response()->json([
@@ -232,8 +196,8 @@ class StudentController extends Controller
                 'designation' => $instructor->designation,
                 'department' => $instructor->department,
             ] : null,
-            'hasSubmitted' => $hasSubmitted,
-            'feedbackToken' => $feedbackToken,
+            'hasSubmitted' => false,
+            'feedbackToken' => $activeToken->token,
             'avgRating' => $avgRating,
         ]);
     }
@@ -241,34 +205,28 @@ class StudentController extends Controller
     public function feedbackHistory()
     {
         $student = auth()->user();
-        $submissions = $student->feedbackAccess()->with('course')->where('submitted', true)->latest('updated_at')->get();
-
-        $enrolledCourses = $student->courses;
-        $activeCourses = $enrolledCourses->count();
-        $pendingFeedback = max(0, $activeCourses - $submissions->count());
-        $pendingCourses = $enrolledCourses->whereNotIn('id', $submissions->pluck('course_id'));
+        $submissions = $student->feedbackTokens()->with(['evaluation', 'course', 'faculty'])->where('is_used', true)->latest('used_at')->get();
+        $pendingTokens = $student->feedbackTokens()->with(['evaluation', 'course'])->where('is_used', false)->get();
 
         return view('users.student.feedback.history', [
             'submissions' => $submissions,
-            'pendingFeedback' => $pendingFeedback,
-            'pendingCourses' => $pendingCourses,
+            'pendingFeedback' => $pendingTokens->count(),
+            'pendingCourses' => $pendingTokens->pluck('course'),
         ]);
     }
 
     public function profile()
     {
         $student = auth()->user();
-        $student->loadCount(['feedbackAccess as feedbacks_count' => function ($query) {
-            $query->where('submitted', true);
-        }]);
 
         $activeCourses = $student->courses()->count();
         $totalCredits = $student->courses()->sum('credit_hours') ?? 0;
 
-        $submittedFeedbackCount = $student->feedbacks_count;
-        $feedbackRate = $activeCourses > 0 ? round(($submittedFeedbackCount / $activeCourses) * 100) : 0;
+        $allTokens = $student->feedbackTokens()->get();
+        $submittedFeedbackCount = $allTokens->where('is_used', true)->count();
+        $feedbackRate = $allTokens->count() > 0 ? round(($submittedFeedbackCount / $allTokens->count()) * 100) : 0;
 
-        $submissions = $student->feedbackAccess()->with('course')->where('submitted', true)->latest('updated_at')->take(5)->get();
+        $submissions = $student->feedbackTokens()->with(['evaluation', 'course'])->where('is_used', true)->latest('used_at')->take(5)->get();
 
         return view('users.student.profile', [
             'student' => $student,
@@ -283,7 +241,6 @@ class StudentController extends Controller
     {
         $student = auth()->user();
 
-        // Eager load courses and their assigned teachers
         $courses = $student->courses()->with(['faculty' => fn ($q) => $q->where('role', 'faculty')])->get();
 
         $teachersMap = [];
@@ -314,5 +271,68 @@ class StudentController extends Controller
             'uniqueDepartmentsCount' => $uniqueDepartmentsCount,
             'totalTeachersCount' => $totalTeachersCount,
         ]);
+    }
+
+    public function store(
+        Request $request,
+        GeminiModerationService $gemini
+    ) {
+        $result = $gemini->moderate($request->worked_well);
+
+        dd($result);
+    }
+}
+class FeedbackController extends Controller
+{
+    public function store(
+        Request $request,
+        GeminiModerationService $gemini
+    ) {
+        $request->validate([
+            'worked_well' => 'required|min:80',
+            'improve' => 'required|min:80',
+        ]);
+
+        $worked = $gemini->moderate(
+            $request->worked_well
+        );
+
+        $improve = $gemini->moderate(
+            $request->improve
+        );
+
+        if (
+            $worked['status'] == 'rejected' ||
+            $improve['status'] == 'rejected'
+        ) {
+            return back()
+                ->withErrors([
+                    'comment' => 'Your feedback contains inappropriate language.',
+                ]);
+        }
+
+        Feedback::create([
+
+            'worked_well' => $worked['cleaned_comment'],
+
+            'improve' => $improve['cleaned_comment'],
+
+            'worked_status' => $worked['status'],
+
+            'worked_score' => $worked['toxicity_score'],
+
+            'worked_reason' => $worked['reason'],
+
+            'improve_status' => $improve['status'],
+
+            'improve_score' => $improve['toxicity_score'],
+
+            'improve_reason' => $improve['reason'],
+
+        ]);
+
+        return redirect()
+            ->route('student.dashboard')
+            ->with('success', 'Feedback submitted successfully.');
     }
 }

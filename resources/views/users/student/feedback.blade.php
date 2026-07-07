@@ -32,7 +32,7 @@
         @endif
 
         {{-- All caught up state --}}
-        @if ($pendingCourses->isEmpty() && !$course)
+        @if ($pendingTokens->isEmpty() && !$course)
             <div class="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <div
                     class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#0e48c1]">
@@ -73,7 +73,7 @@
         @else
             <form method="POST" action="{{ route('student.feedback.store') }}" id="feedback-form">
                 @csrf
-                <input type="hidden" name="token" value="{{ $feedbackToken }}">
+                <input type="hidden" name="token" value="{{ $activeToken ? $activeToken->token : '' }}">
                 {{-- Hidden inputs for all 7 rating fields --}}
                 <input type="hidden" name="overall_rating" id="input-overall_rating" value="0">
                 <input type="hidden" name="clarity" id="input-clarity" value="0">
@@ -93,15 +93,15 @@
                     </div>
 
                     {{-- Course selector --}}
-                    @if ($pendingCourses->count() > 1)
+                    @if ($pendingTokens->count() > 1)
                         <div class="shrink-0">
                             <select id="course_select"
                                 class="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-[13px] font-semibold text-gray-700 focus:ring-2 focus:ring-[#0e48c1]/20 focus:border-[#0e48c1] outline-none shadow-sm"
                                 onchange="loadCourseDetails(this.value)">
-                                @foreach ($pendingCourses as $c)
-                                    <option value="{{ $c->id }}"
-                                        {{ $course && $course->id == $c->id ? 'selected' : '' }}>
-                                        {{ $c->code }} — {{ $c->title }}
+                                @foreach ($pendingTokens as $t)
+                                    <option value="{{ $t->course->id }}"
+                                        {{ $course && $course->id == $t->course->id ? 'selected' : '' }}>
+                                        {{ $t->course->code }} — {{ $t->course->title }}
                                     </option>
                                 @endforeach
                             </select>
@@ -112,7 +112,7 @@
                 {{-- Faculty card --}}
                 @if ($course)
                     @php
-                        $faculty = $course->faculty->first();
+                        $faculty = $instructor;
                         $facultyInitials = $faculty ? strtoupper(substr($faculty->name, 0, 2)) : 'NA';
                         $displayRating = $avgRating ?? null;
                     @endphp

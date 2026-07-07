@@ -5,10 +5,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div class="flex flex-col gap-1">
                 <div class="flex items-center text-[12px] font-semibold text-gray-500 mb-2">
-                    <span>Academic Curator</span>
-                    <svg class="w-3 h-3 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
+                    
                     <span class="text-[#0e48c1]">Manage Courses</span>
                 </div>
                 <h1 class="text-[32px] font-bold text-[#1f2937] mb-1 tracking-tight">Curricular Catalog</h1>

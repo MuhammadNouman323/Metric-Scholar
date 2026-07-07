@@ -7,22 +7,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Feedback extends Model
 {
+    protected $table = 'feedbacks';
+
     protected $fillable = [
-        'anonymous_token',
-        'course_id',
+        'evaluation_id',
         'faculty_id',
-        'clarity',
-        'materials',
-        'responsiveness',
-        'fairness',
-        'practical',
-        'organization',
-        'overall_rating',
-        'comments',
-        'what_worked_well',
-        'what_could_improve',
-        'recommendation',
+        'course_id',
+        'submitted_at',
+        'worked_well',
+        'improve',
+        'worked_status',
+        'improve_status',
+        'worked_score',
+        'improve_score',
+        'worked_reason',
+        'improve_reason',
     ];
+
+    public $timestamps = true;
+
+    public function evaluation(): BelongsTo
+    {
+        return $this->belongsTo(Evaluation::class);
+    }
 
     public function faculty(): BelongsTo
     {
@@ -32,5 +39,10 @@ class Feedback extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(FeedbackAnswer::class);
     }
 }
