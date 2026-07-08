@@ -75,6 +75,7 @@ Route::prefix('admin')
         Route::get('/evaluations/api/faculty-courses', [AdminController::class, 'getFacultyCoursesForEvaluation'])->name('admin.evaluations.api.faculty-courses');
 
         Route::get('/reports', [AdminController::class, 'reports']);
+        Route::get('/moderation', [AdminController::class, 'moderation'])->name('admin.moderation');
     });
 
 Route::prefix('faculty')

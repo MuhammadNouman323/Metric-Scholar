@@ -122,7 +122,43 @@ class StudentController extends Controller
         $tokenModel = $feedbackRepository->findToken($validated['token']);
 
         if (! $tokenModel || $tokenModel->is_used) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid or already used evaluation token.',
+                ], 422);
+            }
+
             return back()->withErrors(['token' => 'Invalid or already used evaluation token.']);
+        }
+
+        // Moderate written comments before persisting
+        $moderationService = app(GeminiModerationService::class);
+        $textFields = ['comments', 'what_worked_well', 'what_could_improve'];
+        $moderatedAnswers = [];
+        $isRejected = false;
+
+        foreach ($textFields as $field) {
+            if (! empty($validated[$field])) {
+                $result = $moderationService->moderate($validated[$field]);
+                if (($result['status'] ?? 'approved') === 'rejected') {
+                    $isRejected = true;
+                }
+                $moderatedAnswers[$field] = $result;
+            }
+        }
+
+        if ($isRejected) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your written feedback contains offensive or inappropriate language. Please revise your comments and submit again.',
+                ], 422);
+            }
+
+            return back()->withInput()->withErrors([
+                'comments' => 'Your written feedback contains offensive or inappropriate language. Please revise your comments and submit again.',
+            ]);
         }
 
         // Save anonymous feedback
@@ -140,13 +176,30 @@ class StudentController extends Controller
             'practical' => ['rating' => $validated['practical']],
             'organization' => ['rating' => $validated['organization']],
             'overall_rating' => ['rating' => $validated['overall_rating']],
-            'comments' => ['text_answer' => $validated['comments'] ?? null],
-            'what_worked_well' => ['text_answer' => $validated['what_worked_well'] ?? null],
-            'what_could_improve' => ['text_answer' => $validated['what_could_improve'] ?? null],
             'recommendation' => ['text_answer' => $validated['recommendation'] ?? null],
         ];
 
-        // Mark token as used BEFORE dispatching or saving to prevent race conditions
+        foreach ($textFields as $field) {
+            if (! empty($validated[$field])) {
+                $mod = $moderatedAnswers[$field];
+                $answersData[$field] = [
+                    'text_answer' => $mod['cleaned_comment'] ?? $validated[$field],
+                    'moderation_status' => $mod['status'] ?? 'approved',
+                    'toxicity_score' => $mod['toxicity_score'] ?? 0,
+                    'moderation_reason' => $mod['reason'] ?? null,
+                    'moderation_categories' => $mod['categories'] ?? [],
+                    'original_comment' => $validated[$field],
+                    'cleaned_comment' => $mod['cleaned_comment'] ?? $validated[$field],
+                    'moderated_at' => now(),
+                ];
+            } else {
+                $answersData[$field] = [
+                    'text_answer' => null,
+                ];
+            }
+        }
+
+        // Mark token as used BEFORE saving to prevent race conditions
         $feedbackRepository->markTokenAsUsed($tokenModel);
 
         $feedbackRepository->saveFeedback($feedbackData, $answersData);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\FeedbackAnswer;
 use App\Models\User;
 use App\Services\EvaluationService;
 use Illuminate\Http\JsonResponse;
@@ -904,5 +905,48 @@ class AdminController extends Controller
             ->map(fn (?string $value): string => trim((string) $value))
             ->filter()
             ->first(fn (string $value): bool => Str::slug($value) === $slug);
+    }
+
+    public function moderation(Request $request)
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $query = FeedbackAnswer::whereNotNull('moderation_status')
+            ->with(['feedback.course', 'feedback.faculty'])
+            ->whereHas('feedback', function ($q) use ($tenantId) {
+                $q->whereHas('faculty', function ($q2) use ($tenantId) {
+                    $q2->where('university_id', $tenantId);
+                });
+            });
+
+        if ($request->has('status') && in_array($request->status, ['approved', 'flagged', 'rejected'])) {
+            $query->where('moderation_status', $request->status);
+        }
+
+        if ($request->has('search') && ! empty($request->search)) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('original_comment', 'like', "%{$search}%")
+                    ->orWhere('cleaned_comment', 'like', "%{$search}%")
+                    ->orWhere('moderation_reason', 'like', "%{$search}%");
+            });
+        }
+
+        $answers = $query->latest('moderated_at')->paginate(15);
+
+        $statsQuery = FeedbackAnswer::whereNotNull('moderation_status')
+            ->whereHas('feedback.faculty', function ($q) use ($tenantId) {
+                $q->where('university_id', $tenantId);
+            });
+
+        $totalModerated = (clone $statsQuery)->count();
+        $totalApproved = (clone $statsQuery)->where('moderation_status', 'approved')->count();
+        $totalFlagged = (clone $statsQuery)->where('moderation_status', 'flagged')->count();
+        $totalRejected = (clone $statsQuery)->where('moderation_status', 'rejected')->count();
+        $avgToxicity = (clone $statsQuery)->avg('toxicity_score') ?? 0;
+
+        return view('users.admin.moderation', compact(
+            'answers', 'totalModerated', 'totalApproved', 'totalFlagged', 'totalRejected', 'avgToxicity'
+        ));
     }
 }

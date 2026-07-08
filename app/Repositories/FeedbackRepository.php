@@ -35,6 +35,13 @@ class FeedbackRepository
                 'question_id' => $questionId,
                 'rating' => $answer['rating'] ?? null,
                 'text_answer' => $answer['text_answer'] ?? null,
+                'moderation_status' => $answer['moderation_status'] ?? null,
+                'toxicity_score' => $answer['toxicity_score'] ?? null,
+                'moderation_reason' => $answer['moderation_reason'] ?? null,
+                'moderation_categories' => $answer['moderation_categories'] ?? null,
+                'original_comment' => $answer['original_comment'] ?? null,
+                'cleaned_comment' => $answer['cleaned_comment'] ?? null,
+                'moderated_at' => $answer['moderated_at'] ?? null,
             ]);
         }
 
