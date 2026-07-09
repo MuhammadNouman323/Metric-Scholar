@@ -99,14 +99,14 @@
                             <!-- Start Date -->
                             <div class="space-y-2.5">
                                 <label for="start_date" class="block text-[11px] font-extrabold text-slate-400 tracking-widest uppercase">Start Date</label>
-                                <input id="start_date" name="start_date" type="date" required value="{{ old('start_date', $evaluationData['start_date'] ?? '') }}" class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white" />
+                                <input id="start_date" name="start_date" type="date" required min="{{ date('Y-m-d') }}" value="{{ old('start_date', $evaluationData['start_date'] ?? '') }}" class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white" />
                                 @error('start_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <!-- End Date -->
                             <div class="space-y-2.5">
                                 <label for="end_date" class="block text-[11px] font-extrabold text-slate-400 tracking-widest uppercase">End Date</label>
-                                <input id="end_date" name="end_date" type="date" required value="{{ old('end_date', $evaluationData['end_date'] ?? '') }}" class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white" />
+                                <input id="end_date" name="end_date" type="date" required min="{{ date('Y-m-d') }}" value="{{ old('end_date', $evaluationData['end_date'] ?? '') }}" class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white" />
                                 @error('end_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>

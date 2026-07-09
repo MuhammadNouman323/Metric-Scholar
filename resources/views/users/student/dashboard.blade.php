@@ -110,9 +110,15 @@
                         </div>
                     @empty
                         <div class="p-10 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                            <div class="text-4xl mb-3">🎉</div>
-                            <h4 class="text-[16px] font-bold text-gray-900 mb-1">All evaluations completed!</h4>
-                            <p class="text-[13px] text-gray-500 font-medium">Thank you for your feedback. Your voice helps shape our faculty.</p>
+                            @if($totalEvaluations == 0)
+                                <div class="text-4xl mb-3">📅</div>
+                                <h4 class="text-[16px] font-bold text-gray-900 mb-1">There are currently no active evaluations.</h4>
+                                <p class="text-[13px] text-gray-500 font-medium">We will notify you when a new evaluation cycle begins.</p>
+                            @else
+                                <div class="text-4xl mb-3">🎉</div>
+                                <h4 class="text-[16px] font-bold text-gray-900 mb-1">All evaluations completed!</h4>
+                                <p class="text-[13px] text-gray-500 font-medium">Thank you for your feedback. Your voice helps shape our faculty.</p>
+                            @endif
                         </div>
                     @endforelse
                 </div>
@@ -124,36 +130,30 @@
                 <div class="bg-white rounded-[2rem] p-7 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                     <div class="flex items-center justify-between mb-5">
                         <h3 class="text-[16px] font-bold text-gray-900">Notifications</h3>
-                        <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                        @if($student->unreadNotifications->count() > 0)
+                            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                        @endif
                     </div>
                     <div class="space-y-4">
-                        <div class="flex gap-3">
-                            <div class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        @forelse($notifications as $notification)
+                            <div class="flex gap-3 {{ $notification->unread() ? 'bg-blue-50/50 -mx-2 px-2 py-1 rounded-lg' : '' }}">
+                                <div class="w-8 h-8 rounded-full bg-blue-50 text-[#0e48c1] flex items-center justify-center shrink-0">
+                                    @if(str_contains($notification->type, 'EvaluationAvailableNotification') || str_contains($notification->type, 'NewEvaluationScheduledNotification'))
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    @elseif(str_contains($notification->type, 'EvaluationClosedNotification'))
+                                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    @else
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    @endif
+                                </div>
+                                <div>
+                                    <p class="text-[13px] font-medium text-gray-900 leading-snug">{{ $notification->data['message'] ?? $notification->data['title'] ?? 'New Notification' }}</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-[13px] font-medium text-gray-900 leading-snug">Feedback for <span class="font-bold">CS201</span> closes tomorrow.</p>
-                                <p class="text-[11px] text-gray-400 mt-1">2 hours ago</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3">
-                            <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-[13px] font-medium text-gray-900 leading-snug">Submission confirmed for Database Systems.</p>
-                                <p class="text-[11px] text-gray-400 mt-1">1 day ago</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-50 text-[#0e48c1] flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </div>
-                            <div>
-                                <p class="text-[13px] font-medium text-gray-900 leading-snug">New evaluations are now available for the Fall semester.</p>
-                                <p class="text-[11px] text-gray-400 mt-1">3 days ago</p>
-                            </div>
-                        </div>
+                        @empty
+                            <p class="text-[12px] text-gray-500 text-center py-4">No new notifications.</p>
+                        @endforelse
                     </div>
                 </div>
 

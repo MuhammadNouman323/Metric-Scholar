@@ -23,6 +23,37 @@
             </div>
         </div>
 
+        <!-- Active Evaluation Notification -->
+        @if($activeEvaluation)
+        <div class="mb-10 bg-[#f0f4ff] border border-[#0e48c1]/20 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-8 h-8 rounded-full bg-[#0e48c1] text-white flex items-center justify-center shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </span>
+                    <h2 class="text-xl font-bold text-gray-900">{{ $activeEvaluation->title }}</h2>
+                    <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider">{{ $activeEvaluation->status }}</span>
+                </div>
+                <p class="text-[14px] text-gray-600 font-medium">
+                    An evaluation cycle is currently {{ $activeEvaluation->status }}. It runs from 
+                    <strong class="text-gray-900">{{ $activeEvaluation->start_date->format('M d, Y') }}</strong> to 
+                    <strong class="text-gray-900">{{ $activeEvaluation->end_date->format('M d, Y') }}</strong>.
+                </p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="text-[13px] font-bold text-gray-400 flex items-center mr-2">Assigned Courses:</span>
+                    @forelse($assignedCourses as $course)
+                        <span class="bg-white border border-gray-200 text-gray-700 text-xs font-bold px-3 py-1.5 rounded-lg">{{ $course->code }}</span>
+                    @empty
+                        <span class="text-[13px] text-gray-500">No courses assigned for this cycle.</span>
+                    @endforelse
+                </div>
+            </div>
+            <a href="{{ route('faculty.feedback') }}" class="shrink-0 bg-[#0e48c1] text-white px-5 py-2.5 rounded-xl text-[14px] font-bold shadow-sm hover:bg-blue-800 transition-colors">
+                View Feedback
+            </a>
+        </div>
+        @endif
+
         <!-- 3 Stats Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-6 mb-10 w-full">
             <!-- Average Rating -->

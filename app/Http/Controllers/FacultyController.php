@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evaluation;
 use App\Models\Feedback;
 use App\Models\FeedbackAnswer;
 use Illuminate\Support\Facades\Auth;
@@ -10,7 +11,22 @@ class FacultyController extends Controller
 {
     public function dashboard()
     {
-        return view('users.faculty.dashboard');
+        $faculty = Auth::user();
+        $notifications = $faculty->notifications()->take(5)->get();
+
+        $activeEvaluation = Evaluation::whereIn('status', ['active', 'scheduled'])
+            ->whereHas('faculty', function ($q) use ($faculty) {
+                $q->where('users.id', $faculty->id);
+            })->first();
+
+        $assignedCourses = collect();
+        if ($activeEvaluation) {
+            $assignedCourses = $faculty->courses()->whereHas('evaluations', function ($q) use ($activeEvaluation) {
+                $q->where('evaluations.id', $activeEvaluation->id);
+            })->get();
+        }
+
+        return view('users.faculty.dashboard', compact('faculty', 'notifications', 'activeEvaluation', 'assignedCourses'));
     }
 
     public function feedback()

@@ -38,6 +38,17 @@
                 </div>
             </div>
 
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-[1rem] relative" role="alert">
+                    <strong class="font-bold">Oops! There were some problems.</strong>
+                    <ul class="mt-2 list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <form action="{{ route('admin.evaluations.new.publish') }}" method="POST" class="space-y-8 mt-4" id="publish-form">
                 @csrf
                 <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-8">

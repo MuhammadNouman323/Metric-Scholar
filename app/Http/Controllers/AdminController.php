@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEvaluationRequest;
 use App\Models\Course;
+use App\Models\Evaluation;
 use App\Models\FeedbackAnswer;
 use App\Models\User;
 use App\Services\EvaluationService;
@@ -406,7 +408,41 @@ class AdminController extends Controller
 
     public function evaluations()
     {
-        return view('users.admin.evaluations.index');
+        $tenantId = auth()->user()->university_id;
+
+        $evaluations = Evaluation::whereHas('creator', function ($query) use ($tenantId) {
+            $query->where('university_id', $tenantId);
+        })->withCount('tokens')->latest()->get();
+
+        $activeEvaluation = $evaluations->where('status', 'active')->first();
+        $scheduledEvaluations = $evaluations->where('status', 'scheduled');
+        $closedEvaluations = $evaluations->where('status', 'closed');
+        $draftEvaluations = $evaluations->where('status', 'draft');
+
+        $activeProgress = [
+            'eligible' => 0,
+            'submitted' => 0,
+            'pending' => 0,
+            'completion_percentage' => 0,
+        ];
+
+        if ($activeEvaluation) {
+            $activeProgress['eligible'] = $activeEvaluation->tokens_count;
+            $activeProgress['submitted'] = $activeEvaluation->tokens()->where('is_used', true)->count();
+            $activeProgress['pending'] = $activeProgress['eligible'] - $activeProgress['submitted'];
+            $activeProgress['completion_percentage'] = $activeProgress['eligible'] > 0
+                ? round(($activeProgress['submitted'] / $activeProgress['eligible']) * 100)
+                : 0;
+        }
+
+        return view('users.admin.evaluations.index', compact(
+            'evaluations',
+            'activeEvaluation',
+            'scheduledEvaluations',
+            'closedEvaluations',
+            'draftEvaluations',
+            'activeProgress'
+        ));
     }
 
     public function newEvaluationStep1(Request $request)
@@ -416,18 +452,9 @@ class AdminController extends Controller
         return view('users.admin.evaluations.step1', compact('evaluationData'));
     }
 
-    public function storeEvaluationStep1(Request $request)
+    public function storeEvaluationStep1(StoreEvaluationRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'semester' => 'required|string|max:255',
-            'evaluation_type' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'is_anonymous' => 'boolean',
-            'allow_faculty_response' => 'boolean',
-            'send_reminder' => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $request->session()->put('evaluation_wizard_step1', $validated);
 
@@ -557,6 +584,11 @@ class AdminController extends Controller
     public function reports()
     {
         return view('users.admin.reports');
+    }
+
+    public function eval()
+    {
+        return view('admin.evaluations.index');
     }
 
     public function newCourse(): View

@@ -17,6 +17,8 @@ class Evaluation extends Model
         'allow_faculty_response',
         'send_reminder',
         'created_by',
+        'activated_at',
+        'closed_at',
     ];
 
     protected $casts = [
@@ -25,6 +27,8 @@ class Evaluation extends Model
         'is_anonymous' => 'boolean',
         'allow_faculty_response' => 'boolean',
         'send_reminder' => 'boolean',
+        'activated_at' => 'datetime',
+        'closed_at' => 'datetime',
     ];
 
     public function creator()
@@ -73,5 +77,30 @@ class Evaluation extends Model
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeScheduled($query)
+    {
+        return $query->where('status', 'scheduled');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
+    }
+
+    public function scopeClosed($query)
+    {
+        return $query->where('status', 'closed');
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->where('status', 'archived');
     }
 }

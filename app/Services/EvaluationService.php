@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\FeedbackToken;
+use App\Models\User;
+use App\Notifications\NewEvaluationScheduledNotification;
 use App\Repositories\EvaluationRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class EvaluationService
 {
@@ -17,8 +20,14 @@ class EvaluationService
 
     public function publishEvaluation(array $data, array $facultyIds, array $courseFacultyMapping): Evaluation
     {
-        return DB::transaction(function () use ($data, $facultyIds, $courseFacultyMapping) {
-            $data['status'] = 'active'; // or 'published' based on flow
+        if (Evaluation::whereIn('status', ['active', 'scheduled'])->exists()) {
+            throw ValidationException::withMessages([
+                'status' => 'Another evaluation cycle is already scheduled or active. Please wait until the current evaluation cycle is completed before creating a new one.',
+            ]);
+        }
+
+        $evaluation = DB::transaction(function () use ($data, $facultyIds, $courseFacultyMapping) {
+            $data['status'] = 'scheduled'; // Scheduler handles transition to active
 
             $evaluation = $this->evaluationRepository->create($data);
 
@@ -49,6 +58,11 @@ class EvaluationService
 
             return $evaluation;
         });
+        
+        // Immediately run the lifecycle processor so that if the evaluation is scheduled for today, it becomes active right away
+        \Illuminate\Support\Facades\Artisan::call('evaluation:process-lifecycle');
+        
+        return $evaluation;
     }
 
     protected function generateTokensForEvaluation(Evaluation $evaluation, array $courseFacultyMapping): void
@@ -56,6 +70,8 @@ class EvaluationService
         // For each course, find enrolled students, and generate a token
         $tokensToInsert = [];
         $now = now();
+        $notifiedStudents = [];
+        $notifiedFaculty = [];
 
         foreach ($courseFacultyMapping as $courseId => $facultyId) {
             if (is_array($facultyId)) {
@@ -67,9 +83,23 @@ class EvaluationService
                 continue;
             }
 
+            // Notify Faculty
+            if ($facultyId && ! in_array($facultyId, $notifiedFaculty)) {
+                $facultyUser = User::find($facultyId);
+                if ($facultyUser) {
+                    $facultyUser->notify(new NewEvaluationScheduledNotification($evaluation, 'faculty'));
+                    $notifiedFaculty[] = $facultyId;
+                }
+            }
+
             $students = $course->users->where('role', 'student');
 
             foreach ($students as $student) {
+                if (! in_array($student->id, $notifiedStudents)) {
+                    $student->notify(new NewEvaluationScheduledNotification($evaluation, 'student'));
+                    $notifiedStudents[] = $student->id;
+                }
+
                 $tokensToInsert[] = [
                     'evaluation_id' => $evaluation->id,
                     'student_id' => $student->id,

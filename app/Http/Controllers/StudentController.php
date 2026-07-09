@@ -18,8 +18,13 @@ class StudentController extends Controller
         $enrolledCourses = $student->courses()->with('faculty')->get();
         $activeCourses = $enrolledCourses->count();
 
-        // Get tokens for the student
-        $allTokens = $student->feedbackTokens()->with(['evaluation', 'course', 'faculty'])->get();
+        // Get tokens for the student but ONLY for active evaluations
+        $allTokens = $student->feedbackTokens()
+            ->whereHas('evaluation', function ($query) {
+                $query->active();
+            })
+            ->with(['evaluation', 'course', 'faculty'])
+            ->get();
 
         $submittedFeedbackCount = $allTokens->where('is_used', true)->count();
         $pendingFeedback = $allTokens->where('is_used', false)->count();
@@ -31,14 +36,18 @@ class StudentController extends Controller
 
         $recentSubmission = $allTokens->where('is_used', true)->sortByDesc('used_at')->first();
 
+        $notifications = $student->notifications()->take(5)->get();
+
         return view('users.student.dashboard', [
             'student' => $student,
             'activeCourses' => $activeCourses,
             'submittedFeedbackCount' => $submittedFeedbackCount,
             'pendingFeedback' => $pendingFeedback,
+            'totalEvaluations' => $totalEvaluations,
             'feedbackRate' => $feedbackRate,
             'pendingEvaluations' => $pendingEvaluations,
             'recentSubmission' => $recentSubmission,
+            'notifications' => $notifications,
         ]);
     }
 
