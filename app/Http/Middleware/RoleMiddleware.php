@@ -32,7 +32,7 @@ class RoleMiddleware
 
         $target = $this->redirectPathForRole($userRole);
 
-        return redirect($target)->with('error', 'You are not authorized to access that page.');
+        return redirect($target)->with('error', 'You are not authorized to access this page.');
     }
 
     protected function redirectPathForRole(string $role): string

@@ -24,7 +24,7 @@ test('student cannot access admin routes', function () {
     $student = User::factory()->create(['role' => 'student']);
     $response = $this->actingAs($student)->get('/admin/dashboard');
     $response->assertRedirect('/student/dashboard');
-    $response->assertSessionHas('error', 'You are not authorized to access that page.');
+    $response->assertSessionHas('error', 'You are not authorized to access this page.');
 });
 
 test('admin can access admin routes', function () {

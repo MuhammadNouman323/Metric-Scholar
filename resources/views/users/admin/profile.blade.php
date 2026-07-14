@@ -1,11 +1,11 @@
-<x-faculty>
+<x-admin>
     <div class="p-6 md:p-10 lg:p-12 pb-24 max-w-[1400px] mx-auto min-h-screen">
 
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
             <div>
-                <h1 class="text-[13px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">Faculty Portal</h1>
-                <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Profile Settings</h2>
+                <h1 class="text-[13px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">Account Management</h1>
+                <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Admin Profile</h2>
             </div>
         </div>
 
@@ -58,7 +58,7 @@
 
                 <div class="relative group mb-6">
                     <div class="w-[180px] h-[180px] rounded-full overflow-hidden border-4 border-gray-50 shadow-md bg-gray-100 flex items-center justify-center">
-                        <img id="avatar-preview" src="{{ $faculty->avatar_url }}" alt="{{ $faculty->name }}"
+                        <img id="avatar-preview" src="{{ $admin->avatar_url }}" alt="{{ $admin->name }}"
                             class="w-full h-full object-cover">
                     </div>
                 </div>
@@ -71,7 +71,7 @@
                         Upload Picture
                     </label>
 
-                    @if($faculty->avatar)
+                    @if($admin->avatar)
                         <button type="button" onclick="document.getElementById('remove-avatar-form').submit();"
                             class="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 text-[13px] font-bold px-6 py-3 rounded-xl hover:bg-red-50 hover:border-red-300 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +95,7 @@
                         Personal Information
                     </h3>
 
-                    <form method="POST" action="{{ route('faculty.profile.update', $faculty) }}" enctype="multipart/form-data" class="space-y-6">
+                    <form method="POST" action="{{ route('admin.profile.update', $admin) }}" enctype="multipart/form-data" class="space-y-6">
                         @csrf
                         @method('PUT')
 
@@ -105,30 +105,23 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Full Name</label>
-                                <input type="text" name="name" value="{{ old('name', $faculty->name) }}"
+                                <input type="text" name="name" value="{{ old('name', $admin->name) }}"
                                     class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                     placeholder="Jane Doe" required>
                             </div>
 
                             <div>
                                 <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Email Address</label>
-                                <input type="email" name="email" value="{{ old('email', $faculty->email) }}"
+                                <input type="email" name="email" value="{{ old('email', $admin->email) }}"
                                     class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                     placeholder="jane.doe@university.edu" required>
                             </div>
 
-                            <div>
+                            <div class="md:col-span-2">
                                 <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Phone Number</label>
-                                <input type="text" name="phone" value="{{ old('phone', $faculty->phone) }}"
+                                <input type="text" name="phone" value="{{ old('phone', $admin->phone) }}"
                                     class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                     placeholder="+1234567890">
-                            </div>
-
-                            <div>
-                                <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Department</label>
-                                <input type="text" value="{{ $faculty->department ?? 'N/A' }}"
-                                    class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-gray-400 font-medium text-sm focus:outline-none cursor-not-allowed"
-                                    disabled readonly>
                             </div>
                         </div>
 
@@ -147,7 +140,7 @@
                         Change Password
                     </h3>
 
-                    <form method="POST" action="{{ route('faculty.profile.password', $faculty) }}" class="space-y-6">
+                    <form method="POST" action="{{ route('admin.profile.password', $admin) }}" class="space-y-6">
                         @csrf
                         @method('PUT')
 
@@ -191,8 +184,8 @@
     </div>
 
     <!-- Hidden Form for Avatar Removal -->
-    @if($faculty->avatar)
-        <form id="remove-avatar-form" action="{{ route('faculty.profile.avatar.remove', $faculty) }}" method="POST" class="hidden">
+    @if($admin->avatar)
+        <form id="remove-avatar-form" action="{{ route('admin.profile.avatar.remove', $admin) }}" method="POST" class="hidden">
             @csrf
         </form>
     @endif
@@ -209,4 +202,4 @@
             }
         }
     </script>
-</x-faculty>
+</x-admin>

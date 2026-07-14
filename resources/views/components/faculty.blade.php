@@ -87,7 +87,7 @@
                     class="flex items-center gap-3 bg-white/80 border border-slate-100 rounded-2xl p-3 mb-3 shadow-sm
                            transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-[#0e48c1]/20
                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
-                    <img src="https://i.pravatar.cc/150?img=60" alt="{{ auth()->user()->name }}"
+                    <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}"
                         class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm bg-slate-200 shrink-0">
                     <div class="flex flex-col min-w-0">
                         <span class="text-[13.5px] font-bold text-slate-900 leading-tight truncate">{{ auth()->user()->name }}</span>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,11 @@ Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name(
 Route::prefix('admin')
     ->middleware(['auth.redirect', 'admin'])
     ->group(function () {
+        Route::put('/profile/password/{user?}', [ProfileController::class, 'updatePassword'])->name('admin.profile.password');
+        Route::post('/profile/avatar/remove/{user?}', [ProfileController::class, 'removeAvatar'])->name('admin.profile.avatar.remove');
+        Route::get('/profile/{user?}', [ProfileController::class, 'showAdminProfile'])->name('admin.profile');
+        Route::put('/profile/{user?}', [ProfileController::class, 'updateProfile'])->name('admin.profile.update');
+
         Route::get('/dashboard', [AdminController::class, 'dashboard']);
         Route::get('/user', [AdminController::class, 'users'])->name('admin.users');
         Route::post('/user', [AdminController::class, 'storeUser'])->name('admin.users.store');
@@ -84,7 +90,10 @@ Route::prefix('faculty')
         Route::get('/dashboard', [FacultyController::class, 'dashboard']);
         Route::get('/feedback', [FacultyController::class, 'feedback']);
         Route::get('/analytics', [FacultyController::class, 'analytics']);
-        Route::get('/profile', [FacultyController::class, 'profile']);
+        Route::put('/profile/password/{user?}', [ProfileController::class, 'updatePassword'])->name('faculty.profile.password');
+        Route::post('/profile/avatar/remove/{user?}', [ProfileController::class, 'removeAvatar'])->name('faculty.profile.avatar.remove');
+        Route::get('/profile/{user?}', [ProfileController::class, 'showFacultyProfile'])->name('faculty.profile');
+        Route::put('/profile/{user?}', [ProfileController::class, 'updateProfile'])->name('faculty.profile.update');
     });
 
 Route::prefix('student')
@@ -96,7 +105,10 @@ Route::prefix('student')
         Route::get('/feedback/{course?}', [StudentController::class, 'feedback'])->name('student.feedback');
         Route::post('/feedback', [StudentController::class, 'storeFeedback'])->name('student.feedback.store');
         Route::get('/feedback-history', [StudentController::class, 'feedbackHistory'])->name('student.feedback.history');
-        Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
+        Route::put('/profile/password/{user?}', [ProfileController::class, 'updatePassword'])->name('student.profile.password');
+        Route::post('/profile/avatar/remove/{user?}', [ProfileController::class, 'removeAvatar'])->name('student.profile.avatar.remove');
+        Route::get('/profile/{user?}', [ProfileController::class, 'showStudentProfile'])->name('student.profile');
+        Route::put('/profile/{user?}', [ProfileController::class, 'updateProfile'])->name('student.profile.update');
         Route::get('/teachers', [StudentController::class, 'teachers'])->name('student.teachers');
     });
 

@@ -168,15 +168,15 @@
                 </a>
 
                 <!-- Profile -->
-                <div class="flex items-center gap-3 bg-white/80 border border-slate-100 rounded-2xl p-3 mb-4 shadow-sm">
-                    <img src="https://i.pravatar.cc/150?img=60" alt="{{ Auth::user()->name }}"
+                <a href="{{ route('admin.profile') }}" class="flex items-center gap-3 bg-white/80 border border-slate-100 rounded-2xl p-3 mb-4 shadow-sm hover:bg-slate-50 transition-colors">
+                    <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}"
                         class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm bg-slate-200 shrink-0">
                     <div class="flex flex-col min-w-0">
                         <span class="text-[13.5px] font-bold text-slate-900 leading-tight truncate">{{ Auth::user()->name }}</span>
                         <span class="text-[11.5px] font-medium text-[#0e48c1] leading-tight">{{ Auth::user()->role }}</span>
                         <span class="text-[11px] font-medium text-slate-400 leading-tight truncate">{{ Auth::user()->email }}</span>
                     </div>
-                </div>
+                </a>
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
