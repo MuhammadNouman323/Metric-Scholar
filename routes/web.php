@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
@@ -80,16 +81,18 @@ Route::prefix('admin')
         Route::post('/evaluations/new/publish', [AdminController::class, 'publishEvaluation'])->name('admin.evaluations.new.publish');
         Route::get('/evaluations/api/faculty-courses', [AdminController::class, 'getFacultyCoursesForEvaluation'])->name('admin.evaluations.api.faculty-courses');
 
-        Route::get('/reports', [AdminController::class, 'reports']);
+        Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
+        Route::get('/reports/print', [ReportController::class, 'print'])->name('admin.reports.print');
+        Route::get('/reports/export/{format}', [ReportController::class, 'export'])->name('admin.reports.export');
         Route::get('/moderation', [AdminController::class, 'moderation'])->name('admin.moderation');
     });
 
 Route::prefix('faculty')
     ->middleware(['auth.redirect', 'faculty'])
     ->group(function () {
-        Route::get('/dashboard', [FacultyController::class, 'dashboard']);
-        Route::get('/feedback', [FacultyController::class, 'feedback']);
-        Route::get('/analytics', [FacultyController::class, 'analytics']);
+        Route::get('/dashboard', [FacultyController::class, 'dashboard'])->name('faculty.dashboard');
+        Route::get('/feedback', [FacultyController::class, 'feedback'])->name('faculty.feedback');
+        Route::get('/analytics', [FacultyController::class, 'analytics'])->name('faculty.analytics');
         Route::put('/profile/password/{user?}', [ProfileController::class, 'updatePassword'])->name('faculty.profile.password');
         Route::post('/profile/avatar/remove/{user?}', [ProfileController::class, 'removeAvatar'])->name('faculty.profile.avatar.remove');
         Route::get('/profile/{user?}', [ProfileController::class, 'showFacultyProfile'])->name('faculty.profile');

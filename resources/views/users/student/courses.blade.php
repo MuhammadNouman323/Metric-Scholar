@@ -85,8 +85,11 @@
                         <div class="flex items-start justify-between">
                             <span
                                 class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full uppercase tracking-wide">{{ $course->department ?? 'General' }}</span>
-                            <img src="https://i.pravatar.cc/40?img={{ rand(0, 70) }}"
-                                alt="{{ $course->title }}"
+                            @php
+                                $instructor = $course->faculty->first();
+                            @endphp
+                            <img src="{{ $instructor ? $instructor->avatar_url : 'https://ui-avatars.com/api/?name=TBA&background=0e48c1&color=fff' }}"
+                                alt="{{ $instructor ? $instructor->name : 'TBA' }}"
                                 class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
                         </div>
                         <div class="flex-1">

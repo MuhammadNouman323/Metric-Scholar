@@ -16,6 +16,12 @@ class Course extends Model
         'department',
     ];
 
+    public function evaluations(): BelongsToMany
+    {
+        return $this->belongsToMany(Evaluation::class, 'evaluation_courses', 'course_id', 'evaluation_id')
+            ->withPivot('faculty_id');
+    }
+
     public function faculty(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withPivot('term')->withTimestamps();

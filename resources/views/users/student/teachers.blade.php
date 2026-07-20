@@ -21,7 +21,7 @@
                 </div>
                 <div class="flex items-center -space-x-3">
                     @foreach($teachers->take(4) as $index => $t)
-                        <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" src="https://i.pravatar.cc/100?img={{ $t->id + 10 }}" alt="{{ $t->name }}">
+                        <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" src="{{ $t->avatar_url }}" alt="{{ $t->name }}">
                     @endforeach
                     @if($teachers->count() > 4)
                         <div class="w-10 h-10 rounded-full border-2 border-white bg-gray-100 shadow-sm flex items-center justify-center text-[12px] font-bold text-gray-600 z-10">
@@ -52,7 +52,7 @@
                     <!-- Image Header -->
                     <div class="relative h-48 w-full overflow-hidden bg-gray-100">
                         <!-- Abstract background if no profile picture, you can integrate real image field later -->
-                        <img src="https://i.pravatar.cc/500?img={{ $teacher->id + 40 }}" alt="{{ $teacher->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="{{ $teacher->avatar_url }}" alt="{{ $teacher->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         <div class="absolute top-4 left-4">
                             <span class="bg-white/90 backdrop-blur-sm text-[#0e48c1] text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
                                 {{ $department }}

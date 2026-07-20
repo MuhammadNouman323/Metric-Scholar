@@ -69,15 +69,11 @@
                     </div>
                 </div>
                 <div class="flex items-baseline gap-2 mb-2">
-                    <span class="text-[40px] font-bold text-gray-900 tracking-tight leading-none">4.8</span>
+                    <span class="text-[40px] font-bold text-gray-900 tracking-tight leading-none">{{ number_format($avgRating, 1) }}</span>
                     <span class="text-[18px] font-bold text-gray-300">/ 5.0</span>
                 </div>
-                <div class="flex items-center gap-1.5 text-[13px] font-semibold text-emerald-600 mt-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                    </svg>
-                    0.4 vs Last Semester
+                <div class="flex items-center gap-1.5 text-[13px] font-semibold text-gray-400 mt-1">
+                    Based on student evaluations
                 </div>
             </div>
 
@@ -94,13 +90,13 @@
                         </svg>
                     </div>
                 </div>
-                <div class="text-[40px] font-bold text-gray-900 tracking-tight leading-none mb-2">1,248</div>
+                <div class="text-[40px] font-bold text-gray-900 tracking-tight leading-none mb-2">{{ number_format($totalResponsesCount) }}</div>
                 <div class="flex items-center gap-1.5 text-[13px] font-semibold text-gray-400 mt-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    Across 4 Active Courses
+                    Across {{ $coursesCount }} {{ Str::plural('Course', $coursesCount) }}
                 </div>
             </div>
 
@@ -116,9 +112,9 @@
                         </svg>
                     </div>
                 </div>
-                <div class="text-[40px] font-bold text-gray-900 tracking-tight leading-none mb-3">92.4%</div>
+                <div class="text-[40px] font-bold text-gray-900 tracking-tight leading-none mb-3">{{ number_format($completionRate, 1) }}%</div>
                 <div class="w-full bg-[#f1f5f9] rounded-full h-2">
-                    <div class="bg-[#0e48c1] h-2 rounded-full" style="width: 92.4%"></div>
+                    <div class="bg-[#0e48c1] h-2 rounded-full" style="width: {{ $completionRate }}%"></div>
                 </div>
             </div>
         </div>
@@ -140,44 +136,44 @@
                     <div>
                         <div class="flex justify-between text-[13px] font-semibold text-gray-600 mb-2">
                             <span>Course Clarity</span>
-                            <span class="text-[#0e48c1] font-bold">4.9</span>
+                            <span class="text-[#0e48c1] font-bold">{{ number_format($criteriaStats['clarity'], 1) }}</span>
                         </div>
                         <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
                             <div class="bg-[#0e48c1] h-2.5 rounded-full shadow-sm shadow-blue-500/20"
-                                style="width: 98%"></div>
+                                style="width: {{ $criteriaStats['clarity'] > 0 ? ($criteriaStats['clarity'] / 5.0) * 100 : 0 }}%"></div>
                         </div>
                     </div>
                     <!-- Student Support -->
                     <div>
                         <div class="flex justify-between text-[13px] font-semibold text-gray-600 mb-2">
                             <span>Student Support</span>
-                            <span class="text-[#0e48c1] font-bold">4.7</span>
+                            <span class="text-[#0e48c1] font-bold">{{ number_format($criteriaStats['responsiveness'], 1) }}</span>
                         </div>
                         <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
                             <div class="bg-[#0e48c1] h-2.5 rounded-full shadow-sm shadow-blue-500/20"
-                                style="width: 94%"></div>
+                                style="width: {{ $criteriaStats['responsiveness'] > 0 ? ($criteriaStats['responsiveness'] / 5.0) * 100 : 0 }}%"></div>
                         </div>
                     </div>
                     <!-- Punctuality -->
                     <div>
                         <div class="flex justify-between text-[13px] font-semibold text-gray-600 mb-2">
-                            <span>Punctuality</span>
-                            <span class="text-[#0e48c1] font-bold">4.4</span>
+                            <span>Organization & Punctuality</span>
+                            <span class="text-[#0e48c1] font-bold">{{ number_format($criteriaStats['organization'], 1) }}</span>
                         </div>
                         <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
                             <div class="bg-[#0e48c1] h-2.5 rounded-full shadow-sm shadow-blue-500/20"
-                                style="width: 88%"></div>
+                                style="width: {{ $criteriaStats['organization'] > 0 ? ($criteriaStats['organization'] / 5.0) * 100 : 0 }}%"></div>
                         </div>
                     </div>
                     <!-- Material Quality -->
                     <div>
                         <div class="flex justify-between text-[13px] font-semibold text-gray-600 mb-2">
                             <span>Material Quality</span>
-                            <span class="text-[#0e48c1] font-bold">4.6</span>
+                            <span class="text-[#0e48c1] font-bold">{{ number_format($criteriaStats['materials'], 1) }}</span>
                         </div>
                         <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
                             <div class="bg-[#0e48c1] h-2.5 rounded-full shadow-sm shadow-blue-500/20"
-                                style="width: 92%"></div>
+                                style="width: {{ $criteriaStats['materials'] > 0 ? ($criteriaStats['materials'] / 5.0) * 100 : 0 }}%"></div>
                         </div>
                     </div>
                 </div>
@@ -187,8 +183,7 @@
             <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                 <div class="flex justify-between items-center mb-7">
                     <h3 class="text-[19px] font-bold text-gray-900">Historical Trend</h3>
-                    <span class="text-[12px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">Last 4
-                        Semesters</span>
+                    <span class="text-[12px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">Last Semesters</span>
                 </div>
 
                 <!-- SVG Line Chart -->
@@ -203,31 +198,34 @@
                             stroke-width="1.5" stroke-dasharray="4 4" />
 
                         <!-- Trend Line -->
-                        <path d="M 30 155 Q 170 130 310 110 T 570 35" stroke="#0e48c1" stroke-width="3.5"
-                            fill="none" stroke-linecap="round" />
+                        @if(count($svgPoints) > 1)
+                            @php
+                                $pathD = "";
+                                foreach($svgPoints as $index => $pt) {
+                                    $pathD .= ($index === 0 ? "M " : " L ") . $pt['x'] . " " . $pt['y'];
+                                }
+                            @endphp
+                            <path d="{{ $pathD }}" stroke="#0e48c1" stroke-width="3.5"
+                                fill="none" stroke-linecap="round" />
+                        @endif
 
                         <!-- Data Points -->
-                        <circle cx="30" cy="155" r="5" fill="white" stroke="#0e48c1"
-                            stroke-width="2.5" />
-                        <circle cx="210" cy="128" r="5" fill="white" stroke="#0e48c1"
-                            stroke-width="2.5" />
-                        <circle cx="390" cy="100" r="5" fill="white" stroke="#0e48c1"
-                            stroke-width="2.5" />
-                        <circle cx="570" cy="35" r="7" fill="#0e48c1" stroke="white"
-                            stroke-width="2.5" />
+                        @foreach($svgPoints as $pt)
+                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="5" fill="white" stroke="#0e48c1"
+                                stroke-width="2.5" />
+                        @endforeach
                     </svg>
                 </div>
 
                 <!-- X Axis Labels -->
                 <div class="flex justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                    <span>Fall '22</span>
-                    <span>Spring '23</span>
-                    <span>Fall '23</span>
-                    <span class="text-[#0e48c1]">Spring '24</span>
+                    @foreach($svgPoints as $pt)
+                        <span>{{ $pt['semester'] }}</span>
+                    @endforeach
                 </div>
 
                 <p class="text-[13px] text-gray-500 font-medium mt-5 italic border-t border-gray-50 pt-4">
-                    "Performance metrics show a significant upward trend since the introduction of interactive labs."
+                    "Performance metrics show progress as feedback is incorporated semester over semester."
                 </p>
             </div>
         </div>
@@ -240,7 +238,7 @@
                     <p class="text-[13.5px] text-gray-500 font-medium mt-0.5">Recent anonymous highlights from verified
                         course evaluations</p>
                 </div>
-                <a href="#"
+                <a href="{{ route('faculty.feedback') }}"
                     class="text-[13px] font-bold text-[#0e48c1] hover:underline whitespace-nowrap flex items-center gap-1">
                     View All Comments
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,89 +249,31 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-7">
-                <!-- Comment 1 -->
+                @forelse($recentComments as $comment)
                 <div class="bg-[#f8fafc] rounded-2xl p-6 border border-gray-100">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
-                            <div
-                                class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-[12px] font-bold">
-                                99</div>
                             <div class="flex text-amber-400">
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
+                                @for($i = 1; $i <= 5; $i++)
+                                    <svg class="w-3.5 h-3.5 {{ $i <= $comment['rating'] ? 'fill-current' : 'text-gray-300 fill-current' }}" viewBox="0 0 20 20">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                @endfor
                             </div>
                         </div>
-                        <span class="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">CS-402</span>
+                        <span class="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{{ $comment['course'] }}</span>
                     </div>
                     <p class="text-[14px] text-gray-700 leading-relaxed mb-4">
-                        "Professor Vance explains complex algorithms in a way that just clicks. The real-world examples
-                        in the 'Cloud Scalability' module were game-changing for my understanding."
+                        "{{ $comment['text'] }}"
                     </p>
-                    <p class="text-[12px] text-gray-400 font-medium">— 3 days ago</p>
+                    <p class="text-[12px] text-gray-400 font-medium">— {{ $comment['date'] }}</p>
                 </div>
-
-                <!-- Comment 2 -->
-                <div class="bg-[#f8fafc] rounded-2xl p-6 border border-gray-100">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-[#0e48c1]">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
-                                    </path>
-                                </svg>
-                            </div>
-                            <div class="flex text-amber-400">
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                <svg class="w-3.5 h-3.5 text-gray-300 fill-current" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <span
-                            class="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">MATH-201</span>
-                    </div>
-                    <p class="text-[14px] text-gray-700 leading-relaxed mb-4">
-                        "Extremely responsive during office hours. I felt supported throughout the difficult final
-                        project. Sometimes the lab feedback can be a bit delayed, but always detailed."
-                    </p>
-                    <p class="text-[12px] text-gray-400 font-medium">— 1 week ago</p>
+                @empty
+                <div class="col-span-2 bg-[#f8fafc] rounded-2xl p-8 border border-gray-100 text-center">
+                    <p class="text-[15px] text-gray-500 font-medium">No written comments have been submitted yet.</p>
                 </div>
+                @endforelse
             </div>
         </div>
 

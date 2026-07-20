@@ -32,7 +32,7 @@
         @endif
 
         {{-- All caught up state --}}
-        @if ($pendingTokens->isEmpty() && !$course)
+        @if ($pendingTokens->isEmpty() && !$course && $notYetAvailableTokens->isEmpty())
             <div class="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <div
                     class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-[#0e48c1]">
@@ -46,6 +46,42 @@
                 <a href="{{ route('student.feedback.history') }}"
                     class="inline-block mt-6 text-[#0e48c1] font-semibold hover:underline">View Evaluation History
                     →</a>
+            </div>
+
+        {{-- Evaluations exist but none have started yet --}}
+        @elseif ($pendingTokens->isEmpty() && !$course && $notYetAvailableTokens->isNotEmpty())
+            <div class="text-center py-16 bg-white rounded-2xl border border-amber-100 shadow-sm px-6">
+                <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-500">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900 mb-2">Evaluations Not Open Yet</h2>
+                <p class="text-gray-500 max-w-md mx-auto">
+                    You have {{ $notYetAvailableTokens->count() }} upcoming
+                    {{ Str::plural('evaluation', $notYetAvailableTokens->count()) }} scheduled, but
+                    {{ $notYetAvailableTokens->count() === 1 ? 'it hasn\'t' : 'they haven\'t' }} started yet.
+                </p>
+
+                {{-- List upcoming evaluations --}}
+                <div class="mt-6 max-w-sm mx-auto space-y-3 text-left">
+                    @foreach ($notYetAvailableTokens as $token)
+                        <div class="flex items-center justify-between bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">{{ $token->course?->code }} — {{ $token->course?->title }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ $token->evaluation?->title }}</p>
+                            </div>
+                            <div class="text-right shrink-0 ml-3">
+                                <p class="text-[11px] font-bold text-amber-600 uppercase tracking-wide">Opens</p>
+                                <p class="text-xs font-semibold text-gray-700">{{ $token->evaluation?->start_date?->format('M j, Y') }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <a href="{{ route('student.feedback.history') }}"
+                    class="inline-block mt-8 text-[#0e48c1] font-semibold hover:underline">View Evaluation History →</a>
             </div>
 
         {{-- Already submitted state --}}

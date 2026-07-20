@@ -144,7 +144,7 @@
                                 <td class="px-6 py-6 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
                                         <img class="w-10 h-10 rounded-full border-2 border-gray-200 object-cover shadow-sm"
-                                            src="https://i.pravatar.cc/150?img={{ rand(0, 70) }}" alt="{{ $student->name }}">
+                                            src="{{ $student->avatar_url }}" alt="{{ $student->name }}">
                                         <span
                                             class="text-[14px] font-bold text-gray-900 group-hover:text-[#0e48c1] transition-colors cursor-pointer">{{ $student->name }}</span>
                                     </div>

@@ -158,7 +158,7 @@
                             <!-- User Card -->
                             <div class="flex gap-4 items-center">
                                 <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
-                                    src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random"
+                                    src="{{ $user->avatar_url }}"
                                     alt="{{ $user->name }}">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-[14px] font-bold text-gray-900 truncate">{{ $user->name }}</p>

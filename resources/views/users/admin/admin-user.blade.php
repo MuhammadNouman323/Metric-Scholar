@@ -141,7 +141,7 @@
                         @forelse ($recentUsers as $recentUser)
                             <div class="flex gap-4 items-center">
                                 <img class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover bg-gray-50"
-                                    src="https://i.pravatar.cc/150?u={{ urlencode($recentUser->email) }}"
+                                    src="{{ $recentUser->avatar_url }}"
                                     alt="{{ $recentUser->name }}">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-[14px] font-bold text-gray-900 truncate">{{ $recentUser->name }}</p>

@@ -195,6 +195,22 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto relative z-10 w-full">
+            <!-- Mobile Header -->
+            <div class="flex md:hidden items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-slate-100/80 sticky top-0 z-30">
+                <a href="/admin/dashboard" class="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-lg">
+                    <div class="w-8 h-8 bg-gradient-to-br from-[#0e48c1] to-[#3d6ae8] rounded-lg flex items-center justify-center text-white shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z" />
+                        </svg>
+                    </div>
+                    <span class="font-bold text-[15px] text-slate-900 tracking-tight">Scholar Metric</span>
+                </a>
+                <a href="{{ route('admin.profile') }}" class="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-full">
+                    <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}"
+                        class="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm bg-slate-200">
+                </a>
+            </div>
+
             <div class="min-h-full">
                 {{ $slot }}
             </div>

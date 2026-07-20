@@ -14,6 +14,7 @@ use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SessionExpiredMiddleware;
 use App\Http\Middleware\StudentEnrollmentMiddleware;
 use App\Http\Middleware\StudentMiddleware;
+use App\Http\Middleware\UpdateEvaluationStatuses;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -26,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            UpdateEvaluationStatuses::class,
+        ]);
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'admin' => AdminMiddleware::class,

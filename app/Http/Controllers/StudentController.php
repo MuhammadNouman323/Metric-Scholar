@@ -72,9 +72,28 @@ class StudentController extends Controller
     public function feedback(Request $request, ?Course $course = null)
     {
         $student = auth()->user();
-        $pendingTokens = $student->feedbackTokens()->with(['evaluation', 'course', 'faculty'])->where('is_used', false)->get();
 
-        // Find the specific token to use
+        // All unused tokens regardless of date (needed for sidebar counts)
+        $allPendingTokens = $student->feedbackTokens()
+            ->with(['evaluation', 'course', 'faculty'])
+            ->where('is_used', false)
+            ->get();
+
+        // Only tokens whose evaluation has started (start_date <= today)
+        $pendingTokens = $allPendingTokens->filter(function ($token) {
+            $startDate = $token->evaluation?->start_date;
+
+            return $startDate === null || $startDate->lte(now()->startOfDay());
+        })->values();
+
+        // Tokens whose evaluation hasn't started yet
+        $notYetAvailableTokens = $allPendingTokens->filter(function ($token) {
+            $startDate = $token->evaluation?->start_date;
+
+            return $startDate !== null && $startDate->gt(now()->startOfDay());
+        })->values();
+
+        // Find the specific token to use (only from date-valid tokens)
         $activeToken = null;
         if ($request->has('token')) {
             $activeToken = $pendingTokens->firstWhere('token', $request->query('token'));
@@ -105,6 +124,7 @@ class StudentController extends Controller
             'course' => $courseModel,
             'instructor' => $instructor,
             'pendingTokens' => $pendingTokens,
+            'notYetAvailableTokens' => $notYetAvailableTokens,
             'activeToken' => $activeToken,
             'hasSubmitted' => $hasSubmitted,
             'avgRating' => $avgRating,
@@ -139,6 +159,20 @@ class StudentController extends Controller
             }
 
             return back()->withErrors(['token' => 'Invalid or already used evaluation token.']);
+        }
+
+        // Guard: reject submission if evaluation hasn't started yet
+        $evaluation = $tokenModel->evaluation;
+        if ($evaluation && $evaluation->start_date && $evaluation->start_date->gt(now()->startOfDay())) {
+            $opensOn = $evaluation->start_date->format('F j, Y');
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "This evaluation is not open yet. It opens on {$opensOn}.",
+                ], 403);
+            }
+
+            return back()->withErrors(['token' => "This evaluation is not open yet. It opens on {$opensOn}."]);
         }
 
         // Moderate written comments before persisting
