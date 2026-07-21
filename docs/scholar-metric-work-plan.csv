@@ -1,0 +1,41 @@
+ID,Name,Outline Level,Duration,Predecessors,Resource Names,Notes
+1,Project Initiation & Planning,1,5 days,,Project Manager,
+1.1,Requirements gathering & scope definition,2,3 days,,Business Analyst;Project Manager,Define FR/NFR and stakeholder roles
+1.2,Tech stack selection (Laravel 13 Tailwind Gemini),2,2 days,1.1,Solution Architect,Confirm PHP 8.3+ MySQL Vite 8
+2,Phase 1: Foundation,1,10 days,1,Development Team,
+2.1,Laravel setup DB config Vite Tailwind,2,3 days,1.2,Backend Developer,composer install npm install migrations
+2.2,User model auth role middleware,2,4 days,2.1,Backend Developer,Admin Faculty Student middleware
+2.3,Admin registration university multi-tenancy,2,3 days,2.2,Backend Developer,University firstOrCreate from email domain
+2.4,Auth and role tests (Pest),2,2 days,2.3,QA Engineer,LoginTest RegisterTest RoleMiddlewareTest
+3,Phase 2: Academic Management,1,12 days,2,Development Team,
+3.1,Course model and CRUD,2,3 days,2.4,Backend Developer,Courses table and admin views
+3.2,Faculty-course and student-course pivots,2,4 days,3.1,Backend Developer,course_user pivot with term
+3.3,Department management UI,2,4 days,3.2,Full-Stack Developer,Department list detail manage enrollment
+3.4,Admin user management and recovery,2,3 days,3.2,Backend Developer,CRUD toggle status temp password
+3.5,Admin users and profile tests,2,2 days,3.4,QA Engineer,AdminUsersTest ProfileManagementTest
+4,Phase 3: Evaluation Engine,1,15 days,3,Development Team,
+4.1,Evaluation model and pivot tables,2,4 days,3.5,Backend Developer,evaluations evaluation_faculty evaluation_courses
+4.2,3-step evaluation wizard UI,2,5 days,4.1,Full-Stack Developer,Step1 Step2 Step3 publish flow
+4.3,Token generation FeedbackToken model,2,3 days,4.2,Backend Developer,UUID tokens per student course faculty
+4.4,Lifecycle command events notifications,2,4 days,4.3,Backend Developer,ProcessEvaluationsLifecycle daily scheduler
+4.5,Evaluation and lifecycle tests,2,3 days,4.4,QA Engineer,EvaluationTest FacultyDashboardTest
+5,Phase 4: Feedback and Anonymity,1,12 days,4,Development Team,
+5.1,Feedback and FeedbackAnswer models,2,4 days,4.5,Backend Developer,feedbacks feedback_answers tables
+5.2,Student feedback form and submission flow,2,5 days,5.1,Full-Stack Developer,Rating dimensions and text fields
+5.3,Gemini moderation service and fallback,2,4 days,5.2,Backend Developer,GeminiModerationService local filter
+5.4,Faculty dashboard and feedback views,2,4 days,5.2,Full-Stack Developer,Metrics trends comments list
+5.5,Feedback submission tests,2,2 days,5.3,QA Engineer,Anonymous submission token validation
+6,Phase 5: Reporting and Admin Analytics,1,10 days,5,Development Team,
+6.1,ReportService seven report types,2,5 days,5.5,Backend Developer,Faculty course department evaluation moderation
+6.2,Reports UI print view CSV Excel export,2,4 days,6.1,Full-Stack Developer,ReportController export formats
+6.3,Moderation log admin page,2,2 days,6.1,Full-Stack Developer,Admin moderation review UI
+6.4,Reports and export tests,2,2 days,6.2,QA Engineer,AdminReportsTest
+7,Phase 6: Polish and Deployment,1,8 days,6,Development Team,
+7.1,Profile management avatar password,2,3 days,6.4,Full-Stack Developer,ProfileController all roles
+7.2,UI UX refinement Tailwind layouts,2,3 days,7.1,Frontend Developer,Admin faculty student layouts
+7.3,Security review middleware hardening,2,2 days,7.1,Solution Architect,Review auth and anonymity
+7.4,UAT with university stakeholders,2,5 days,"7.2;7.3",Project Manager;QA Engineer,Acceptance against FR list
+7.5,Production deployment and handover,2,3 days,7.4,DevOps Engineer,Env config queue scheduler backup
+8,Project Closure,1,3 days,7,Project Manager,
+8.1,Final demo and handover,2,2 days,7.5,All Team Members,Deliver training and admin guide
+8.2,Post-launch support plan,2,1 days,8.1,Project Manager,Define SLA and maintenance window

@@ -130,3 +130,187 @@ test('student can submit anonymous feedback using token', function () {
         'rating' => 5,
     ]);
 });
+
+test('admin can view edit form for scheduled evaluation', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $evaluation = Evaluation::create([
+        'title' => 'Spring 2025 Eval',
+        'semester' => 'Spring 2025',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('admin.evaluations.edit', $evaluation));
+
+    $response->assertOk();
+    $response->assertSee('Spring 2025 Eval');
+    $response->assertSee('Edit Scheduled Evaluation');
+});
+
+test('admin cannot edit non-scheduled evaluation', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Active Eval',
+        'semester' => 'Fall 2024',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now(),
+        'end_date' => now()->addDays(7),
+        'status' => 'active',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('admin.evaluations.edit', $evaluation));
+
+    $response->assertNotFound();
+});
+
+test('admin cannot edit draft evaluation', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Draft Eval',
+        'semester' => 'Spring 2025',
+        'evaluation_type' => 'Annual',
+        'start_date' => now()->addDays(30),
+        'end_date' => now()->addDays(37),
+        'status' => 'draft',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('admin.evaluations.edit', $evaluation));
+
+    $response->assertNotFound();
+});
+
+test('admin cannot edit closed evaluation', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Closed Eval',
+        'semester' => 'Fall 2024',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->subDays(14),
+        'end_date' => now()->subDays(7),
+        'status' => 'closed',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('admin.evaluations.edit', $evaluation));
+
+    $response->assertNotFound();
+});
+
+test('admin can update scheduled evaluation', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Original Title',
+        'semester' => 'Fall 2024',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'is_anonymous' => true,
+        'send_reminder' => true,
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->put(route('admin.evaluations.update', $evaluation), [
+        'title' => 'Updated Title',
+        'semester' => 'Spring 2025',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->addDays(20)->toDateString(),
+        'end_date' => now()->addDays(27)->toDateString(),
+        'is_anonymous' => '1',
+        'allow_faculty_response' => '1',
+        'send_reminder' => '0',
+    ]);
+
+    $response->assertRedirect(route('admin.evaluations'));
+    $response->assertSessionHas('success', 'Scheduled evaluation updated successfully.');
+
+    $evaluation->refresh();
+
+    expect($evaluation->title)->toBe('Updated Title');
+    expect($evaluation->semester)->toBe('Spring 2025');
+    expect($evaluation->evaluation_type)->toBe('Final');
+    expect($evaluation->is_anonymous)->toBeTrue();
+    expect($evaluation->allow_faculty_response)->toBeTrue();
+    expect($evaluation->send_reminder)->toBeFalse();
+});
+
+test('admin cannot update scheduled evaluation with invalid data', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Existing Eval',
+        'semester' => 'Fall 2024',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->put(route('admin.evaluations.update', $evaluation), [
+        'title' => '',
+        'semester' => '',
+        'evaluation_type' => '',
+        'start_date' => '',
+        'end_date' => '',
+    ]);
+
+    $response->assertSessionHasErrors(['title', 'semester', 'evaluation_type', 'start_date', 'end_date']);
+});
+
+test('non-admin user cannot edit scheduled evaluation', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Scheduled Eval',
+        'semester' => 'Spring 2025',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $faculty = User::factory()->create(['role' => 'faculty']);
+
+    $response = $this->actingAs($faculty)->get(route('admin.evaluations.edit', $evaluation));
+
+    $response->assertRedirect();
+    $this->assertDatabaseMissing('evaluations', [
+        'id' => $evaluation->id,
+        'status' => 'draft',
+    ]);
+});
+
+test('admin cannot update scheduled evaluation to invalid date range', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Eval',
+        'semester' => 'Fall 2024',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->put(route('admin.evaluations.update', $evaluation), [
+        'title' => 'Updated',
+        'semester' => 'Spring 2025',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->addDays(27)->toDateString(),
+        'end_date' => now()->addDays(20)->toDateString(),
+    ]);
+
+    $response->assertSessionHasErrors(['end_date']);
+});

@@ -1,0 +1,155 @@
+@startuml ScholarMetric_ClassDiagram
+skinparam classAttributeIconSize 0
+title Scholar Metric — Class Diagram
+
+package "Models" {
+  class User {
+    +id: bigint
+    +name: string
+    +email: string
+    +role: string
+    +university_id: bigint
+    +university(): BelongsTo
+    +courses(): BelongsToMany
+    +feedbackTokens(): HasMany
+    +evaluations(): BelongsToMany
+    +isAdmin(): bool
+    +isFaculty(): bool
+    +isStudent(): bool
+  }
+
+  class University {
+    +id: bigint
+    +name: string
+    +domain: string
+    +users(): HasMany
+  }
+
+  class Course {
+    +id: bigint
+    +title: string
+    +code: string
+    +semester: string
+    +users(): BelongsToMany
+    +evaluations(): BelongsToMany
+    +feedbacks(): HasMany
+  }
+
+  class Evaluation {
+    +title: string
+    +status: string
+    +start_date: date
+    +end_date: date
+    +faculty(): BelongsToMany
+    +courses(): BelongsToMany
+    +tokens(): HasMany
+    +feedbacks(): HasMany
+    +scopeActive()
+    +scopeScheduled()
+  }
+
+  class FeedbackToken {
+    +token: uuid
+    +is_used: bool
+    +evaluation(): BelongsTo
+    +student(): BelongsTo
+    +faculty(): BelongsTo
+    +course(): BelongsTo
+  }
+
+  class Feedback {
+    +evaluation_id: bigint
+    +faculty_id: bigint
+    +course_id: bigint
+    +answers(): HasMany
+  }
+
+  class FeedbackAnswer {
+    +question_id: string
+    +rating: decimal
+    +text_answer: text
+    +moderation_status: string
+    +toxicity_score: decimal
+  }
+}
+
+package "Services" {
+  class EvaluationService {
+    -evaluationRepository: EvaluationRepository
+    +publishEvaluation(): Evaluation
+    -generateTokensForEvaluation(): void
+  }
+
+  class ReportService {
+    +getSummaryStats(): array
+    +getChartData(): array
+    +exportReport(): mixed
+  }
+
+  class GeminiModerationService {
+    +moderate(comment: string): array
+    -localModerate(comment: string): array
+  }
+}
+
+package "Repositories" {
+  class EvaluationRepository {
+    +create(): Evaluation
+    +attachFaculty(): void
+    +attachCourses(): void
+  }
+
+  class FeedbackRepository {
+    +findToken(): FeedbackToken
+    +markTokenAsUsed(): void
+    +saveFeedback(): Feedback
+  }
+}
+
+package "Controllers" {
+  class AuthController {
+    +login(): RedirectResponse
+    +register(): RedirectResponse
+    +logout(): RedirectResponse
+  }
+
+  class AdminController {
+    +dashboard()
+    +evaluations()
+    +publishEvaluation()
+  }
+
+  class StudentController {
+    +dashboard()
+    +storeFeedback()
+  }
+
+  class FacultyController {
+    +dashboard()
+    +feedback()
+  }
+
+  class ReportController {
+    +index()
+    +export()
+  }
+}
+
+User "1" --> "0..*" University
+User "0..*" -- "0..*" Course : course_user
+Evaluation "0..*" -- "0..*" User : evaluation_faculty
+Evaluation "0..*" -- "0..*" Course : evaluation_courses
+Evaluation "1" --> "0..*" FeedbackToken
+Evaluation "1" --> "0..*" Feedback
+Feedback "1" --> "0..*" FeedbackAnswer
+FeedbackToken --> User : student
+FeedbackToken --> User : faculty
+FeedbackToken --> Course
+
+AdminController --> EvaluationService
+StudentController --> FeedbackRepository
+StudentController --> GeminiModerationService
+ReportController --> ReportService
+EvaluationService --> EvaluationRepository
+
+@enduml

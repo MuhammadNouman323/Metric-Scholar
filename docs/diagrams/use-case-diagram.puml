@@ -1,0 +1,64 @@
+@startuml ScholarMetric_UseCaseDiagram
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Scholar Metric — Use Case Diagram
+
+actor "Administrator" as Admin
+actor "Faculty" as Faculty
+actor "Student" as Student
+actor "System Scheduler" as System
+actor "Gemini AI" as Gemini
+
+rectangle "Scholar Metric System" {
+  usecase "Register University Admin" as UC1
+  usecase "Manage Users" as UC2
+  usecase "Manage Courses & Enrollments" as UC3
+  usecase "Manage Departments" as UC4
+  usecase "Create & Publish Evaluation" as UC5
+  usecase "View Reports & Export" as UC6
+  usecase "Review Moderation Log" as UC7
+  usecase "Login / Logout" as UC8
+  usecase "Manage Profile" as UC9
+  usecase "View Dashboard & Metrics" as UC10
+  usecase "View Feedback Results" as UC11
+  usecase "View Pending Evaluations" as UC12
+  usecase "Submit Anonymous Feedback" as UC13
+  usecase "Process Evaluation Lifecycle" as UC14
+  usecase "Generate Feedback Tokens" as UC15
+  usecase "Send Notifications" as UC16
+  usecase "Moderate Comments" as UC17
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+
+Faculty --> UC8
+Faculty --> UC9
+Faculty --> UC10
+Faculty --> UC11
+
+Student --> UC8
+Student --> UC9
+Student --> UC10
+Student --> UC12
+Student --> UC13
+
+System --> UC14
+System --> UC15
+System --> UC16
+
+UC5 ..> UC15 : <<include>>
+UC14 ..> UC16 : <<include>>
+UC13 ..> UC17 : <<include>>
+Gemini --> UC17
+
+@enduml

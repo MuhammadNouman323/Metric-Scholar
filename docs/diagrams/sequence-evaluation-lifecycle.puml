@@ -1,0 +1,39 @@
+@startuml ScholarMetric_Sequence_EvaluationLifecycle
+title Sequence Diagram — Evaluation Lifecycle Processing
+
+participant "UpdateEvaluationStatuses\n(Middleware)" as MW
+participant "ProcessEvaluationsLifecycle\n(Artisan Command)" as CMD
+database "Database" as DB
+participant "Events" as EV
+participant "Listeners" as L
+participant "Notifications" as N
+
+MW -> CMD : Trigger on each web request
+note over CMD
+  Also scheduled daily via routes/console.php
+end note
+
+CMD -> DB : SELECT active evaluations WHERE end_date < today
+loop Each expired active evaluation
+  CMD -> DB : UPDATE status=closed, closed_at=now()
+  CMD -> EV : fire EvaluationClosed
+  EV -> L : SendEvaluationClosedNotifications
+  L -> N : EvaluationClosedNotification (database channel)
+end
+
+CMD -> DB : Check if any evaluation is active
+alt No active evaluation
+  CMD -> DB : SELECT scheduled WHERE start_date <= today LIMIT 1
+  alt Eligible scheduled evaluation found
+    CMD -> DB : UPDATE status=active, activated_at=now()
+    CMD -> EV : fire EvaluationActivated
+    EV -> L : SendEvaluationActivatedNotifications
+    L -> N : EvaluationAvailableNotification
+  else None eligible
+    CMD -> CMD : Log: no scheduled evaluations
+  end
+else Active evaluation exists
+  CMD -> CMD : Skip activation (single-active rule)
+end
+
+@enduml

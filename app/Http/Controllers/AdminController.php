@@ -581,6 +581,41 @@ class AdminController extends Controller
         return redirect()->route('admin.evaluations')->with('success', 'Evaluation cycle published successfully. Tokens have been generated for eligible students.');
     }
 
+    public function editEvaluation(Evaluation $evaluation): View
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($evaluation->creator->university_id === $tenantId, 403);
+        abort_unless($evaluation->status === 'scheduled', 404);
+
+        return view('users.admin.evaluations.edit', compact('evaluation'));
+    }
+
+    public function updateEvaluation(Request $request, Evaluation $evaluation): RedirectResponse
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($evaluation->creator->university_id === $tenantId, 403);
+        abort_unless($evaluation->status === 'scheduled', 404);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'semester' => ['required', 'string', 'max:255'],
+            'evaluation_type' => ['required', 'string', 'max:255'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'is_anonymous' => ['boolean'],
+            'allow_faculty_response' => ['boolean'],
+            'send_reminder' => ['boolean'],
+        ]);
+
+        $validated['is_anonymous'] = $request->boolean('is_anonymous');
+        $validated['allow_faculty_response'] = $request->boolean('allow_faculty_response');
+        $validated['send_reminder'] = $request->boolean('send_reminder');
+
+        $evaluation->update($validated);
+
+        return redirect()->route('admin.evaluations')->with('success', 'Scheduled evaluation updated successfully.');
+    }
+
     public function reports()
     {
         return view('users.admin.reports');

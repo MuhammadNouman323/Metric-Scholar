@@ -1,0 +1,42 @@
+@startuml ScholarMetric_Sequence_SubmitFeedback
+title Sequence Diagram — Student Submits Anonymous Feedback
+
+actor Student
+participant "StudentController" as SC
+participant "FeedbackRepository" as FR
+participant "GeminiModerationService" as GM
+database "Database" as DB
+
+Student -> SC : POST /student/feedback (token, ratings, comments)
+SC -> FR : findToken(uuid)
+FR -> DB : SELECT feedback_tokens WHERE token = uuid
+FR --> SC : FeedbackToken
+
+alt Token not found or already used
+  SC --> Student : Validation error
+else Token valid
+  SC -> SC : Validate evaluation is active
+  loop Each text answer field
+    SC -> GM : moderate(comment)
+    alt Gemini API available
+      GM -> GM : POST generativelanguage.googleapis.com
+      GM --> SC : status, toxicity_score, cleaned_comment
+    else API unavailable
+      GM -> GM : localModerate(word filter)
+      GM --> SC : fallback moderation result
+    end
+  end
+  SC -> FR : saveFeedback(feedbackData, answersData)
+  FR -> DB : INSERT feedbacks
+  FR -> DB : INSERT feedback_answers (with moderation metadata)
+  FR -> FR : markTokenAsUsed(token)
+  FR -> DB : UPDATE feedback_tokens SET is_used=true
+  SC --> Student : Success redirect to dashboard
+end
+
+note over DB
+  feedbacks table has NO student_id.
+  Anonymity is preserved at storage layer.
+end note
+
+@enduml

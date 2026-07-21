@@ -79,6 +79,8 @@ Route::prefix('admin')
         Route::post('/evaluations/new/step2', [AdminController::class, 'storeEvaluationStep2'])->name('admin.evaluations.new.storeStep2');
         Route::get('/evaluations/new/step3', [AdminController::class, 'newEvaluationStep3'])->name('admin.evaluations.new.step3');
         Route::post('/evaluations/new/publish', [AdminController::class, 'publishEvaluation'])->name('admin.evaluations.new.publish');
+        Route::get('/evaluations/{evaluation}/edit', [AdminController::class, 'editEvaluation'])->name('admin.evaluations.edit');
+        Route::put('/evaluations/{evaluation}', [AdminController::class, 'updateEvaluation'])->name('admin.evaluations.update');
         Route::get('/evaluations/api/faculty-courses', [AdminController::class, 'getFacultyCoursesForEvaluation'])->name('admin.evaluations.api.faculty-courses');
 
         Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
