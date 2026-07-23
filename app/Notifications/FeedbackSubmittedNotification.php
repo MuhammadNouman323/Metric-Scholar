@@ -2,6 +2,8 @@
 
 namespace App\Notifications;
 
+use App\Models\Evaluation;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -10,44 +12,35 @@ class FeedbackSubmittedNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        public Evaluation $evaluation,
+        public User $faculty,
+    ) {}
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('New Feedback Received')
+            ->line('You have received new feedback for an evaluation.')
+            ->line('Evaluation: '.$this->evaluation->title)
+            ->line('Semester: '.$this->evaluation->semester)
+            ->action('View Feedback', url('/faculty/dashboard'))
+            ->line('Thank you for your dedication to teaching excellence.');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'title' => 'New Feedback Received',
+            'message' => 'You have received new feedback for the evaluation: '.$this->evaluation->title.'.',
+            'evaluation_id' => $this->evaluation->id,
+            'evaluation_title' => $this->evaluation->title,
+            'action_url' => '/faculty/dashboard',
         ];
     }
 }

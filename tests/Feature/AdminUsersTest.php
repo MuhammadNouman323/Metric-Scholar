@@ -78,6 +78,7 @@ test('/admin/departments and detail page show dynamic users created by admin', f
 test('/admin/user creation does not reuse the admin primary key as admin_id', function () {
     $admin = User::factory()->create([
         'role' => 'admin',
+        'email' => 'admin@example.com',
     ]);
 
     User::factory()->create([
@@ -263,6 +264,7 @@ test('admin can set temporary password and force change requirement', function (
 
     $response = $this->post("/admin/user/{$student->id}/recovery/password", [
         'password' => 'StrongPass1234!!_ComplianceCheck',
+        'password_confirmation' => 'StrongPass1234!!_ComplianceCheck',
         'force_change' => '1',
     ]);
 

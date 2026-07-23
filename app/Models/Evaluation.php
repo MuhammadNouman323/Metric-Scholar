@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Evaluation extends Model
 {
@@ -31,7 +34,7 @@ class Evaluation extends Model
         'closed_at' => 'datetime',
     ];
 
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
@@ -58,49 +61,49 @@ class Evaluation extends Model
         });
     }
 
-    public function faculty()
+    public function faculty(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'evaluation_faculty', 'evaluation_id', 'faculty_id');
     }
 
-    public function courses()
+    public function courses(): BelongsToMany
     {
         return $this->belongsToMany(Course::class, 'evaluation_courses', 'evaluation_id', 'course_id')
             ->withPivot('faculty_id');
     }
 
-    public function tokens()
+    public function tokens(): HasMany
     {
         return $this->hasMany(FeedbackToken::class);
     }
 
-    public function feedbacks()
+    public function feedbacks(): HasMany
     {
         return $this->hasMany(Feedback::class);
     }
 
-    public function scopeActive($query)
+    public function scopeActive($query): void
     {
-        return $query->where('status', 'active');
+        $query->where('status', 'active');
     }
 
-    public function scopeScheduled($query)
+    public function scopeScheduled($query): void
     {
-        return $query->where('status', 'scheduled');
+        $query->where('status', 'scheduled');
     }
 
-    public function scopeDraft($query)
+    public function scopeDraft($query): void
     {
-        return $query->where('status', 'draft');
+        $query->where('status', 'draft');
     }
 
-    public function scopeClosed($query)
+    public function scopeClosed($query): void
     {
-        return $query->where('status', 'closed');
+        $query->where('status', 'closed');
     }
 
-    public function scopeArchived($query)
+    public function scopeArchived($query): void
     {
-        return $query->where('status', 'archived');
+        $query->where('status', 'archived');
     }
 }

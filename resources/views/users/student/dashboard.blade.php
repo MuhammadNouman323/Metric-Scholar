@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-5">
             <div>
-                <p class="text-[13px] text-gray-400 font-medium mb-1">Fall 2024 Semester</p>
+                <p class="text-[13px] text-gray-400 font-medium mb-1">{{ currentTerm() }} Semester</p>
                 <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Welcome back, {{ $student->name }} 👋</h1>
             </div>
             <div class="flex items-center gap-3">
@@ -86,7 +86,7 @@
                                 <div class="flex items-center gap-2 mb-1.5">
                                     <span class="text-[11px] font-bold text-gray-400">{{ $token->course->code }}</span>
                                     <span class="text-gray-300">•</span>
-                                    <span class="text-[11px] font-bold text-gray-400">{{ $token->evaluation->semester ?? 'Fall 2024' }}</span>
+                                    <span class="text-[11px] font-bold text-gray-400">{{ $token->evaluation->semester ?? currentTerm() }}</span>
                                     <span class="text-[10px] font-bold bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md ml-2">Pending</span>
                                 </div>
                                 <p class="text-[16px] font-bold text-gray-900 mb-1">{{ $token->course->title }}</p>
@@ -169,7 +169,7 @@
                             <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                                 <p class="text-[14px] font-bold text-gray-900 mb-1">{{ $recentSubmission->course->title }}</p>
                                 <div class="flex items-center justify-between mt-2">
-                                    <p class="text-[12px] text-gray-400">{{ $recentSubmission->course->semester ?? 'Fall 2024' }}</p>
+                                    <p class="text-[12px] text-gray-400">{{ $recentSubmission->course->semester ?? currentTerm() }}</p>
                                     <span class="inline-block text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md">✓ Submitted</span>
                                 </div>
                             </div>

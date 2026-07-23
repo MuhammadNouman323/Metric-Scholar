@@ -23,9 +23,9 @@
             </div>
         </div>
 
-        <!-- Active Evaluation Notification -->
-        @if($activeEvaluation)
-        <div class="mb-10 bg-[#f0f4ff] border border-[#0e48c1]/20 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <!-- Active Evaluation Notifications -->
+        @forelse($activeEvaluations as $activeEvaluation)
+        <div class="mb-6 bg-[#f0f4ff] border border-[#0e48c1]/20 rounded-2xl p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
                 <div class="flex items-center gap-3 mb-2">
                     <span class="w-8 h-8 rounded-full bg-[#0e48c1] text-white flex items-center justify-center shrink-0">
@@ -52,7 +52,11 @@
                 View Feedback
             </a>
         </div>
-        @endif
+        @empty
+        <div class="mb-10 bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center">
+            <p class="text-sm text-gray-500 font-medium">No active evaluation cycles at the moment.</p>
+        </div>
+        @endforelse
 
         <!-- 3 Stats Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-6 mb-10 w-full">
@@ -288,7 +292,7 @@
             </div>
             <button
                 class="bg-white text-[#0e48c1] font-bold text-[14px] px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:bg-blue-50 transition-all whitespace-nowrap flex-shrink-0">
-                Export Dossier 2024
+                Export Dossier {{ date('Y') }}
             </button>
         </div>
 

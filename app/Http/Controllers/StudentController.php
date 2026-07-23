@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreFeedbackRequest;
 use App\Models\Course;
-use App\Models\Feedback;
 use App\Models\FeedbackAnswer;
+use App\Models\FeedbackToken;
 use App\Repositories\FeedbackRepository;
 use App\Services\GeminiModerationService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function dashboard()
+    public function dashboard(): View
     {
         $student = auth()->user();
 
@@ -51,7 +56,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function courses()
+    public function courses(): View
     {
         $student = auth()->user();
         $courses = $student->courses()->with('faculty')->paginate(10);
@@ -69,7 +74,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function feedback(Request $request, ?Course $course = null)
+    public function feedback(Request $request, ?Course $course = null): View
     {
         $student = auth()->user();
 
@@ -131,22 +136,9 @@ class StudentController extends Controller
         ]);
     }
 
-    public function storeFeedback(Request $request, FeedbackRepository $feedbackRepository)
+    public function storeFeedback(StoreFeedbackRequest $request, FeedbackRepository $feedbackRepository): RedirectResponse|JsonResponse
     {
-        $validated = $request->validate([
-            'token' => 'required|string|exists:feedback_tokens,token',
-            'clarity' => 'required|integer|min:1|max:5',
-            'materials' => 'required|integer|min:1|max:5',
-            'responsiveness' => 'required|integer|min:1|max:5',
-            'fairness' => 'required|integer|min:1|max:5',
-            'practical' => 'required|integer|min:1|max:5',
-            'organization' => 'required|integer|min:1|max:5',
-            'overall_rating' => 'required|integer|min:1|max:5',
-            'comments' => 'nullable|string|max:2000',
-            'what_worked_well' => 'nullable|string|max:2000',
-            'what_could_improve' => 'nullable|string|max:2000',
-            'recommendation' => 'nullable|in:yes_definitely,neutral,not_really',
-        ]);
+        $validated = $request->validated();
 
         $tokenModel = $feedbackRepository->findToken($validated['token']);
 
@@ -204,48 +196,68 @@ class StudentController extends Controller
             ]);
         }
 
-        // Save anonymous feedback
-        $feedbackData = [
-            'evaluation_id' => $tokenModel->evaluation_id,
-            'faculty_id' => $tokenModel->faculty_id,
-            'course_id' => $tokenModel->course_id,
-        ];
+        // Save anonymous feedback inside a transaction with row locking
+        $feedback = DB::transaction(function () use ($tokenModel, $validated, $textFields, $moderatedAnswers, $feedbackRepository) {
+            $freshToken = FeedbackToken::where('id', $tokenModel->id)
+                ->lockForUpdate()
+                ->first();
 
-        $answersData = [
-            'clarity' => ['rating' => $validated['clarity']],
-            'materials' => ['rating' => $validated['materials']],
-            'responsiveness' => ['rating' => $validated['responsiveness']],
-            'fairness' => ['rating' => $validated['fairness']],
-            'practical' => ['rating' => $validated['practical']],
-            'organization' => ['rating' => $validated['organization']],
-            'overall_rating' => ['rating' => $validated['overall_rating']],
-            'recommendation' => ['text_answer' => $validated['recommendation'] ?? null],
-        ];
-
-        foreach ($textFields as $field) {
-            if (! empty($validated[$field])) {
-                $mod = $moderatedAnswers[$field];
-                $answersData[$field] = [
-                    'text_answer' => $mod['cleaned_comment'] ?? $validated[$field],
-                    'moderation_status' => $mod['status'] ?? 'approved',
-                    'toxicity_score' => $mod['toxicity_score'] ?? 0,
-                    'moderation_reason' => $mod['reason'] ?? null,
-                    'moderation_categories' => $mod['categories'] ?? [],
-                    'original_comment' => $validated[$field],
-                    'cleaned_comment' => $mod['cleaned_comment'] ?? $validated[$field],
-                    'moderated_at' => now(),
-                ];
-            } else {
-                $answersData[$field] = [
-                    'text_answer' => null,
-                ];
+            if (! $freshToken || $freshToken->is_used) {
+                return null;
             }
+
+            $feedbackData = [
+                'evaluation_id' => $freshToken->evaluation_id,
+                'faculty_id' => $freshToken->faculty_id,
+                'course_id' => $freshToken->course_id,
+            ];
+
+            $answersData = [
+                'clarity' => ['rating' => $validated['clarity']],
+                'materials' => ['rating' => $validated['materials']],
+                'responsiveness' => ['rating' => $validated['responsiveness']],
+                'fairness' => ['rating' => $validated['fairness']],
+                'practical' => ['rating' => $validated['practical']],
+                'organization' => ['rating' => $validated['organization']],
+                'overall_rating' => ['rating' => $validated['overall_rating']],
+                'recommendation' => ['text_answer' => $validated['recommendation'] ?? null],
+            ];
+
+            foreach ($textFields as $field) {
+                if (! empty($validated[$field])) {
+                    $mod = $moderatedAnswers[$field];
+                    $answersData[$field] = [
+                        'text_answer' => $mod['cleaned_comment'] ?? $validated[$field],
+                        'moderation_status' => $mod['status'] ?? 'approved',
+                        'toxicity_score' => $mod['toxicity_score'] ?? 0,
+                        'moderation_reason' => $mod['reason'] ?? null,
+                        'moderation_categories' => $mod['categories'] ?? [],
+                        'original_comment' => $validated[$field],
+                        'cleaned_comment' => $mod['cleaned_comment'] ?? $validated[$field],
+                        'moderated_at' => now(),
+                    ];
+                } else {
+                    $answersData[$field] = [
+                        'text_answer' => null,
+                    ];
+                }
+            }
+
+            $feedbackRepository->markTokenAsUsed($freshToken);
+
+            return $feedbackRepository->saveFeedback($feedbackData, $answersData);
+        });
+
+        if ($feedback === null) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid or already used evaluation token.',
+                ], 422);
+            }
+
+            return back()->withErrors(['token' => 'Invalid or already used evaluation token.']);
         }
-
-        // Mark token as used BEFORE saving to prevent race conditions
-        $feedbackRepository->markTokenAsUsed($tokenModel);
-
-        $feedbackRepository->saveFeedback($feedbackData, $answersData);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -258,7 +270,7 @@ class StudentController extends Controller
         return redirect()->route('student.feedback.history')->with('success', 'Thank you! Your feedback has been submitted successfully and anonymously.');
     }
 
-    public function getCourseDetails(Course $course)
+    public function getCourseDetails(Course $course): JsonResponse
     {
         $student = auth()->user();
 
@@ -298,10 +310,10 @@ class StudentController extends Controller
         ]);
     }
 
-    public function feedbackHistory()
+    public function feedbackHistory(): View
     {
         $student = auth()->user();
-        $submissions = $student->feedbackTokens()->with(['evaluation', 'course', 'faculty'])->where('is_used', true)->latest('used_at')->get();
+        $submissions = $student->feedbackTokens()->with(['evaluation', 'course', 'faculty'])->where('is_used', true)->latest('used_at')->paginate(25);
         $pendingTokens = $student->feedbackTokens()->with(['evaluation', 'course'])->where('is_used', false)->get();
 
         return view('users.student.feedback.history', [
@@ -311,7 +323,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function profile()
+    public function profile(): View
     {
         $student = auth()->user();
 
@@ -333,7 +345,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function teachers()
+    public function teachers(): View
     {
         $student = auth()->user();
 
@@ -367,68 +379,5 @@ class StudentController extends Controller
             'uniqueDepartmentsCount' => $uniqueDepartmentsCount,
             'totalTeachersCount' => $totalTeachersCount,
         ]);
-    }
-
-    public function store(
-        Request $request,
-        GeminiModerationService $gemini
-    ) {
-        $result = $gemini->moderate($request->worked_well);
-
-        dd($result);
-    }
-}
-class FeedbackController extends Controller
-{
-    public function store(
-        Request $request,
-        GeminiModerationService $gemini
-    ) {
-        $request->validate([
-            'worked_well' => 'required|min:80',
-            'improve' => 'required|min:80',
-        ]);
-
-        $worked = $gemini->moderate(
-            $request->worked_well
-        );
-
-        $improve = $gemini->moderate(
-            $request->improve
-        );
-
-        if (
-            $worked['status'] == 'rejected' ||
-            $improve['status'] == 'rejected'
-        ) {
-            return back()
-                ->withErrors([
-                    'comment' => 'Your feedback contains inappropriate language.',
-                ]);
-        }
-
-        Feedback::create([
-
-            'worked_well' => $worked['cleaned_comment'],
-
-            'improve' => $improve['cleaned_comment'],
-
-            'worked_status' => $worked['status'],
-
-            'worked_score' => $worked['toxicity_score'],
-
-            'worked_reason' => $worked['reason'],
-
-            'improve_status' => $improve['status'],
-
-            'improve_score' => $improve['toxicity_score'],
-
-            'improve_reason' => $improve['reason'],
-
-        ]);
-
-        return redirect()
-            ->route('student.dashboard')
-            ->with('success', 'Feedback submitted successfully.');
     }
 }

@@ -5,7 +5,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ">
             <div class="flex flex-col gap-2">
                 <h1 class="text-[32px] font-bold text-gray-900 mb-2 tracking-tight">Manage Students</h1>
-                <p class="text-gray-500 text-[15px] font-medium">Overview and administration of the 2024 academic cohort.
+                <p class="text-gray-500 text-[15px] font-medium">Overview and administration of the {{ date('Y') }} academic cohort.
                 </p>
             </div>
             <!-- Total Card (Column 3) -->
@@ -83,7 +83,7 @@
                     <div class="relative">
                         <select
                             class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white text-[14px]">
-                            <option>Fall 2024 (Current)</option>
+                            <option>{{ currentTerm() }} (Current)</option>
                         </select>
                         <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                             <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,35 +194,7 @@
             </div>
 
             <!-- Pagination -->
-            <div
-                class="px-6 py-5 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-[13px] font-medium text-gray-600">
-                    Showing <span class="font-bold text-gray-900">{{ $students->count() > 0 ? 1 : 0 }}-{{ $students->count() }}</span> of <span
-                        class="font-bold text-gray-900">{{ $totalStudents }}</span> students
-                </div>
-                <div class="flex items-center gap-2">
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-white hover:border-gray-300 transition-colors duration-150">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                    </button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#0e48c1] text-white font-bold text-[13px] shadow-sm hover:bg-[#0a389f] transition-colors duration-150">1</button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 font-bold text-[13px] transition-colors duration-150">2</button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 font-bold text-[13px] transition-colors duration-150">3</button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-white hover:border-gray-300 transition-colors duration-150">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            {{ $students->links('vendor.pagination.admin') }}
         </div>
 
         <!-- Metric Cards -->

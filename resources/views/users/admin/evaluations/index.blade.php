@@ -50,44 +50,49 @@
                 <a href="{{ route('admin.evaluations.new.step1') }}" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-sm rounded-lg transition-colors">Start New Cycle</a>
             </div>
         @else
-            <!-- Active Evaluation Section -->
-            @if($activeEvaluation)
+            <!-- Active Evaluations Section -->
+            @if($activeEvaluations->isNotEmpty())
             <div class="mb-10">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Active Evaluation</h2>
-                <div class="bg-white rounded-[2rem] p-8 border-2 border-[#0e48c1] shadow-[0_4px_20px_rgba(14,72,193,0.1)]">
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <div class="flex items-center gap-3 mb-2">
-                                <h3 class="text-2xl font-extrabold text-gray-900">{{ $activeEvaluation->title }}</h3>
-                                <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Active</span>
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Active Evaluations</h2>
+                <div class="space-y-4">
+                    @foreach($activeEvaluations as $activeEvaluation)
+                    @php $progress = $activeEvaluationsProgress[$activeEvaluation->id] ?? [] @endphp
+                    <div class="bg-white rounded-[2rem] p-8 border-2 border-[#0e48c1] shadow-[0_4px_20px_rgba(14,72,193,0.1)]">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-2xl font-extrabold text-gray-900">{{ $activeEvaluation->title }}</h3>
+                                    <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Active</span>
+                                </div>
+                                <p class="text-sm text-gray-500 font-medium">Semester: {{ $activeEvaluation->semester }} | Ends on {{ $activeEvaluation->end_date->format('M d, Y') }}</p>
                             </div>
-                            <p class="text-sm text-gray-500 font-medium">Semester: {{ $activeEvaluation->semester }} | Ends on {{ $activeEvaluation->end_date->format('M d, Y') }}</p>
                         </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-gray-100">
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Eligible Students</p>
-                            <p class="text-3xl font-black text-gray-900">{{ $activeProgress['eligible'] }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Submitted</p>
-                            <p class="text-3xl font-black text-emerald-600">{{ $activeProgress['submitted'] }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Pending</p>
-                            <p class="text-3xl font-black text-orange-500">{{ $activeProgress['pending'] }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Completion</p>
-                            <div class="flex items-center gap-3">
-                                <p class="text-3xl font-black text-[#0e48c1]">{{ $activeProgress['completion_percentage'] }}%</p>
-                                <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <div class="h-full bg-[#0e48c1] rounded-full" style="width: {{ $activeProgress['completion_percentage'] }}%"></div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-gray-100">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Eligible Students</p>
+                                <p class="text-3xl font-black text-gray-900">{{ $progress['eligible'] ?? 0 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Submitted</p>
+                                <p class="text-3xl font-black text-emerald-600">{{ $progress['submitted'] ?? 0 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Pending</p>
+                                <p class="text-3xl font-black text-orange-500">{{ $progress['pending'] ?? 0 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Completion</p>
+                                <div class="flex items-center gap-3">
+                                    <p class="text-3xl font-black text-[#0e48c1]">{{ $progress['completion_percentage'] ?? 0 }}%</p>
+                                    <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                        <div class="h-full bg-[#0e48c1] rounded-full" style="width: {{ $progress['completion_percentage'] ?? 0 }}%"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    @endforeach
                 </div>
             </div>
             @endif

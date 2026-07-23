@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeedbackToken extends Model
 {
@@ -21,7 +22,7 @@ class FeedbackToken extends Model
         'used_at' => 'datetime',
     ];
 
-    public function evaluation()
+    public function evaluation(): BelongsTo
     {
         return $this->belongsTo(Evaluation::class);
     }

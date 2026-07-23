@@ -52,10 +52,11 @@
             <div class="flex justify-between items-center bg-gray-50/50 p-2 rounded-2xl mb-6">
                 <div class="flex gap-2">
                     <div class="relative">
-                        <select class="appearance-none bg-white border border-gray-100 text-gray-700 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 focus:outline-none shadow-sm">
-                            <option>Fall 2024</option>
-                            <option>Spring 2025</option>
-                        </select>
+                            <select class="appearance-none bg-white border border-gray-100 text-gray-700 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 focus:outline-none shadow-sm">
+                                @foreach(semesterOptions(1, 2) as $sem)
+                                    <option>{{ $sem }}</option>
+                                @endforeach
+                            </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -148,6 +149,8 @@
                     </table>
                 </div>
             </div>
+
+            {{ $courses->links('vendor.pagination.admin') }}
 
             <!-- Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -244,6 +247,7 @@
                 @endforelse
             </div>
 
+            {{ $facultyMembers->links('vendor.pagination.admin') }}
 
         @elseif ($section === 'enrollment')
             <!-- Student Enrollment -->
@@ -326,6 +330,8 @@
                 </div>
                 @endforelse
             </div>
+
+            {{ $students->links('vendor.pagination.admin') }}
         @endif
 
     </div>

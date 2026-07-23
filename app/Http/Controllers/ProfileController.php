@@ -6,6 +6,7 @@ use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -29,7 +30,7 @@ class ProfileController extends Controller
     /**
      * Show the Admin Profile view.
      */
-    public function showAdminProfile(?User $user = null)
+    public function showAdminProfile(?User $user = null): View|RedirectResponse
     {
         if ($redirect = $this->validateProfileAccess($user)) {
             return $redirect;
@@ -43,7 +44,7 @@ class ProfileController extends Controller
     /**
      * Show the Faculty Profile view.
      */
-    public function showFacultyProfile(?User $user = null)
+    public function showFacultyProfile(?User $user = null): View|RedirectResponse
     {
         if ($redirect = $this->validateProfileAccess($user)) {
             return $redirect;
@@ -57,7 +58,7 @@ class ProfileController extends Controller
     /**
      * Show the Student Profile view.
      */
-    public function showStudentProfile(?User $user = null)
+    public function showStudentProfile(?User $user = null): View|RedirectResponse
     {
         if ($redirect = $this->validateProfileAccess($user)) {
             return $redirect;
@@ -101,21 +102,21 @@ class ProfileController extends Controller
         $currentUser = auth()->user();
         $data = $request->validated();
 
-        if ($request->hasFile('avatar')) {
-            // Delete old avatar if it exists
-            if ($currentUser->avatar) {
-                Storage::disk('public')->delete($currentUser->avatar);
+        DB::transaction(function () use ($currentUser, $request, $data) {
+            if ($request->hasFile('avatar')) {
+                if ($currentUser->avatar) {
+                    Storage::disk('public')->delete($currentUser->avatar);
+                }
+
+                $path = $request->file('avatar')->store('profile-images', 'public');
+                $currentUser->avatar = $path;
             }
 
-            // Store new avatar in public/profile-images
-            $path = $request->file('avatar')->store('profile-images', 'public');
-            $currentUser->avatar = $path;
-        }
-
-        $currentUser->name = $data['name'];
-        $currentUser->email = $data['email'];
-        $currentUser->phone = $data['phone'] ?? null;
-        $currentUser->save();
+            $currentUser->name = $data['name'];
+            $currentUser->email = $data['email'];
+            $currentUser->phone = $data['phone'] ?? null;
+            $currentUser->save();
+        });
 
         return back()->with('success', 'Profile information updated successfully.');
     }

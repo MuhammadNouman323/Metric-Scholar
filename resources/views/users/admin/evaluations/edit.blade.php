@@ -61,7 +61,7 @@
                                 <label for="semester" class="block text-[11px] font-extrabold text-slate-400 tracking-widest uppercase">Semester</label>
                                 <div class="relative">
                                     <select id="semester" name="semester" class="w-full appearance-none rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 pr-12 text-[14px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white transition-all duration-200">
-                                        @foreach(['Fall 2024', 'Spring 2024', 'Spring 2025', 'Fall 2025'] as $sem)
+                                        @foreach(semesterOptions() as $sem)
                                             <option value="{{ $sem }}" {{ old('semester', $evaluation->semester) == $sem ? 'selected' : '' }}>{{ $sem }}</option>
                                         @endforeach
                                     </select>

@@ -7,7 +7,7 @@
                 <h1 class="text-3xl lg:text-[34px] font-bold text-gray-900 tracking-tight">Faculty Analytics</h1>
                 <span
                     class="text-[11px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full tracking-wider uppercase">Annual
-                    Review 2024</span>
+                    Review {{ date('Y') }}</span>
             </div>
             <div class="flex items-center gap-3">
                 <!-- Search -->
@@ -45,32 +45,34 @@
             <div class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                 <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Global Performance</p>
                 <div class="flex items-baseline gap-1.5 mb-2">
-                    <span class="text-[38px] font-bold text-gray-900 leading-none tracking-tight">4.8</span>
+                    <span class="text-[38px] font-bold text-gray-900 leading-none tracking-tight">{{ $avgRating > 0 ? $avgRating : '—' }}</span>
                     <span class="text-[16px] font-bold text-gray-300">/ 5.0</span>
                 </div>
-                <div class="flex items-center gap-1 text-[12px] font-semibold text-emerald-600">
+                @if(count($historicalTrend) >= 2)
+                <div class="flex items-center gap-1 text-[12px] font-semibold {{ $trendingUp ? 'text-emerald-600' : 'text-orange-600' }}">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            d="{{ $trendingUp ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6' }}"></path>
                     </svg>
-                    +12% vs last year
+                    {{ $trendingUp ? '+' : '' }}{{ round(($historicalTrend[count($historicalTrend)-1]['rating'] - $historicalTrend[count($historicalTrend)-2]['rating']) / max($historicalTrend[count($historicalTrend)-2]['rating'], 0.01) * 100) }}% vs last semester
                 </div>
+                @endif
             </div>
 
             <!-- Response Rate -->
             <div class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                 <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Response Rate</p>
-                <div class="text-[38px] font-bold text-gray-900 leading-none tracking-tight mb-3">92%</div>
+                <div class="text-[38px] font-bold text-gray-900 leading-none tracking-tight mb-3">{{ $completionRate > 0 ? $completionRate : 0 }}%</div>
                 <div class="w-full bg-gray-100 rounded-full h-2">
-                    <div class="bg-[#0e48c1] h-2 rounded-full" style="width: 92%"></div>
+                    <div class="bg-[#0e48c1] h-2 rounded-full" style="width: {{ min($completionRate, 100) }}%"></div>
                 </div>
             </div>
 
             <!-- Students Polled -->
             <div class="bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                 <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Students Polled</p>
-                <div class="text-[38px] font-bold text-gray-900 leading-none tracking-tight mb-2">1,240</div>
-                <p class="text-[12px] font-medium text-gray-400">Across 6 Departments</p>
+                <div class="text-[38px] font-bold text-gray-900 leading-none tracking-tight mb-2">{{ number_format($studentsPolled) }}</div>
+                <p class="text-[12px] font-medium text-gray-400">Across {{ $coursesCount }} {{ Str::plural('Course', $coursesCount) }}</p>
             </div>
 
             <!-- Growth Areas -->
@@ -84,9 +86,9 @@
                             </path>
                         </svg>
                     </div>
-                    <span class="text-[17px] font-bold text-gray-900 leading-tight">Peer Mentorship</span>
+                    <span class="text-[17px] font-bold text-gray-900 leading-tight">{{ $lowestCriterion ? ucfirst($lowestCriterion) : 'N/A' }}</span>
                 </div>
-                <p class="text-[12px] font-medium text-orange-500">Recommended for Tenure track</p>
+                <p class="text-[12px] font-medium text-orange-500">{{ $lowestCriterion && isset($criteriaStats[$lowestCriterion]) ? 'Score: ' . $criteriaStats[$lowestCriterion] . '/5 — Focus area for improvement' : 'No data available' }}</p>
             </div>
         </div>
 
@@ -114,7 +116,6 @@
                 <!-- Area Chart SVG -->
                 <div class="w-full h-[240px] relative mt-4">
                     <svg viewBox="0 0 760 220" class="w-full h-full overflow-visible" preserveAspectRatio="none">
-                        <!-- Grid lines -->
                         <line x1="0" y1="55" x2="760" y2="55" stroke="#f1f5f9"
                             stroke-width="1.5" />
                         <line x1="0" y1="110" x2="760" y2="110" stroke="#f1f5f9"
@@ -122,28 +123,17 @@
                         <line x1="0" y1="165" x2="760" y2="165" stroke="#f1f5f9"
                             stroke-width="1.5" />
 
-                        <!-- Area fill -->
-                        <path
-                            d="M 0 200 C 80 195 130 175 190 165 C 250 155 270 130 330 118 C 380 108 400 130 450 120 C 510 108 560 60 640 45 C 700 33 730 25 760 20 L 760 220 L 0 220 Z"
+                        @if(!empty($trendAreaPath))
+                        <path d="{{ $trendAreaPath }}"
                             fill="url(#areaGrad)" opacity="0.25" />
-
-                        <!-- Line -->
-                        <path
-                            d="M 0 200 C 80 195 130 175 190 165 C 250 155 270 130 330 118 C 380 108 400 130 450 120 C 510 108 560 60 640 45 C 700 33 730 25 760 20"
+                        <path d="{{ $trendLinePath }}"
                             stroke="#0e48c1" stroke-width="3" fill="none" stroke-linecap="round" />
 
-                        <!-- Data points -->
-                        <circle cx="0" cy="200" r="0" fill="#0e48c1" />
-                        <circle cx="190" cy="165" r="5" fill="white" stroke="#0e48c1"
+                        @foreach($trendPoints as $p)
+                        <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="white" stroke="#0e48c1"
                             stroke-width="2.5" />
-                        <circle cx="330" cy="118" r="5" fill="white" stroke="#0e48c1"
-                            stroke-width="2.5" />
-                        <circle cx="430" cy="124" r="5" fill="#cbd5e1" stroke="white"
-                            stroke-width="2" />
-                        <circle cx="560" cy="60" r="5" fill="white" stroke="#0e48c1"
-                            stroke-width="2.5" />
-                        <circle cx="640" cy="45" r="6" fill="#0e48c1" stroke="white"
-                            stroke-width="2.5" />
+                        @endforeach
+                        @endif
 
                         <defs>
                             <linearGradient id="areaGrad" x1="0" y1="0" x2="0"
@@ -158,14 +148,11 @@
                 <!-- X Axis Labels -->
                 <div
                     class="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-3 px-0">
-                    <span>Fall 2020</span>
-                    <span>Spring 2021</span>
-                    <span>Fall 2021</span>
-                    <span>Spring 2022</span>
-                    <span>Fall 2022</span>
-                    <span>Spring 2023</span>
-                    <span>Fall 2023</span>
-                    <span class="text-[#0e48c1]">Current</span>
+                    @forelse($trendPoints as $p)
+                        <span class="{{ $loop->last ? 'text-[#0e48c1]' : '' }}">{{ $p['semester'] }}</span>
+                    @empty
+                        <span class="text-gray-400">No historical data</span>
+                    @endforelse
                 </div>
             </div>
 
@@ -197,25 +184,27 @@
                         <polygon points="150,80 214,127 190,199 110,199 86,127" fill="none" stroke="#e2e8f0"
                             stroke-width="1" stroke-dasharray="3 3" />
 
-                        <!-- Inner pentagon (data) -->
-                        <polygon points="150,52 238,117 202,222 98,222 62,117" fill="#bfdbfe" stroke="#0e48c1"
+                        @if($radarPolygon)
+                        <polygon points="{{ $radarPolygon }}" fill="#bfdbfe" stroke="#0e48c1"
                             stroke-width="2.5" fill-opacity="0.45" />
+                        @endif
 
-                        <!-- Center dot -->
                         <circle cx="150" cy="150" r="3" fill="#0e48c1" opacity="0.3" />
                     </svg>
                 </div>
 
                 <!-- Scorecard rows -->
                 <div class="space-y-3 border-t border-gray-50 pt-4">
+                    @forelse($criteriaStats as $key => $value)
                     <div class="flex items-center justify-between text-[13px]">
-                        <span class="font-medium text-gray-600">Academic Rigor</span>
-                        <span class="font-bold text-[#0e48c1]">Superior</span>
+                        <span class="font-medium text-gray-600">{{ ucfirst($key) }}</span>
+                        <span class="font-bold {{ $value >= 4 ? 'text-[#0e48c1]' : ($value >= 3 ? 'text-amber-600' : 'text-orange-600') }}">{{ number_format($value, 1) }}/5</span>
                     </div>
+                    @empty
                     <div class="flex items-center justify-between text-[13px]">
-                        <span class="font-medium text-gray-600">Inclusivity</span>
-                        <span class="font-bold text-[#0e48c1]">Very High</span>
+                        <span class="font-medium text-gray-400 italic">No criteria data available</span>
                     </div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -231,38 +220,28 @@
                 <div class="mb-7">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-[13px] font-semibold text-gray-600">Positive Reception</span>
-                        <span class="text-[14px] font-bold text-[#0e48c1]">88%</span>
+                        <span class="text-[14px] font-bold text-[#0e48c1]">{{ $totalResponses > 0 ? round(($studentsPolled / max($totalResponses, 1)) * 100) : 0 }}%</span>
                     </div>
                     <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
                         <div class="h-full rounded-full flex">
-                            <div class="bg-[#0e48c1] h-full rounded-l-full" style="width: 88%"></div>
-                            <div class="bg-orange-300 h-full rounded-r-full" style="width: 12%"></div>
+                            <div class="bg-[#0e48c1] h-full rounded-l-full" style="width: {{ $totalResponses > 0 ? round(($studentsPolled / max($totalResponses, 1)) * 100) : 0 }}%"></div>
+                            <div class="bg-orange-300 h-full rounded-r-full" style="width: {{ $totalResponses > 0 ? 100 - round(($studentsPolled / max($totalResponses, 1)) * 100) : 100 }}%"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Subject Score Chips -->
                 <div class="flex flex-wrap gap-3">
-                    <div class="flex-1 min-w-[80px] bg-[#0e48c1] rounded-2xl p-4 text-center text-white">
-                        <div class="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-80">Lectures</div>
-                        <div class="text-[26px] font-bold leading-none">4.9</div>
+                    @php $chipColors = ['#0e48c1', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd']; @endphp
+                    @forelse($criteriaStats as $key => $value)
+                    @php $label = $criterionLabels[$key] ?? ucfirst($key); $color = $chipColors[$loop->index % count($chipColors)]; @endphp
+                    <div class="flex-1 min-w-[80px] rounded-2xl p-4 text-center text-white" style="background-color: {{ $color }}">
+                        <div class="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-80">{{ $label }}</div>
+                        <div class="text-[26px] font-bold leading-none">{{ number_format($value, 1) }}</div>
                     </div>
-                    <div class="flex-1 min-w-[80px] bg-[#2563eb] rounded-2xl p-4 text-center text-white">
-                        <div class="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-80">Grading</div>
-                        <div class="text-[26px] font-bold leading-none">4.2</div>
-                    </div>
-                    <div class="flex-1 min-w-[80px] bg-[#3b82f6] rounded-2xl p-4 text-center text-white">
-                        <div class="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-80">Labs</div>
-                        <div class="text-[26px] font-bold leading-none">3.8</div>
-                    </div>
-                    <div class="flex-1 min-w-[80px] bg-[#60a5fa] rounded-2xl p-4 text-center text-white">
-                        <div class="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-80">Speed</div>
-                        <div class="text-[26px] font-bold leading-none">3.1</div>
-                    </div>
-                    <div class="flex-1 min-w-[80px] bg-[#93c5fd] rounded-2xl p-4 text-center text-white">
-                        <div class="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-80">Reading</div>
-                        <div class="text-[26px] font-bold leading-none">2.5</div>
-                    </div>
+                    @empty
+                    <div class="w-full text-center py-6 text-gray-400 text-sm font-medium">No sentiment data available yet.</div>
+                    @endforelse
                 </div>
             </div>
 
@@ -271,33 +250,24 @@
                 <h3 class="text-[20px] font-bold text-gray-900 mb-6">Qualitative Synthesis</h3>
 
                 <div class="space-y-5">
-                    <!-- Quote 1 -->
+                    @forelse($recentComments as $comment)
                     <div class="bg-[#f8fafc] rounded-2xl p-5 border border-gray-100">
                         <p class="text-[14px] text-gray-700 leading-relaxed mb-4">
-                            "The transition to digital lab notebooks was seamless and significantly improved our
-                            collaboration speed. Dr. Academic's feedback was timely."
+                            "{{ $comment['comment'] ?? 'No comment text' }}"
                         </p>
                         <div class="flex items-center justify-between flex-wrap gap-2">
                             <span
-                                class="text-[10px] font-bold bg-blue-100 text-[#0e48c1] px-2.5 py-1 rounded-md tracking-wide uppercase">Common
-                                Theme: Technology</span>
-                            <span class="text-[11px] font-medium text-gray-400">Verified Graduate Student</span>
+                                class="text-[10px] font-bold bg-blue-100 text-[#0e48c1] px-2.5 py-1 rounded-md tracking-wide uppercase">
+                                {{ $comment['course'] ?? 'General' }}
+                            </span>
+                            <span class="text-[11px] font-medium text-gray-400">{{ $comment['submitted_at'] ? $comment['submitted_at']->diffForHumans() : '' }}</span>
                         </div>
                     </div>
-
-                    <!-- Quote 2 -->
-                    <div class="bg-[#f8fafc] rounded-2xl p-5 border border-gray-100">
-                        <p class="text-[14px] text-gray-700 leading-relaxed mb-4">
-                            "Workload in Week 7 was overwhelming compared to previous years. Suggest spacing out the
-                            final project milestones."
-                        </p>
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <span
-                                class="text-[10px] font-bold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md tracking-wide uppercase">Trend:
-                                Workload Balance</span>
-                            <span class="text-[11px] font-medium text-gray-400">Undergraduate Cohort</span>
-                        </div>
+                    @empty
+                    <div class="bg-[#f8fafc] rounded-2xl p-8 text-center border border-gray-100">
+                        <p class="text-sm font-medium text-gray-400">No qualitative feedback available yet.</p>
                     </div>
+                    @endforelse
                 </div>
             </div>
         </div>

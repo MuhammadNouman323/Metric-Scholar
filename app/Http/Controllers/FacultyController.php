@@ -2,109 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Evaluation;
 use App\Models\Feedback;
 use App\Models\FeedbackAnswer;
 use App\Models\FeedbackToken;
+use App\Services\FacultyDashboardService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class FacultyController extends Controller
 {
-    public function dashboard()
+    public function dashboard(FacultyDashboardService $dashboardService): View
     {
         $faculty = Auth::user();
         $notifications = $faculty->notifications()->take(5)->get();
 
-        $activeEvaluation = Evaluation::whereIn('status', ['active', 'scheduled'])
-            ->whereHas('faculty', function ($q) use ($faculty) {
-                $q->where('users.id', $faculty->id);
-            })->first();
+        $activeEvaluations = $dashboardService->getActiveEvaluations($faculty);
 
         $assignedCourses = collect();
-        if ($activeEvaluation) {
-            $assignedCourses = $faculty->courses()->whereHas('evaluations', function ($q) use ($activeEvaluation) {
-                $q->where('evaluations.id', $activeEvaluation->id);
+        if ($activeEvaluations->isNotEmpty()) {
+            $evaluationIds = $activeEvaluations->pluck('id');
+            $assignedCourses = $faculty->courses()->whereHas('evaluations', function ($q) use ($evaluationIds) {
+                $q->whereIn('evaluations.id', $evaluationIds);
             })->get();
         }
 
-        // 1. Average Rating
-        $avgRating = Feedback::where('faculty_id', $faculty->id)
-            ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
-            ->where('feedback_answers.question_id', 'overall_rating')
-            ->avg('feedback_answers.rating');
-        $avgRating = $avgRating ? round($avgRating, 1) : 0.0;
+        $avgRating = $dashboardService->getAverageRating($faculty);
+        $totalResponsesCount = $dashboardService->getTotalResponses($faculty);
+        $coursesCount = $dashboardService->getCoursesCount($faculty);
+        $completionRate = $dashboardService->getCompletionRate($faculty);
+        $criteriaStats = $dashboardService->getCriteriaStats($faculty);
+        $svgPoints = $dashboardService->generateSvgPoints($faculty);
 
-        // 2. Total Responses Count
-        $totalResponsesCount = Feedback::where('faculty_id', $faculty->id)->count();
-
-        // 3. Courses Count
-        $coursesCount = $faculty->courses()->count();
-
-        // 4. Feedback Completion Rate
-        $totalTokensCount = FeedbackToken::where('faculty_id', $faculty->id)->count();
-        $usedTokensCount = FeedbackToken::where('faculty_id', $faculty->id)->where('is_used', true)->count();
-        $completionRate = $totalTokensCount > 0 ? round(($usedTokensCount / $totalTokensCount) * 100, 1) : 0.0;
-
-        // 5. Criteria Stats
-        $criteriaAverages = FeedbackAnswer::join('feedbacks', 'feedback_answers.feedback_id', '=', 'feedbacks.id')
-            ->where('feedbacks.faculty_id', $faculty->id)
-            ->whereIn('feedback_answers.question_id', ['clarity', 'materials', 'responsiveness', 'organization'])
-            ->selectRaw('feedback_answers.question_id, AVG(feedback_answers.rating) as avg_rating')
-            ->groupBy('feedback_answers.question_id')
-            ->pluck('avg_rating', 'question_id')
-            ->all();
-
-        $criteriaStats = [
-            'clarity' => isset($criteriaAverages['clarity']) ? round($criteriaAverages['clarity'], 1) : 0.0,
-            'materials' => isset($criteriaAverages['materials']) ? round($criteriaAverages['materials'], 1) : 0.0,
-            'responsiveness' => isset($criteriaAverages['responsiveness']) ? round($criteriaAverages['responsiveness'], 1) : 0.0,
-            'organization' => isset($criteriaAverages['organization']) ? round($criteriaAverages['organization'], 1) : 0.0,
-        ];
-
-        // 6. Historical Semesters Trend
-        $historicalSemesters = Feedback::where('faculty_id', $faculty->id)
-            ->join('evaluations', 'feedbacks.evaluation_id', '=', 'evaluations.id')
-            ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
-            ->where('feedback_answers.question_id', 'overall_rating')
-            ->selectRaw('evaluations.semester, AVG(feedback_answers.rating) as avg_rating, MIN(evaluations.created_at) as created_at')
-            ->groupBy('evaluations.semester')
-            ->orderBy('created_at')
-            ->get();
-
-        if ($historicalSemesters->isEmpty()) {
-            // Default mock trend if no data is available, for beautiful visualization
-            $historicalTrend = [
-                ['semester' => 'Fall 2022', 'rating' => 4.2],
-                ['semester' => 'Spring 2023', 'rating' => 4.4],
-                ['semester' => 'Fall 2023', 'rating' => 4.6],
-                ['semester' => 'Spring 2024', 'rating' => 4.8],
-            ];
-        } else {
-            $historicalTrend = [];
-            foreach ($historicalSemesters as $hs) {
-                $historicalTrend[] = [
-                    'semester' => $hs->semester,
-                    'rating' => round($hs->avg_rating, 1),
-                ];
-            }
-        }
-
-        // Generate SVG points from $historicalTrend
-        $svgPoints = [];
-        $numTrendPoints = count($historicalTrend);
-        foreach ($historicalTrend as $idx => $trend) {
-            $x = $numTrendPoints > 1 ? 40 + ($idx * (520 / ($numTrendPoints - 1))) : 300;
-            $ratingValue = max(1, min(5, $trend['rating']));
-            $y = 155 - ($ratingValue - 1) * 32.5;
-            $svgPoints[] = [
-                'x' => $x,
-                'y' => $y,
-                'semester' => $trend['semester'],
-                'rating' => $trend['rating'],
-            ];
-        }
-
-        // 7. Recent Comments
         $recentComments = FeedbackAnswer::where('question_id', 'comments')
             ->whereNotNull('text_answer')
             ->where('text_answer', '!=', '')
@@ -132,7 +60,7 @@ class FacultyController extends Controller
         return view('users.faculty.dashboard', compact(
             'faculty',
             'notifications',
-            'activeEvaluation',
+            'activeEvaluations',
             'assignedCourses',
             'avgRating',
             'totalResponsesCount',
@@ -144,7 +72,7 @@ class FacultyController extends Controller
         ));
     }
 
-    public function feedback()
+    public function feedback(): View
     {
         $faculty = Auth::user();
 
@@ -238,12 +166,130 @@ class FacultyController extends Controller
         ));
     }
 
-    public function analytics()
+    public function analytics(FacultyDashboardService $dashboardService): View
     {
-        return view('users.faculty.analytics');
+        $faculty = Auth::user();
+
+        $avgRating = $dashboardService->getAverageRating($faculty);
+        $completionRate = $dashboardService->getCompletionRate($faculty);
+        $totalResponses = $dashboardService->getTotalResponses($faculty);
+        $coursesCount = $dashboardService->getCoursesCount($faculty);
+        $criteriaStats = $dashboardService->getCriteriaStats($faculty);
+        $historicalTrend = $dashboardService->getHistoricalTrend($faculty);
+        $recentComments = $dashboardService->getRecentComments($faculty);
+
+        $studentsPolled = FeedbackToken::where('faculty_id', $faculty->id)
+            ->where('is_used', true)
+            ->distinct('student_id')
+            ->count('student_id');
+
+        $lowestCriterion = ! empty($criteriaStats)
+            ? array_keys($criteriaStats, min($criteriaStats))[0]
+            : null;
+
+        $trendPoints = $this->buildTrendPoints($historicalTrend);
+
+        $radarPolygon = $this->buildRadarPolygon($criteriaStats);
+
+        $trendAreaPath = '';
+        $trendLinePath = '';
+        if (! empty($trendPoints)) {
+            $first = $trendPoints[0];
+            $last = $trendPoints[count($trendPoints) - 1];
+            $dArea = "M {$first['x']} {$first['y']}";
+            $dLine = "M {$first['x']} {$first['y']}";
+            foreach (array_slice($trendPoints, 1) as $p) {
+                $dArea .= " L {$p['x']} {$p['y']}";
+                $dLine .= " L {$p['x']} {$p['y']}";
+            }
+            $dArea .= " L {$last['x']} 220 L {$first['x']} 220 Z";
+            $trendAreaPath = $dArea;
+            $trendLinePath = $dLine;
+        }
+
+        $trendingUp = count($historicalTrend) >= 2
+            && end($historicalTrend)['rating'] > $historicalTrend[count($historicalTrend) - 2]['rating'];
+
+        $criterionLabels = [
+            'clarity' => 'Lectures',
+            'responsiveness' => 'Grading',
+            'materials' => 'Labs',
+            'organization' => 'Speed',
+        ];
+
+        return view('users.faculty.analytics', compact(
+            'avgRating',
+            'completionRate',
+            'totalResponses',
+            'studentsPolled',
+            'coursesCount',
+            'criteriaStats',
+            'historicalTrend',
+            'recentComments',
+            'lowestCriterion',
+            'trendPoints',
+            'radarPolygon',
+            'trendAreaPath',
+            'trendLinePath',
+            'trendingUp',
+            'criterionLabels',
+        ));
     }
 
-    public function profile()
+    private function buildTrendPoints(array $trend): array
+    {
+        $numPoints = count($trend);
+        $points = [];
+        foreach ($trend as $idx => $t) {
+            $x = $numPoints > 1 ? round(($idx / ($numPoints - 1)) * 760) : 380;
+            $ratingValue = max(1, min(5, $t['rating']));
+            $y = round(200 - (($ratingValue - 1) / 4) * 160);
+
+            $points[] = [
+                'x' => $x,
+                'y' => $y,
+                'semester' => $t['semester'],
+                'rating' => $t['rating'],
+            ];
+        }
+
+        return $points;
+    }
+
+    private function buildRadarPolygon(array $criteriaStats): string
+    {
+        if (empty($criteriaStats)) {
+            return '';
+        }
+
+        $vertices = [
+            ['x' => 150, 'y' => 30],
+            ['x' => 258, 'y' => 108],
+            ['x' => 216, 'y' => 234],
+            ['x' => 84, 'y' => 234],
+            ['x' => 42, 'y' => 108],
+        ];
+
+        $values = [
+            $criteriaStats['clarity'] ?? 0,
+            $criteriaStats['responsiveness'] ?? 0,
+            $criteriaStats['materials'] ?? 0,
+            $criteriaStats['organization'] ?? 0,
+            array_sum($criteriaStats) / count($criteriaStats),
+        ];
+
+        $polygonPoints = '';
+        foreach ($vertices as $i => $v) {
+            $pct = $values[$i] / 5;
+            $px = round(150 + ($v['x'] - 150) * $pct);
+            $py = round(150 + ($v['y'] - 150) * $pct);
+            $polygonPoints .= "$px,$py ";
+        }
+
+        return trim($polygonPoints);
+    }
+
+    public function profile(): View
     {
         return view('users.faculty.profile');
     }

@@ -14,21 +14,26 @@ Route::view('/login', 'auth.login')
     ->middleware('guest')
     ->name('login');
 
-Route::post('/login', [AuthController::class, 'login'])->name('auth.attempt');
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:10,1')
+    ->name('auth.attempt');
 Route::view('/register', 'auth.register')
     ->middleware('guest')
     ->name('register');
 Route::post('/register', [AuthController::class, 'register'])
-    ->middleware('guest');
-
-Route::get('/register', function () {
-    return view('auth.register');
-});
+    ->middleware(['guest', 'throttle:5,30']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
-Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
+    // ->middleware('throttle:3,30')
+    ->name('password.email');
+
+Route::get('/password/reset/{token}', [AuthController::class, 'showResetForm'])
+    ->name('password.reset');
+Route::post('/password/reset', [AuthController::class, 'reset'])
+    ->name('password.update');
 
 Route::prefix('admin')
     ->middleware(['auth.redirect', 'admin'])
@@ -48,7 +53,6 @@ Route::prefix('admin')
         Route::post('/user/{user}/recovery/password', [AdminController::class, 'updateTemporaryPassword'])->name('admin.users.recovery.password');
         Route::post('/user/{user}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.users.toggle-status');
         Route::get('/students', [AdminController::class, 'students']);
-        Route::get('/faculity', [AdminController::class, 'faculty']);
         Route::get('/faculty', [AdminController::class, 'faculty']);
         Route::get('/faculty/{faculty}/assign-courses', [AdminController::class, 'assignCourses'])->name('admin.faculty.assign-courses');
         Route::post('/faculty/{faculty}/assign-courses', [AdminController::class, 'storeCourseAssignments'])->name('admin.faculty.store-assignments');
@@ -108,7 +112,9 @@ Route::prefix('student')
         Route::get('/courses', [StudentController::class, 'courses'])->name('student.courses');
         Route::get('/feedback/api/course-details/{course}', [StudentController::class, 'getCourseDetails'])->name('student.feedback.api.course-details');
         Route::get('/feedback/{course?}', [StudentController::class, 'feedback'])->name('student.feedback');
-        Route::post('/feedback', [StudentController::class, 'storeFeedback'])->name('student.feedback.store');
+        Route::post('/feedback', [StudentController::class, 'storeFeedback'])
+            ->middleware('throttle:10,1')
+            ->name('student.feedback.store');
         Route::get('/feedback-history', [StudentController::class, 'feedbackHistory'])->name('student.feedback.history');
         Route::put('/profile/password/{user?}', [ProfileController::class, 'updatePassword'])->name('student.profile.password');
         Route::post('/profile/avatar/remove/{user?}', [ProfileController::class, 'removeAvatar'])->name('student.profile.avatar.remove');

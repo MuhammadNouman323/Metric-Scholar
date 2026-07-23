@@ -40,7 +40,7 @@
                 <div>
                     <h2 class="text-[32px] font-bold text-gray-900 tracking-tight mb-2">My Enrolled Courses</h2>
                     <p class="text-[14px] text-gray-500 font-medium">Managing your academic journey through curated
-                        feedback and performance analytics for the Fall 2024 Semester.</p>
+                        feedback and performance analytics for the {{ currentTerm() }} Semester.</p>
                 </div>
                 <div class="flex gap-3 shrink-0">
                     <button
@@ -88,7 +88,7 @@
                             @php
                                 $instructor = $course->faculty->first();
                             @endphp
-                            <img src="{{ $instructor ? $instructor->avatar_url : 'https://ui-avatars.com/api/?name=TBA&background=0e48c1&color=fff' }}"
+                            <img src="{{ $instructor ? $instructor->avatar_url : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 fill=%22%230e48c1%22 rx=%226%22/%3E%3Ctext x=%2216%22 y=%2216%22 text-anchor=%22middle%22 dominant-baseline=%22central%22 font-family=%22system-ui,sans-serif%22 font-size=%2213%22 font-weight=%22600%22 fill=%22%23fff%22%3ETBA%3C/text%3E%3C/svg%3E' }}"
                                 alt="{{ $instructor ? $instructor->name : 'TBA' }}"
                                 class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
                         </div>
@@ -113,7 +113,7 @@
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                     </path>
                                 </svg>
-                                Fall 2024 • Course {{ $course->code ?? 'N/A' }}
+                                {{ currentTerm() }} • Course {{ $course->code ?? 'N/A' }}
                             </div>
                         </div>
                         <div class="flex gap-2 pt-1 border-t border-gray-50">

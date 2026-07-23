@@ -139,6 +139,35 @@ test('student identity is completely anonymous and never exposed in reports', fu
     $response->assertDontSee('john.student@university.edu');
 });
 
+test('each report tab loads successfully with data', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $faculty = User::factory()->create(['role' => 'faculty', 'department' => 'Computer Science']);
+    $course = Course::create([
+        'title' => 'Data Structures',
+        'code' => 'CS-201',
+        'semester' => 'Fall 2024',
+        'credit_hours' => 3,
+        'department' => 'Computer Science',
+    ]);
+    $course->faculty()->attach($faculty->id);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Fall 2024 Eval',
+        'semester' => 'Fall 2024',
+        'evaluation_type' => 'mid-term',
+        'start_date' => now(),
+        'end_date' => now()->addDays(7),
+        'status' => 'active',
+        'is_anonymous' => true,
+    ]);
+
+    $tabs = ['faculty', 'course', 'department', 'evaluation', 'questions', 'comments', 'moderation'];
+    foreach ($tabs as $tab) {
+        $response = $this->actingAs($admin)->get("/admin/reports?tab={$tab}");
+        $response->assertStatus(200);
+    }
+});
+
 test('administrator can download CSV and Excel reports', function () {
     $admin = User::factory()->create(['role' => 'admin']);
     $faculty = User::factory()->create(['role' => 'faculty']);

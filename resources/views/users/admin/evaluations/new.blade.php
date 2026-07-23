@@ -83,10 +83,9 @@
                                 <label for="semester" class="block text-[11px] font-extrabold text-slate-400 tracking-widest uppercase">Semester</label>
                                 <div class="relative">
                                     <select id="semester" name="semester" class="w-full appearance-none rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 pr-12 text-[14px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white transition-all duration-200">
-                                        <option>Fall 2024</option>
-                                        <option>Spring 2024</option>
-                                        <option>Spring 2025</option>
-                                        <option>Fall 2025</option>
+                                        @foreach(semesterOptions() as $sem)
+                                            <option>{{ $sem }}</option>
+                                        @endforeach
                                     </select>
                                     <svg class="pointer-events-none absolute right-5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
@@ -304,7 +303,7 @@
                         <div class="grid grid-cols-2 gap-6 bg-[#f8fafc] p-6 rounded-2xl border border-slate-100 mb-6">
                             <div>
                                 <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Semester</span>
-                                <span class="text-sm font-bold text-slate-800" id="preview-semester">Fall 2024</span>
+                                <span class="text-sm font-bold text-slate-800" id="preview-semester">{{ currentTerm() }}</span>
                             </div>
                             <div>
                                 <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Evaluation Type</span>

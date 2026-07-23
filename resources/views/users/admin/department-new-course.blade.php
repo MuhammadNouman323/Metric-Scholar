@@ -57,8 +57,9 @@
                                 <select id="semester" name="semester"
                                     class="w-full border border-gray-100 bg-[#f8fafc] rounded-xl px-4 py-3 text-[14px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white">
                                     <option value="">Select Term</option>
-                                    <option value="Spring 2024" {{ old('semester') === 'Spring 2024' ? 'selected' : '' }}>Spring 2024</option>
-                                    <option value="Fall 2024" {{ old('semester') === 'Fall 2024' ? 'selected' : '' }}>Fall 2024</option>
+                                    @foreach(semesterOptions() as $sem)
+                                        <option value="{{ $sem }}" {{ old('semester') === $sem ? 'selected' : '' }}>{{ $sem }}</option>
+                                    @endforeach
                                 </select>
                                 @error('semester')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

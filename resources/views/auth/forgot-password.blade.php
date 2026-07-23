@@ -79,6 +79,9 @@
                         </div>
                     @endif
 
+                    <!-- WebSocket Reset Link (appears in real-time) -->
+                    <div id="reset-link-container" class="mb-6 hidden"></div>
+
                     <!-- Error -->
                     @error('email')
                         <div class="mb-5 bg-red-50 border border-red-200 rounded-xl px-5 py-3 text-sm font-semibold text-red-600">
@@ -105,18 +108,13 @@
                             </div>
                         </div>
 
-                        <!-- Helpful tip -->
-                        <div class="mb-7 bg-[#f8fafc] border border-gray-100 rounded-xl px-4 py-3.5 flex items-start gap-3">
-                            <svg class="w-4 h-4 text-[#0e48c1] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p class="text-xs text-gray-500 font-medium leading-relaxed">
-                                <span class="font-bold text-gray-700">Helpful Tip:</span>
-                                Reset emails usually arrive within minutes. If you don't see it, please check your <span class="font-bold text-gray-700">spam or junk folders</span> before requesting a new one.
-                            </p>
-                        </div>
+                    <!-- WebSocket Connection Status -->
+                    <div id="ws-status" class="mb-7 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center gap-3">
+                        <div id="ws-indicator" class="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                        <span id="ws-text" class="text-xs font-semibold text-gray-500">Connecting to real-time service...</span>
+                    </div>
 
-                        <button type="submit"
+                        <button id="submit-btn" type="submit"
                             class="w-full bg-[#0e48c1] hover:bg-[#0c3ca1] text-white font-bold rounded-xl py-4 transition-all focus:ring-4 focus:ring-blue-300 focus:outline-none shadow-[0_8px_20px_rgba(14,72,193,0.2)] hover:shadow-[0_8px_25px_rgba(14,72,193,0.3)] flex items-center justify-center gap-2 transform active:scale-[0.99]">
                             <span>Send Reset Link</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +139,7 @@
 
         <!-- Footer -->
         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 text-[13px] font-semibold text-gray-400 max-w-4xl text-center">
-            <span>© 2024 Scholar Metric Academic Systems. All rights reserved.</span>
+            <span>© {{ date('Y') }} Scholar Metric Academic Systems. All rights reserved.</span>
             <span class="hidden sm:inline text-gray-300">|</span>
             <div class="flex gap-4">
                 <a href="#" class="hover:text-gray-600 transition-colors">Privacy Policy</a>
@@ -150,4 +148,53 @@
         </div>
 
     </div>
+
+    @php($resetChannelToken = session('reset_channel_token'))
+    @if($resetChannelToken)
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const wsIndicator = document.getElementById('ws-indicator');
+                const wsText = document.getElementById('ws-text');
+                const resetLinkContainer = document.getElementById('reset-link-container');
+
+                function setWsStatus(color, text) {
+                    if (wsIndicator) wsIndicator.className = 'w-2.5 h-2.5 rounded-full ' + color;
+                    if (wsText) wsText.textContent = text;
+                }
+
+                if (window.Echo) {
+                    setWsStatus('bg-yellow-400', 'Connecting to real-time service...');
+
+                    window.Echo.connector.pusher.connection.bind('connected', function () {
+                        setWsStatus('bg-blue-500', 'Connected. Waiting for reset link...');
+                    });
+
+                    window.Echo.connector.pusher.connection.bind('disconnected', function () {
+                        setWsStatus('bg-red-500', 'Disconnected. Refresh to re-enable real-time updates.');
+                    });
+
+                    window.Echo.connector.pusher.connection.bind('error', function () {
+                        setWsStatus('bg-red-500', 'Connection error. Refresh page.');
+                    });
+
+                    window.Echo.private('reset.{{ $resetChannelToken }}')
+                        .listen('PasswordResetLinkCreated', function (e) {
+                            setWsStatus('bg-green-500', 'Reset link received!');
+
+                            resetLinkContainer.innerHTML =
+                                '<div class="bg-green-50 border border-green-200 rounded-xl px-5 py-4">' +
+                                '<p class="text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Reset Link Generated</p>' +
+                                '<a href="' + e.resetUrl + '" class="text-sm font-semibold text-[#0e48c1] hover:underline break-all">' +
+                                e.resetUrl + '</a></div>';
+                            resetLinkContainer.classList.remove('hidden');
+
+                            document.getElementById('submit-btn').disabled = true;
+                            document.getElementById('submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                        });
+                } else {
+                    setWsStatus('bg-gray-300', 'Real-time service unavailable (Echo not loaded).');
+                }
+            });
+        </script>
+    @endif
 </x-layout>

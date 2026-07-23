@@ -44,32 +44,21 @@ class ProcessEvaluationsLifecycle extends Command
         }
 
         // 2. Activate Scheduled Evaluations
-        // Ensure no evaluation is currently active
-        if (! Evaluation::active()->exists()) {
-            $scheduledToActivate = Evaluation::scheduled()->where('start_date', '<=', $today)->get();
+        $scheduledToActivate = Evaluation::scheduled()->where('start_date', '<=', $today)->get();
 
-            // We should only activate ONE evaluation if there happen to be multiple scheduled for today
-            $evaluationToActivate = $scheduledToActivate->first();
+        foreach ($scheduledToActivate as $evaluation) {
+            $evaluation->update([
+                'status' => 'active',
+                'activated_at' => now(),
+            ]);
 
-            if ($evaluationToActivate) {
-                $evaluationToActivate->update([
-                    'status' => 'active',
-                    'activated_at' => now(),
-                ]);
+            event(new EvaluationActivated($evaluation));
 
-                event(new EvaluationActivated($evaluationToActivate));
+            $this->info("Activated evaluation ID: {$evaluation->id}");
+        }
 
-                $this->info("Activated evaluation ID: {$evaluationToActivate->id}");
-
-                // If there are others, we skip them for now to enforce the single active rule
-                if ($scheduledToActivate->count() > 1) {
-                    $this->warn('More than one scheduled evaluation was eligible. Only one was activated to maintain the single-active rule.');
-                }
-            } else {
-                $this->info('No scheduled evaluations to activate.');
-            }
-        } else {
-            $this->info('An evaluation is already active. Skipping activation of scheduled evaluations.');
+        if ($scheduledToActivate->isEmpty()) {
+            $this->info('No scheduled evaluations to activate.');
         }
     }
 }

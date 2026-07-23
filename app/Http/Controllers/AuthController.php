@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PasswordResetLinkCreated;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Models\University;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function login(Request $request): RedirectResponse
+    public function login(LoginRequest $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-            'role' => ['required', 'in:admin,student,faculty'],
-        ]);
+        $credentials = $request->validated();
 
         if (! Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $request->boolean('remember'))) {
             throw ValidationException::withMessages([
@@ -49,17 +50,9 @@ class AuthController extends Controller
         return redirect()->intended($this->redirectPathForRole($user->role));
     }
 
-    public function register(Request $request): RedirectResponse
+    public function register(RegisterRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'department' => ['nullable', 'string', 'max:255'],
-            'admin_id' => ['nullable', 'string', 'max:255', 'unique:users,admin_id'],
-            'access_level' => ['nullable', 'string', 'max:255'],
-            'terms' => ['accepted'],
-        ]);
+        $validated = $request->validated();
 
         unset($validated['terms']);
         $validated['role'] = 'admin';
@@ -96,7 +89,10 @@ class AuthController extends Controller
 
     public function showForgotPassword(): View
     {
-        return view('auth.forgot-password');
+        $resetChannelToken = Str::random(32);
+        session()->put('reset_channel_token', $resetChannelToken);
+
+        return view('auth.forgot-password', compact('resetChannelToken'));
     }
 
     public function sendResetLink(Request $request): RedirectResponse
@@ -114,12 +110,52 @@ class AuthController extends Controller
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status === Password::RESET_LINK_SENT) {
+            if (session()->has('reset_channel_token')) {
+                $token = Password::getRepository()->create($user);
+                $resetUrl = url('/password/reset/'.$token.'?email='.urlencode($user->email));
+
+                broadcast(new PasswordResetLinkCreated(
+                    resetUrl: $resetUrl,
+                    channelToken: session('reset_channel_token'),
+                ))->toOthers();
+            }
+
             return back()->with('status', __($status));
         }
 
         throw ValidationException::withMessages([
             'email' => __($status),
         ]);
+    }
+
+    public function showResetForm(string $token): View
+    {
+        return view('auth.reset-password', ['token' => $token, 'email' => request('email')]);
+    }
+
+    public function reset(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', 'min:8'],
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password): void {
+                $user->password = Hash::make($password);
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return redirect()->route('login')->with('status', __($status));
+        }
+
+        return back()->withErrors(['email' => __($status)]);
     }
 
     private function redirectPathForRole(string $role): string

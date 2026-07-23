@@ -170,7 +170,7 @@
                                 <td class="px-6 md:px-8 py-5 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
                                         <img class="w-10 h-10 rounded-full object-cover"
-                                            src="https://i.pravatar.cc/150?img={{ rand(0, 70) }}" alt="{{ $faculty->name }}">
+                                            src="{{ $faculty->avatar_url }}" alt="{{ $faculty->name }}">
                                         <div class="flex flex-col">
                                             <span
                                                 class="text-[14px] font-bold text-gray-900 group-hover:text-[#0e48c1] transition-colors cursor-pointer">{{ $faculty->name }}</span>
@@ -218,39 +218,7 @@
             </div>
 
             <!-- Pagination -->
-            <div
-                class="px-6 md:px-8 py-5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-[13px] font-medium text-gray-500">
-                    Showing <span class="font-bold text-gray-900">{{ $faculties->count() > 0 ? 1 : 0 }}-{{ $faculties->count() }}</span> of <span
-                        class="font-bold text-gray-900">{{ $totalFaculty }}</span> faculty members
-                </div>
-                <div class="flex items-center gap-2">
-                    <button
-                        class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#0e48c1] transition-colors duration-150 disabled:opacity-50"
-                        disabled>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                    </button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#0e48c1] text-white font-bold text-[13px] shadow-sm hover:bg-[#0a389f] transition-colors duration-150">1</button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 font-bold text-[13px] transition-colors duration-150">2</button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 font-bold text-[13px] transition-colors duration-150">3</button>
-                    <span class="px-1 text-gray-400 font-bold">...</span>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 font-bold text-[13px] transition-colors duration-150">321</button>
-                    <button
-                        class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-[#0e48c1] transition-colors duration-150">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            {{ $faculties->links('vendor.pagination.admin') }}
         </div>
 
         <!-- Bottom Cards -->

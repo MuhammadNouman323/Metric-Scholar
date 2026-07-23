@@ -2,33 +2,123 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\StoreEvaluationRequest;
+use App\Http\Requests\StoreUserRequest;
 use App\Models\Course;
 use App\Models\Evaluation;
+use App\Models\Feedback;
 use App\Models\FeedbackAnswer;
 use App\Models\User;
 use App\Services\EvaluationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(): View
     {
         $tenantId = auth()->user()->university_id;
-        $studentCount = User::where('university_id', $tenantId)->where('role', 'student')->count();
-        $facultyCount = User::where('university_id', $tenantId)->where('role', 'faculty')->count();
+
+        $counts = User::where('university_id', $tenantId)
+            ->selectRaw("
+                SUM(CASE WHEN role = 'student' THEN 1 ELSE 0 END) as student_count,
+                SUM(CASE WHEN role = 'faculty' THEN 1 ELSE 0 END) as faculty_count
+            ")
+            ->first();
+
+        $studentCount = $counts->student_count ?? 0;
+        $facultyCount = $counts->faculty_count ?? 0;
         $courseCount = Course::count();
 
-        return view('users.admin.dashboard', compact('studentCount', 'facultyCount', 'courseCount'));
+        $feedbackCount = Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))->count();
+
+        $ratingQuery = FeedbackAnswer::where('question_id', 'overall_rating')
+            ->whereHas('feedback.faculty', fn ($q) => $q->where('university_id', $tenantId));
+
+        $totalRatings = $ratingQuery->count();
+
+        if ($totalRatings > 0) {
+            $avgRating = round($ratingQuery->avg('rating'), 1);
+            $excellent = (clone $ratingQuery)->where('rating', '>=', 4.5)->count();
+            $good = (clone $ratingQuery)->whereBetween('rating', [3.5, 4.49])->count();
+            $others = (clone $ratingQuery)->where('rating', '<', 3.5)->count();
+
+            $excellentPct = round(($excellent / $totalRatings) * 100);
+            $goodPct = round(($good / $totalRatings) * 100);
+            $othersPct = 100 - $excellentPct - $goodPct;
+        } else {
+            $avgRating = 0;
+            $excellentPct = 0;
+            $goodPct = 0;
+            $othersPct = 100;
+        }
+
+        $ratingChart = [
+            'avgRating' => $avgRating,
+            'excellentPct' => $excellentPct,
+            'goodPct' => $goodPct,
+            'othersPct' => $othersPct,
+            'circumference' => 238.7,
+            'excellentOffset' => 238.7 * (1 - $excellentPct / 100),
+            'goodOffset' => 238.7 * (1 - $goodPct / 100),
+            'goodRotation' => $excellentPct * 3.6,
+        ];
+
+        $departments = User::where('university_id', $tenantId)
+            ->where('role', 'faculty')
+            ->whereNotNull('department')
+            ->distinct()
+            ->pluck('department');
+
+        $departmentPerformance = [];
+        $colors = [
+            ['bar' => '#0e48c1', 'shadow' => 'shadow-blue-500/20'],
+            ['bar' => '#2563eb', 'shadow' => 'shadow-blue-400/20'],
+            ['bar' => '#6366f1', 'shadow' => 'shadow-indigo-400/20'],
+            ['bar' => '#10b981', 'shadow' => 'shadow-emerald-400/20'],
+            ['bar' => '#f59e0b', 'shadow' => 'shadow-amber-400/20'],
+            ['bar' => '#ef4444', 'shadow' => 'shadow-red-400/20'],
+        ];
+
+        foreach ($departments as $i => $dept) {
+            $avg = Feedback::whereHas('faculty', function ($q) use ($dept, $tenantId) {
+                $q->where('department', $dept)->where('university_id', $tenantId);
+            })
+                ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
+                ->where('feedback_answers.question_id', 'overall_rating')
+                ->avg('feedback_answers.rating');
+
+            $score = $avg ? round(($avg / 5) * 100) : 0;
+
+            $departmentPerformance[] = [
+                'name' => $dept,
+                'score' => $score,
+                'avg_rating' => $avg ? round($avg, 1) : 0,
+                'color' => $colors[$i % count($colors)],
+            ];
+        }
+
+        usort($departmentPerformance, fn ($a, $b) => $b['score'] <=> $a['score']);
+
+        return view('users.admin.dashboard', compact(
+            'studentCount',
+            'facultyCount',
+            'courseCount',
+            'feedbackCount',
+            'departmentPerformance',
+            'ratingChart',
+        ));
     }
 
-    public function users()
+    public function users(): View
     {
         $recentUsers = User::where('university_id', auth()->user()->university_id)
             ->latest()->take(4)->get();
@@ -36,16 +126,9 @@ class AdminController extends Controller
         return view('users.admin.admin-user', compact('recentUsers'));
     }
 
-    public function storeUser(Request $request)
+    public function storeUser(StoreUserRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'in:student,faculty'],
-            'department' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8'],
-        ]);
-
+        $validated = $request->validated();
         $validated['role'] = strtolower($validated['role']);
         $validated['password'] = Hash::make($validated['password']);
         $validated['admin_id'] = $this->generateAdminId();
@@ -58,7 +141,7 @@ class AdminController extends Controller
         return back()->with('success', ucfirst($validated['role']).' account created successfully.');
     }
 
-    public function students()
+    public function students(): View
     {
         $tenantId = auth()->user()->university_id;
         $students = User::where('university_id', $tenantId)
@@ -82,7 +165,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function faculty()
+    public function faculty(): View
     {
         $tenantId = auth()->user()->university_id;
 
@@ -109,7 +192,7 @@ class AdminController extends Controller
         return view('users.admin.faculty', compact('faculties', 'totalFaculty', 'activeCourses', 'departments', 'pendingReviews', 'tenuredPercentage'));
     }
 
-    public function assignCourses(User $faculty)
+    public function assignCourses(User $faculty): View
     {
         $tenantId = auth()->user()->university_id;
 
@@ -117,16 +200,18 @@ class AdminController extends Controller
 
         $departmentSlug = Str::slug($faculty->department ?? '');
 
-        // Fetch courses for the faculty's department
-        $availableCourses = Course::where('department', $faculty->department)->get();
+        $term = request()->query('term', currentTerm());
 
-        // Fetch currently assigned courses for Spring 2024
-        $assignedCourses = $faculty->courses()->wherePivot('term', 'Spring 2024')->get();
+        $availableCourses = Course::where('department', $faculty->department)
+            ->whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term))
+            ->paginate(50);
 
-        return view('users.admin.faculty-assign-courses', compact('faculty', 'availableCourses', 'assignedCourses', 'departmentSlug'));
+        $assignedCourses = $faculty->courses()->wherePivot('term', $term)->get();
+
+        return view('users.admin.faculty-assign-courses', compact('faculty', 'availableCourses', 'assignedCourses', 'departmentSlug', 'term'));
     }
 
-    public function storeCourseAssignments(Request $request, User $faculty)
+    public function storeCourseAssignments(Request $request, User $faculty): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -135,23 +220,26 @@ class AdminController extends Controller
         $validated = $request->validate([
             'assigned_courses' => ['nullable', 'array'],
             'assigned_courses.*' => ['exists:courses,id'],
+            'term' => ['nullable', 'string', 'max:255'],
         ]);
 
         $courseIds = $validated['assigned_courses'] ?? [];
+        $term = $validated['term'] ?? currentTerm();
 
-        // Sync the courses with the specific term
         $syncData = [];
         foreach ($courseIds as $courseId) {
-            $syncData[$courseId] = ['term' => 'Spring 2024'];
+            $syncData[$courseId] = ['term' => $term];
         }
 
-        $faculty->courses()->wherePivot('term', 'Spring 2024')->detach();
-        $faculty->courses()->attach($syncData);
+        DB::transaction(function () use ($faculty, $term, $syncData) {
+            $faculty->courses()->wherePivot('term', $term)->detach();
+            $faculty->courses()->attach($syncData);
+        });
 
         return redirect()->back()->with('success', 'Course assignments updated successfully.');
     }
 
-    public function courses()
+    public function courses(): View
     {
         $tenantId = auth()->user()->university_id;
 
@@ -168,7 +256,7 @@ class AdminController extends Controller
         $courses = Course::query()
             ->withCount('users')
             ->latest()
-            ->get();
+            ->paginate(50);
 
         $totalEnrollment = $courses->sum('users_count');
         $activeCourses = $courses->count();
@@ -183,7 +271,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function departments()
+    public function departments(): View
     {
         $tenantId = auth()->user()->university_id;
 
@@ -209,7 +297,7 @@ class AdminController extends Controller
         return view('users.admin.departments', compact('departments'));
     }
 
-    public function department(string $department)
+    public function department(string $department): View
     {
         $section = request()->string('section')->toString() ?: 'overview';
         $tenantId = auth()->user()->university_id;
@@ -223,7 +311,7 @@ class AdminController extends Controller
             ->whereIn('role', ['student', 'faculty'])
             ->where('department', $departmentName)
             ->latest()
-            ->get();
+            ->paginate(50);
 
         $students = $departmentUsers
             ->where('role', 'student')
@@ -250,7 +338,7 @@ class AdminController extends Controller
     /**
      * @param  Collection<int, User>  $students
      * @param  Collection<int, User>  $faculty
-     * @param  Collection<int, User>  $users
+     * @param  Collection<int, User>|LengthAwarePaginator<int, User>  $users
      * @return array<string, mixed>
      */
     private function buildDepartmentPayload(
@@ -258,7 +346,7 @@ class AdminController extends Controller
         string $departmentSlug,
         Collection $students,
         Collection $faculty,
-        Collection $users,
+        Collection|LengthAwarePaginator $users,
     ): array {
         $departmentCode = Str::upper(Str::substr(Str::slug($departmentName, ''), 0, 4));
 
@@ -321,8 +409,13 @@ class AdminController extends Controller
         abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
         abort_unless($faculty->department === $departmentName, 404);
 
-        $availableCourses = Course::where('department', $departmentName)->get();
-        $assignedCourses = $faculty->courses()->get();
+        $term = request()->query('term', currentTerm());
+
+        $availableCourses = Course::where('department', $departmentName)
+            ->whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term))
+            ->paginate(50);
+
+        $assignedCourses = $faculty->courses()->wherePivot('term', $term)->get();
 
         return view('users.admin.department-assign-courses', [
             'departmentName' => $departmentName,
@@ -333,7 +426,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function storeDepartmentCourseAssignments(Request $request, string $department, User $faculty)
+    public function storeDepartmentCourseAssignments(Request $request, string $department, User $faculty): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -346,10 +439,21 @@ class AdminController extends Controller
         $validated = $request->validate([
             'assigned_courses' => ['nullable', 'array'],
             'assigned_courses.*' => ['exists:courses,id'],
+            'term' => ['nullable', 'string', 'max:255'],
         ]);
 
         $courseIds = $validated['assigned_courses'] ?? [];
-        $faculty->courses()->sync($courseIds);
+        $term = $validated['term'] ?? currentTerm();
+
+        $syncData = [];
+        foreach ($courseIds as $courseId) {
+            $syncData[$courseId] = ['term' => $term];
+        }
+
+        DB::transaction(function () use ($faculty, $term, $syncData) {
+            $faculty->courses()->wherePivot('term', $term)->detach();
+            $faculty->courses()->attach($syncData);
+        });
 
         return redirect()
             ->route('admin.departments.manage', ['department' => $department, 'section' => 'faculty'])
@@ -368,9 +472,9 @@ class AdminController extends Controller
             ->where('department', $departmentName)
             ->where('role', 'student')
             ->with('courses')
-            ->get();
+            ->paginate(50);
 
-        $availableCourses = Course::where('department', $departmentName)->get();
+        $availableCourses = Course::where('department', $departmentName)->paginate(50);
 
         return view('users.admin.department-assign-enrollment', [
             'departmentName' => $departmentName,
@@ -380,7 +484,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function storeEnrollmentCourseAssignments(Request $request, string $department)
+    public function storeEnrollmentCourseAssignments(Request $request, string $department): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -399,60 +503,66 @@ class AdminController extends Controller
         abort_unless($student->department === $departmentName, 404);
 
         $courseIds = $validated['assigned_courses'] ?? [];
-        $student->courses()->sync($courseIds);
+
+        DB::transaction(function () use ($student, $courseIds) {
+            $student->courses()->sync($courseIds);
+        });
 
         return redirect()
             ->route('admin.departments.manage', ['department' => $department, 'section' => 'enrollment'])
             ->with('success', 'Course enrollment updated successfully.');
     }
 
-    public function evaluations()
+    public function evaluations(): View
     {
         $tenantId = auth()->user()->university_id;
 
         $evaluations = Evaluation::whereHas('creator', function ($query) use ($tenantId) {
             $query->where('university_id', $tenantId);
-        })->withCount('tokens')->latest()->get();
+        })
+            ->withCount(['tokens', 'tokens as used_tokens_count' => function ($q) {
+                $q->where('is_used', true);
+            }])
+            ->latest()
+            ->paginate(50);
 
-        $activeEvaluation = $evaluations->where('status', 'active')->first();
+        $activeEvaluations = $evaluations->where('status', 'active');
         $scheduledEvaluations = $evaluations->where('status', 'scheduled');
         $closedEvaluations = $evaluations->where('status', 'closed');
         $draftEvaluations = $evaluations->where('status', 'draft');
 
-        $activeProgress = [
-            'eligible' => 0,
-            'submitted' => 0,
-            'pending' => 0,
-            'completion_percentage' => 0,
-        ];
+        $activeEvaluationsProgress = $activeEvaluations->mapWithKeys(function ($eval) {
+            $eligible = $eval->tokens_count;
+            $submitted = $eval->used_tokens_count;
 
-        if ($activeEvaluation) {
-            $activeProgress['eligible'] = $activeEvaluation->tokens_count;
-            $activeProgress['submitted'] = $activeEvaluation->tokens()->where('is_used', true)->count();
-            $activeProgress['pending'] = $activeProgress['eligible'] - $activeProgress['submitted'];
-            $activeProgress['completion_percentage'] = $activeProgress['eligible'] > 0
-                ? round(($activeProgress['submitted'] / $activeProgress['eligible']) * 100)
-                : 0;
-        }
+            return [$eval->id => [
+                'eligible' => $eligible,
+                'submitted' => $submitted,
+                'pending' => $eligible - $submitted,
+                'completion_percentage' => $eligible > 0
+                    ? round(($submitted / $eligible) * 100)
+                    : 0,
+            ]];
+        });
 
         return view('users.admin.evaluations.index', compact(
             'evaluations',
-            'activeEvaluation',
+            'activeEvaluations',
             'scheduledEvaluations',
             'closedEvaluations',
             'draftEvaluations',
-            'activeProgress'
+            'activeEvaluationsProgress'
         ));
     }
 
-    public function newEvaluationStep1(Request $request)
+    public function newEvaluationStep1(Request $request): View
     {
         $evaluationData = $request->session()->get('evaluation_wizard_step1', []);
 
         return view('users.admin.evaluations.step1', compact('evaluationData'));
     }
 
-    public function storeEvaluationStep1(StoreEvaluationRequest $request)
+    public function storeEvaluationStep1(StoreEvaluationRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -461,7 +571,7 @@ class AdminController extends Controller
         return redirect()->route('admin.evaluations.new.step2');
     }
 
-    public function newEvaluationStep2(Request $request)
+    public function newEvaluationStep2(Request $request): View|RedirectResponse
     {
         if (! $request->session()->has('evaluation_wizard_step1')) {
             return redirect()->route('admin.evaluations.new.step1');
@@ -479,7 +589,7 @@ class AdminController extends Controller
         return view('users.admin.evaluations.step2', compact('departments', 'selectionData'));
     }
 
-    public function getFacultyCoursesForEvaluation(Request $request)
+    public function getFacultyCoursesForEvaluation(Request $request): JsonResponse
     {
         $tenantId = auth()->user()->university_id;
         $department = $request->query('department');
@@ -513,7 +623,7 @@ class AdminController extends Controller
         return response()->json(['faculty' => $faculty]);
     }
 
-    public function storeEvaluationStep2(Request $request)
+    public function storeEvaluationStep2(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'department' => 'required|string',
@@ -526,7 +636,7 @@ class AdminController extends Controller
         return redirect()->route('admin.evaluations.new.step3');
     }
 
-    public function newEvaluationStep3(Request $request)
+    public function newEvaluationStep3(Request $request): View|RedirectResponse
     {
         if (! $request->session()->has('evaluation_wizard_step1') || ! $request->session()->has('evaluation_wizard_step2')) {
             return redirect()->route('admin.evaluations.new.step1');
@@ -545,7 +655,7 @@ class AdminController extends Controller
         return view('users.admin.evaluations.step3', compact('step1', 'step2', 'faculty', 'courses', 'totalEligibleStudents'));
     }
 
-    public function publishEvaluation(Request $request, EvaluationService $evaluationService)
+    public function publishEvaluation(Request $request, EvaluationService $evaluationService): RedirectResponse
     {
         if (! $request->session()->has('evaluation_wizard_step1') || ! $request->session()->has('evaluation_wizard_step2')) {
             return redirect()->route('admin.evaluations.new.step1');
@@ -616,12 +726,7 @@ class AdminController extends Controller
         return redirect()->route('admin.evaluations')->with('success', 'Scheduled evaluation updated successfully.');
     }
 
-    public function reports()
-    {
-        return view('users.admin.reports');
-    }
-
-    public function eval()
+    public function eval(): View
     {
         return view('admin.evaluations.index');
     }
@@ -642,22 +747,14 @@ class AdminController extends Controller
         return view('users.admin.new-course', compact('departments'));
     }
 
-    public function storeCourse(Request $request)
+    public function storeCourse(StoreCourseRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255', 'unique:courses,code'],
-            'department' => ['required', 'string', 'max:255'],
-            'semester' => ['nullable', 'string', 'max:255'],
-            'credit_hours' => ['nullable', 'integer', 'min:1', 'max:8'],
-        ]);
-
-        Course::create($validated);
+        Course::create($request->validated());
 
         return redirect()->route('admin.courses')->with('success', 'Course created successfully.');
     }
 
-    public function manageDepartment(string $department)
+    public function manageDepartment(string $department): View
     {
         $section = request()->string('section')->toString() ?: 'courses';
         $tenantId = auth()->user()->university_id;
@@ -666,21 +763,21 @@ class AdminController extends Controller
 
         abort_unless($departmentName !== null, 404);
 
-        $courses = Course::where('department', $departmentName)->latest()->get();
+        $courses = Course::where('department', $departmentName)->latest()->paginate(50);
         $facultyMembers = User::query()
             ->where('university_id', $tenantId)
             ->where('role', 'faculty')
             ->where('department', $departmentName)
             ->with('courses')
             ->latest()
-            ->get();
+            ->paginate(50);
         $students = User::query()
             ->where('university_id', $tenantId)
             ->where('role', 'student')
             ->where('department', $departmentName)
             ->with('courses')
             ->latest()
-            ->get();
+            ->paginate(50);
 
         return view('users.admin.department-manage', [
             'departmentName' => $departmentName,
@@ -706,7 +803,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function storeDepartmentCourse(Request $request, string $department)
+    public function storeDepartmentCourse(Request $request, string $department): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -745,7 +842,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function updateDepartmentCourse(Request $request, string $department, Course $course)
+    public function updateDepartmentCourse(Request $request, string $department, Course $course): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -767,7 +864,7 @@ class AdminController extends Controller
             ->with('success', 'Course updated successfully.');
     }
 
-    public function destroyDepartmentCourse(string $department, Course $course)
+    public function destroyDepartmentCourse(string $department, Course $course): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -803,18 +900,23 @@ class AdminController extends Controller
             $query->where('department', $department);
         }
 
-        $faculty = $query->latest()->get();
+        $faculty = $query->latest()->paginate(50);
 
-        $courses = Course::latest()->get();
+        $term = request()->query('term', currentTerm());
+
+        $courses = Course::whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term))
+            ->latest()
+            ->paginate(50);
 
         return view('users.admin.courses-assign-faculty', [
             'faculty' => $faculty,
             'courses' => $courses,
             'selectedDepartment' => $department,
+            'term' => $term,
         ]);
     }
 
-    public function storeFacultyAssignments(Request $request)
+    public function storeFacultyAssignments(Request $request): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -822,13 +924,24 @@ class AdminController extends Controller
             'faculty_id' => ['required', 'exists:users,id'],
             'assigned_courses' => ['nullable', 'array'],
             'assigned_courses.*' => ['exists:courses,id'],
+            'term' => ['nullable', 'string', 'max:255'],
         ]);
 
         $faculty = User::findOrFail($validated['faculty_id']);
         abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
 
         $courseIds = $validated['assigned_courses'] ?? [];
-        $faculty->courses()->sync($courseIds);
+        $term = $validated['term'] ?? currentTerm();
+
+        $syncData = [];
+        foreach ($courseIds as $courseId) {
+            $syncData[$courseId] = ['term' => $term];
+        }
+
+        DB::transaction(function () use ($faculty, $term, $syncData) {
+            $faculty->courses()->wherePivot('term', $term)->detach();
+            $faculty->courses()->attach($syncData);
+        });
 
         return redirect()->route('admin.courses')
             ->with('success', 'Faculty course assignment updated successfully.');
@@ -846,9 +959,9 @@ class AdminController extends Controller
             $query->where('department', $department);
         }
 
-        $students = $query->latest()->get();
+        $students = $query->latest()->paginate(50);
 
-        $courses = Course::latest()->get();
+        $courses = Course::latest()->paginate(50);
 
         return view('users.admin.courses-assign-students', [
             'students' => $students,
@@ -857,7 +970,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function storeStudentAssignments(Request $request)
+    public function storeStudentAssignments(Request $request): RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
@@ -871,7 +984,10 @@ class AdminController extends Controller
         abort_unless($student->university_id === $tenantId && strtolower($student->role) === 'student', 404);
 
         $courseIds = $validated['assigned_courses'] ?? [];
-        $student->courses()->sync($courseIds);
+
+        DB::transaction(function () use ($student, $courseIds) {
+            $student->courses()->sync($courseIds);
+        });
 
         return redirect()->route('admin.courses')
             ->with('success', 'Student course assignment updated successfully.');
@@ -906,7 +1022,9 @@ class AdminController extends Controller
         $validated['role'] = strtolower($validated['role']);
         $validated['is_active'] = $request->boolean('is_active', true);
 
-        $user->update($validated);
+        DB::transaction(function () use ($user, $validated) {
+            $user->update($validated);
+        });
 
         $redirectRoute = $user->role === 'faculty' ? '/admin/faculty' : '/admin/students';
 
@@ -954,10 +1072,12 @@ class AdminController extends Controller
             'force_change' => ['nullable', 'boolean'],
         ]);
 
-        $user->update([
-            'password' => Hash::make($validated['password']),
-            'password_change_required' => $request->boolean('force_change'),
-        ]);
+        DB::transaction(function () use ($user, $validated, $request) {
+            $user->update([
+                'password' => Hash::make($validated['password']),
+                'password_change_required' => $request->boolean('force_change'),
+            ]);
+        });
 
         return redirect()->route('admin.users.edit', $user)->with('success', 'Temporary password updated successfully. Make sure to communicate it to the user.');
     }
@@ -974,7 +1094,7 @@ class AdminController extends Controller
             ->first(fn (string $value): bool => Str::slug($value) === $slug);
     }
 
-    public function moderation(Request $request)
+    public function moderation(Request $request): View
     {
         $tenantId = auth()->user()->university_id;
 
@@ -1006,11 +1126,21 @@ class AdminController extends Controller
                 $q->where('university_id', $tenantId);
             });
 
-        $totalModerated = (clone $statsQuery)->count();
-        $totalApproved = (clone $statsQuery)->where('moderation_status', 'approved')->count();
-        $totalFlagged = (clone $statsQuery)->where('moderation_status', 'flagged')->count();
-        $totalRejected = (clone $statsQuery)->where('moderation_status', 'rejected')->count();
-        $avgToxicity = (clone $statsQuery)->avg('toxicity_score') ?? 0;
+        $moderationStats = (clone $statsQuery)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN moderation_status = 'approved' THEN 1 ELSE 0 END) as approved_count,
+                SUM(CASE WHEN moderation_status = 'flagged' THEN 1 ELSE 0 END) as flagged_count,
+                SUM(CASE WHEN moderation_status = 'rejected' THEN 1 ELSE 0 END) as rejected_count,
+                AVG(toxicity_score) as avg_toxicity
+            ")
+            ->first();
+
+        $totalModerated = $moderationStats->total ?? 0;
+        $totalApproved = $moderationStats->approved_count ?? 0;
+        $totalFlagged = $moderationStats->flagged_count ?? 0;
+        $totalRejected = $moderationStats->rejected_count ?? 0;
+        $avgToxicity = round($moderationStats->avg_toxicity ?? 0, 2);
 
         return view('users.admin.moderation', compact(
             'answers', 'totalModerated', 'totalApproved', 'totalFlagged', 'totalRejected', 'avgToxicity'

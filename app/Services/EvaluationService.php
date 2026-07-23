@@ -8,9 +8,9 @@ use App\Models\FeedbackToken;
 use App\Models\User;
 use App\Notifications\NewEvaluationScheduledNotification;
 use App\Repositories\EvaluationRepository;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class EvaluationService
 {
@@ -20,12 +20,6 @@ class EvaluationService
 
     public function publishEvaluation(array $data, array $facultyIds, array $courseFacultyMapping): Evaluation
     {
-        if (Evaluation::whereIn('status', ['active', 'scheduled'])->exists()) {
-            throw ValidationException::withMessages([
-                'status' => 'Another evaluation cycle is already scheduled or active. Please wait until the current evaluation cycle is completed before creating a new one.',
-            ]);
-        }
-
         $evaluation = DB::transaction(function () use ($data, $facultyIds, $courseFacultyMapping) {
             $data['status'] = 'scheduled'; // Scheduler handles transition to active
 
@@ -58,10 +52,9 @@ class EvaluationService
 
             return $evaluation;
         });
-        
-        // Immediately run the lifecycle processor so that if the evaluation is scheduled for today, it becomes active right away
-        \Illuminate\Support\Facades\Artisan::call('evaluation:process-lifecycle');
-        
+
+        Artisan::call('evaluation:process-lifecycle');
+
         return $evaluation;
     }
 

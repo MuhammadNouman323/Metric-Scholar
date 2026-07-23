@@ -80,9 +80,9 @@
                     </div>
                     <div class="relative">
                         <select class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl px-4 py-3 pr-10 focus:outline-none shadow-sm">
-                            <option>Spring 2024</option>
-                            <option>Fall 2024</option>
-                            <option>Spring 2025</option>
+                            @foreach(semesterOptions() as $sem)
+                                <option>{{ $sem }}</option>
+                            @endforeach
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

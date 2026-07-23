@@ -170,7 +170,7 @@
 
         <!-- Footer -->
         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 text-[13px] font-semibold text-gray-400 max-w-4xl text-center">
-            <span>© 2024 Scholar Metric Academic Systems. All rights reserved.</span>
+            <span>© {{ date('Y') }} Scholar Metric Academic Systems. All rights reserved.</span>
             <span class="hidden sm:inline text-gray-300">|</span>
             <div class="flex gap-4">
                 <a href="#" class="hover:text-gray-600 transition-colors">Privacy Policy</a>

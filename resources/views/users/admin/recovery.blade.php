@@ -35,7 +35,7 @@
                 <!-- User Card Info -->
                 <div class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] flex flex-col sm:flex-row items-center gap-6">
                     <img class="w-16 h-16 rounded-full border-4 border-white shadow-md object-cover bg-gray-50 shrink-0"
-                        src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=0e48c1&color=fff&size=128"
+                        src="{{ $user->avatar_url }}"
                         alt="{{ $user->name }}">
                     <div class="flex-grow text-center sm:text-left">
                         <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">

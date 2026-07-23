@@ -2,10 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Evaluation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
 
 class StoreEvaluationRequest extends FormRequest
 {
@@ -34,23 +32,5 @@ class StoreEvaluationRequest extends FormRequest
             'allow_faculty_response' => ['boolean'],
             'send_reminder' => ['boolean'],
         ];
-    }
-
-    /**
-     * Configure the validator instance.
-     *
-     * @param  Validator  $validator
-     * @return void
-     */
-    public function withValidator($validator)
-    {
-        $validator->after(function ($validator) {
-            if (Evaluation::whereIn('status', ['active', 'scheduled'])->exists()) {
-                $validator->errors()->add(
-                    'status',
-                    'Another evaluation cycle is already scheduled or active. Please wait until the current evaluation cycle is completed before creating a new one.'
-                );
-            }
-        });
     }
 }

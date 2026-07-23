@@ -27,8 +27,8 @@ class ReportService
         $tokenQuery = FeedbackToken::query();
 
         if ($tenantId) {
-            $evalQuery->where('created_by', function ($q) use ($tenantId) {
-                $q->select('id')->from('users')->where('university_id', $tenantId)->limit(1);
+            $evalQuery->whereHas('creator', function ($q) use ($tenantId) {
+                $q->where('university_id', $tenantId);
             });
             $facultyQuery->where('university_id', $tenantId);
             $studentQuery->where('university_id', $tenantId);
@@ -230,56 +230,54 @@ class ReportService
             $query->where('name', 'like', '%'.$search.'%');
         }
 
-        $facultyData = $query->get()->map(function ($faculty) use ($filters) {
-            $feedbackQuery = Feedback::where('faculty_id', $faculty->id);
+        $facultyIds = $query->pluck('id');
 
-            if (! empty($filters['evaluation_id'])) {
-                $feedbackQuery->where('evaluation_id', $filters['evaluation_id']);
-            }
-            if (! empty($filters['semester'])) {
-                $feedbackQuery->whereHas('evaluation', function ($q) use ($filters) {
-                    $q->where('semester', $filters['semester']);
-                });
-            }
-            if (! empty($filters['course_id'])) {
-                $feedbackQuery->where('course_id', $filters['course_id']);
-            }
-            if (! empty($filters['start_date'])) {
-                $feedbackQuery->whereDate('submitted_at', '>=', $filters['start_date']);
-            }
-            if (! empty($filters['end_date'])) {
-                $feedbackQuery->whereDate('submitted_at', '<=', $filters['end_date']);
-            }
-            if (! empty($filters['status'])) {
-                $feedbackQuery->whereHas('evaluation', function ($q) use ($filters) {
-                    $q->where('status', $filters['status']);
-                });
-            }
+        $feedbackQuery = Feedback::whereIn('faculty_id', $facultyIds);
 
-            $feedbackIds = $feedbackQuery->pluck('id');
-            $totalFeedback = $feedbackIds->count();
+        if (! empty($filters['evaluation_id'])) {
+            $feedbackQuery->where('evaluation_id', $filters['evaluation_id']);
+        }
+        if (! empty($filters['semester'])) {
+            $feedbackQuery->whereHas('evaluation', function ($q) use ($filters) {
+                $q->where('semester', $filters['semester']);
+            });
+        }
+        if (! empty($filters['course_id'])) {
+            $feedbackQuery->where('course_id', $filters['course_id']);
+        }
+        if (! empty($filters['start_date'])) {
+            $feedbackQuery->whereDate('submitted_at', '>=', $filters['start_date']);
+        }
+        if (! empty($filters['end_date'])) {
+            $feedbackQuery->whereDate('submitted_at', '<=', $filters['end_date']);
+        }
+        if (! empty($filters['status'])) {
+            $feedbackQuery->whereHas('evaluation', function ($q) use ($filters) {
+                $q->where('status', $filters['status']);
+            });
+        }
 
-            $avgRating = 0.00;
-            if ($totalFeedback > 0) {
-                $avgRating = FeedbackAnswer::whereIn('feedback_id', $feedbackIds)
-                    ->where('question_id', 'overall_rating')
-                    ->avg('rating');
-                $avgRating = $avgRating ? round($avgRating, 2) : 0.00;
-            }
+        $feedbackCounts = (clone $feedbackQuery)
+            ->selectRaw('faculty_id, COUNT(*) as total')
+            ->groupBy('faculty_id')
+            ->pluck('total', 'faculty_id');
 
-            $performanceScore = round($avgRating * 20, 1); // 1-5 scale normalized to 0-100%
+        $avgRatings = FeedbackAnswer::join('feedbacks', 'feedback_answers.feedback_id', '=', 'feedbacks.id')
+            ->whereIn('feedbacks.faculty_id', $facultyIds)
+            ->where('feedback_answers.question_id', 'overall_rating')
+            ->selectRaw('feedbacks.faculty_id, AVG(feedback_answers.rating) as avg_rating')
+            ->groupBy('feedbacks.faculty_id')
+            ->pluck('avg_rating', 'faculty_id');
 
-            // Determine Overall Grade
-            $grade = 'Poor';
-            if ($avgRating >= 4.5) {
-                $grade = 'Excellent';
-            } elseif ($avgRating >= 4.0) {
-                $grade = 'Very Good';
-            } elseif ($avgRating >= 3.0) {
-                $grade = 'Good';
-            } elseif ($avgRating >= 2.0) {
-                $grade = 'Fair';
-            }
+        $facultyData = $query->get()->map(function ($faculty) use ($feedbackCounts, $avgRatings) {
+            $totalFeedback = $feedbackCounts[$faculty->id] ?? 0;
+            $avgRating = isset($avgRatings[$faculty->id]) ? round($avgRatings[$faculty->id], 2) : 0.00;
+            $performanceScore = round($avgRating * 20, 1);
+
+            $grade = $avgRating >= 4.5 ? 'Excellent'
+                : ($avgRating >= 4.0 ? 'Very Good'
+                : ($avgRating >= 3.0 ? 'Good'
+                : ($avgRating >= 2.0 ? 'Fair' : 'Poor')));
 
             return [
                 'faculty_id' => $faculty->id,
@@ -524,8 +522,8 @@ class ReportService
         $query = Evaluation::query();
 
         if ($tenantId) {
-            $query->where('created_by', function ($q) use ($tenantId) {
-                $q->select('id')->from('users')->where('university_id', $tenantId)->limit(1);
+            $query->whereHas('creator', function ($q) use ($tenantId) {
+                $q->where('university_id', $tenantId);
             });
         }
 
@@ -849,16 +847,6 @@ class ReportService
             ->orderBy('evaluations.semester')
             ->pluck('avg_rating', 'semester');
 
-        // Fallbacks for Line Chart to keep dashboard beautiful
-        if ($semesterTrends->isEmpty()) {
-            $semesterTrends = collect([
-                'Fall 2022' => 4.2,
-                'Spring 2023' => 4.3,
-                'Fall 2023' => 4.5,
-                'Spring 2024' => 4.6,
-            ]);
-        }
-
         // 4. Evaluation Completion Rate (Doughnut Chart)
         $tknQuery = FeedbackToken::query();
         if ($tenantId) {
@@ -881,7 +869,6 @@ class ReportService
         // 5. Top 10 Highest Rated Faculty (Horizontal Bar Chart)
         $topFaculty = [];
         $topRatings = [];
-        $facultyRatingsList = collect();
 
         $allFacultyToRate = User::where('role', 'faculty');
         if ($tenantId) {
@@ -891,48 +878,20 @@ class ReportService
             $allFacultyToRate->where('department', $filters['department']);
         }
 
-        foreach ($allFacultyToRate->get() as $fac) {
-            $avg = FeedbackAnswer::join('feedbacks', 'feedback_answers.feedback_id', '=', 'feedbacks.id')
-                ->where('feedbacks.faculty_id', $fac->id)
-                ->where('feedback_answers.question_id', 'overall_rating')
-                ->avg('rating');
-            if ($avg) {
-                $facultyRatingsList->push([
-                    'name' => $fac->name,
-                    'rating' => round($avg, 2),
-                ]);
+        $facultyAvgRatings = FeedbackAnswer::join('feedbacks', 'feedback_answers.feedback_id', '=', 'feedbacks.id')
+            ->where('feedback_answers.question_id', 'overall_rating')
+            ->whereIn('feedbacks.faculty_id', $allFacultyToRate->pluck('id'))
+            ->selectRaw('feedbacks.faculty_id, AVG(feedback_answers.rating) as avg_rating')
+            ->groupBy('feedbacks.faculty_id')
+            ->pluck('avg_rating', 'faculty_id');
+
+        if ($facultyAvgRatings->isNotEmpty()) {
+            $facultyNames = $allFacultyToRate->pluck('name', 'id');
+            $sorted = $facultyAvgRatings->sortDesc()->take(10);
+            foreach ($sorted as $facId => $avg) {
+                $topFaculty[] = $facultyNames[$facId] ?? 'Unknown';
+                $topRatings[] = round($avg, 2);
             }
-        }
-
-        $sortedTopFaculty = $facultyRatingsList->sortByDesc('rating')->take(10);
-        foreach ($sortedTopFaculty as $item) {
-            $topFaculty[] = $item['name'];
-            $topRatings[] = $item['rating'];
-        }
-
-        // Fallbacks for charts if empty
-        if (empty($facNames)) {
-            $facNames = ['Dr. Helena Vance', 'Prof. Julian Thorne', 'Dr. Sarah Jenkins', 'Prof. Marcus Liang'];
-            $facRatings = [4.9, 4.6, 4.8, 4.1];
-        }
-        if (array_sum($ratingDistribution) === 0) {
-            $ratingDistribution = [
-                'Excellent' => 45,
-                'Very Good' => 30,
-                'Good' => 15,
-                'Fair' => 8,
-                'Poor' => 2,
-            ];
-        }
-        if ($completionRateData['Submitted'] === 0 && $completionRateData['Pending'] === 0) {
-            $completionRateData = [
-                'Submitted' => 85,
-                'Pending' => 15,
-            ];
-        }
-        if (empty($topFaculty)) {
-            $topFaculty = ['Dr. Helena Vance', 'Dr. Sarah Jenkins', 'Prof. Julian Thorne', 'Prof. Marcus Liang'];
-            $topRatings = [4.92, 4.85, 4.65, 4.12];
         }
 
         return [

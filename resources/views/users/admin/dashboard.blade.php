@@ -7,7 +7,7 @@
                 <h1 class="text-3xl lg:text-[34px] font-bold text-[#0e48c1] mb-1.5 tracking-tight">Institutional Overview
                 </h1>
                 <p class="text-gray-500 text-[15px] font-medium">Welcome back. Here is the latest performance data for
-                    Semester Fall 2024.</p>
+                    Semester {{ currentTerm() }}.</p>
             </div>
             <div class="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
                 <button
@@ -17,7 +17,7 @@
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                         </path>
                     </svg>
-                    Aug - Dec 2024
+                    {{ currentTermLabel() }}
                 </button>
                 <button
                     class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-[0_4px_12px_rgba(14,72,193,0.2)] hover:bg-blue-800 transition-colors flex-1 sm:flex-none whitespace-nowrap">
@@ -102,7 +102,7 @@
                         class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Active</span>
                 </div>
                 <div class="text-gray-500 text-[13px] font-bold mb-1">Feedback Submitted</div>
-                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">4,902</div>
+                <div class="text-[32px] font-bold text-gray-900 tracking-tight leading-none">{{ number_format($feedbackCount) }}</div>
             </div>
         </div>
 
@@ -165,21 +165,22 @@
                     <div class="relative w-44 h-44 mb-2">
                         <svg viewBox="0 0 100 100"
                             class="w-full h-full transform -rotate-90 origin-center drop-shadow-sm">
-                            <!-- Background circle (Others 8%) -->
                             <circle cx="50" cy="50" r="38" fill="transparent" stroke="#e2e8f0"
                                 stroke-width="12" />
-                            <!-- Good segment (28% - light blue) -->
+                            @if($ratingChart['goodPct'] > 0)
                             <circle cx="50" cy="50" r="38" fill="transparent" stroke="#93c5fd"
-                                stroke-width="12" stroke-dasharray="238.7" stroke-dashoffset="171.8"
-                                class="origin-center rotate-[30deg]" stroke-linecap="round" />
-                            <!-- Excellent segment (64% - dark blue) -->
+                                stroke-width="12" stroke-dasharray="{{ $ratingChart['circumference'] }}" stroke-dashoffset="{{ $ratingChart['goodOffset'] }}"
+                                class="origin-center" style="rotate: {{ $ratingChart['goodRotation'] }}deg" stroke-linecap="round" />
+                            @endif
+                            @if($ratingChart['excellentPct'] > 0)
                             <circle cx="50" cy="50" r="38" fill="transparent" stroke="#0e48c1"
-                                stroke-width="12" stroke-dasharray="238.7" stroke-dashoffset="85.9"
+                                stroke-width="12" stroke-dasharray="{{ $ratingChart['circumference'] }}" stroke-dashoffset="{{ $ratingChart['excellentOffset'] }}"
                                 stroke-linecap="round" />
+                            @endif
                         </svg>
                         <!-- Central Metric -->
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <span class="text-[34px] font-bold text-[#0e48c1] leading-none mb-1 shadow-sm">4.8</span>
+                            <span class="text-[34px] font-bold text-[#0e48c1] leading-none mb-1 shadow-sm">{{ $ratingChart['avgRating'] }}</span>
                             <span class="text-[8px] font-bold text-gray-500 uppercase tracking-[0.15em]">Avg
                                 Rating</span>
                         </div>
@@ -193,21 +194,21 @@
                             <div class="w-2.5 h-2.5 rounded-full bg-[#0e48c1]"></div>
                             <span class="text-gray-600 font-medium">Excellent (4.5+)</span>
                         </div>
-                        <span class="font-bold text-gray-900">64%</span>
+                        <span class="font-bold text-gray-900">{{ $ratingChart['excellentPct'] }}%</span>
                     </div>
                     <div class="flex items-center justify-between text-[13px]">
                         <div class="flex items-center gap-2.5">
                             <div class="w-2.5 h-2.5 rounded-full bg-[#93c5fd]"></div>
                             <span class="text-gray-600 font-medium">Good (3.5-4.5)</span>
                         </div>
-                        <span class="font-bold text-gray-900">28%</span>
+                        <span class="font-bold text-gray-900">{{ $ratingChart['goodPct'] }}%</span>
                     </div>
                     <div class="flex items-center justify-between text-[13px]">
                         <div class="flex items-center gap-2.5">
                             <div class="w-2.5 h-2.5 rounded-full bg-[#e2e8f0]"></div>
                             <span class="text-gray-600 font-medium">Others</span>
                         </div>
-                        <span class="font-bold text-gray-900">8%</span>
+                        <span class="font-bold text-gray-900">{{ $ratingChart['othersPct'] }}%</span>
                     </div>
                 </div>
             </div>
@@ -226,50 +227,22 @@
                         All</a>
                 </div>
                 <div class="space-y-6 flex-1 flex flex-col justify-center">
-                    <!-- Computer Science -->
+                    @forelse($departmentPerformance as $dept)
                     <div>
                         <div class="flex justify-between text-[12px] font-bold text-gray-500 mb-2.5 tracking-wide">
-                            <span>COMPUTER SCIENCE</span>
-                            <span class="text-gray-800">92%</span>
+                            <span>{{ strtoupper($dept['name']) }}</span>
+                            <span class="text-gray-800">{{ $dept['score'] }}%</span>
                         </div>
                         <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
-                            <div class="bg-[#0e48c1] h-2.5 rounded-full shadow-sm shadow-blue-500/20"
-                                style="width: 92%"></div>
+                            <div class="h-2.5 rounded-full shadow-sm"
+                                style="width: {{ $dept['score'] }}%; background-color: {{ $dept['color']['bar'] }}; box-shadow: 0 1px 3px -1px {{ $dept['color']['bar'] }}40;"></div>
                         </div>
                     </div>
-                    <!-- Humanities -->
-                    <div>
-                        <div class="flex justify-between text-[12px] font-bold text-gray-500 mb-2.5 tracking-wide">
-                            <span>HUMANITIES</span>
-                            <span class="text-gray-800">84%</span>
-                        </div>
-                        <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
-                            <div class="bg-[#2563eb] h-2.5 rounded-full shadow-sm shadow-blue-400/20"
-                                style="width: 84%"></div>
-                        </div>
+                    @empty
+                    <div class="text-center py-8">
+                        <p class="text-sm font-medium text-gray-500">No department performance data available yet.</p>
                     </div>
-                    <!-- Business & Finance -->
-                    <div>
-                        <div class="flex justify-between text-[12px] font-bold text-gray-500 mb-2.5 tracking-wide">
-                            <span>BUSINESS & FINANCE</span>
-                            <span class="text-gray-800">78%</span>
-                        </div>
-                        <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
-                            <div class="bg-[#6366f1] h-2.5 rounded-full shadow-sm shadow-indigo-400/20"
-                                style="width: 78%"></div>
-                        </div>
-                    </div>
-                    <!-- Natural Sciences -->
-                    <div>
-                        <div class="flex justify-between text-[12px] font-bold text-gray-500 mb-2.5 tracking-wide">
-                            <span>NATURAL SCIENCES</span>
-                            <span class="text-gray-800">88%</span>
-                        </div>
-                        <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
-                            <div class="bg-[#10b981] h-2.5 rounded-full shadow-sm shadow-emerald-400/20"
-                                style="width: 88%"></div>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
             </div>
 
