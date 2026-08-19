@@ -123,6 +123,10 @@
                             <div class="mb-4 text-red-500 text-sm font-bold">{{ $message }}</div>
                         @enderror
 
+                        @error('password')
+                            <div class="mb-4 text-red-500 text-sm font-bold">{{ $message }}</div>
+                        @enderror
+
                         @error('role')
                             <div class="mb-4 text-red-500 text-sm font-bold">{{ $message }}</div>
                         @enderror

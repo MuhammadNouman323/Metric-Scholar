@@ -90,6 +90,18 @@
                     </svg>
                     Feedback
                 </a>
+                <a href="/student/feedback-history"
+                    class="{{ request()->is('student/feedback-history') || request()->is('student/feedback-history/*')
+                        ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)]'
+                        : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm' }}
+                        group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
+                    <svg class="w-5 h-5 mr-3 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                    History
+                </a>
             </nav>
 
             <!-- Bottom Section -->

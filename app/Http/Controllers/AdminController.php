@@ -172,6 +172,7 @@ class AdminController extends Controller
         $faculties = User::where('university_id', $tenantId)
             ->where('role', 'faculty')
             ->with('courses')
+            ->withCount('courses')
             ->latest()
             ->paginate(10);
 

@@ -143,9 +143,9 @@
 
                             <div>
                                 <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Email Address</label>
-                                <input type="email" name="email" value="{{ old('email', $student->email) }}"
-                                    class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
-                                    placeholder="saad@student.edu" required>
+                                <input type="email" value="{{ $student->email }}"
+                                    class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5 text-gray-400 font-medium text-sm focus:outline-none cursor-not-allowed"
+                                    disabled readonly>
                             </div>
 
                             <div>

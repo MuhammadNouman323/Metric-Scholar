@@ -53,13 +53,12 @@ test('user can update personal info', function () {
     $student = User::factory()->create([
         'role' => 'student',
         'name' => 'Original Name',
-        'email' => 'original@student.edu',
+        // 'email' => 'original@student.edu',
         'phone' => '1234567890',
     ]);
 
     $response = $this->actingAs($student)->put('/student/profile', [
         'name' => 'Updated Name',
-        'email' => 'updated@student.edu',
         'phone' => '0987654321',
     ]);
 
@@ -69,7 +68,6 @@ test('user can update personal info', function () {
     $this->assertDatabaseHas('users', [
         'id' => $student->id,
         'name' => 'Updated Name',
-        'email' => 'updated@student.edu',
         'phone' => '0987654321',
     ]);
 });
@@ -122,7 +120,6 @@ test('user can upload and replace profile picture', function () {
 
     $response = $this->actingAs($student)->put('/student/profile', [
         'name' => $student->name,
-        'email' => $student->email,
         'avatar' => $file,
     ]);
 
@@ -138,7 +135,6 @@ test('user can upload and replace profile picture', function () {
 
     $response = $this->actingAs($student)->put('/student/profile', [
         'name' => $student->name,
-        'email' => $student->email,
         'avatar' => $newFile,
     ]);
 

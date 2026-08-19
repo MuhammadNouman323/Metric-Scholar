@@ -86,16 +86,10 @@
 
                     <!-- ID and Department -->
                     <div class="flex flex-col sm:flex-row gap-5 mb-5 lg:mb-6">
-                        <div class="flex-1">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Administrator ID</label>
-                            <input type="text" name="admin_id" value="{{ old('admin_id') }}" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="ADM-9942">
-                            @error('admin_id')
-                                <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        
                         <div class="flex-1">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Department/Unit</label>
-                            <input type="text" name="department" value="{{ old('department') }}" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="Arts & Sciences">
+                            <input type="text" name="department" value="{{ old('department') }}" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all" placeholder="Optional">
                             @error('department')
                                 <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
                             @enderror

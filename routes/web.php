@@ -52,8 +52,8 @@ Route::prefix('admin')
         Route::post('/user/{user}/recovery/email', [AdminController::class, 'sendRecoveryEmail'])->name('admin.users.recovery.email');
         Route::post('/user/{user}/recovery/password', [AdminController::class, 'updateTemporaryPassword'])->name('admin.users.recovery.password');
         Route::post('/user/{user}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.users.toggle-status');
-        Route::get('/students', [AdminController::class, 'students']);
-        Route::get('/faculty', [AdminController::class, 'faculty']);
+        Route::get('/students', [AdminController::class, 'students'])->name('admin.students');
+        Route::get('/faculty', [AdminController::class, 'faculty'])->name('admin.faculty');
         Route::get('/faculty/{faculty}/assign-courses', [AdminController::class, 'assignCourses'])->name('admin.faculty.assign-courses');
         Route::post('/faculty/{faculty}/assign-courses', [AdminController::class, 'storeCourseAssignments'])->name('admin.faculty.store-assignments');
         Route::get('/courses', [AdminController::class, 'courses'])->name('admin.courses');
@@ -90,6 +90,7 @@ Route::prefix('admin')
         Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
         Route::get('/reports/print', [ReportController::class, 'print'])->name('admin.reports.print');
         Route::get('/reports/export/{format}', [ReportController::class, 'export'])->name('admin.reports.export');
+        Route::get('/reports/generate-pdf', [ReportController::class, 'generatePdf'])->name('admin.reports.generate-pdf');
         Route::get('/moderation', [AdminController::class, 'moderation'])->name('admin.moderation');
     });
 

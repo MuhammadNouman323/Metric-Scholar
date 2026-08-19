@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Evaluation;
+use App\Models\Feedback;
+use App\Models\FeedbackAnswer;
 use App\Models\User;
 use App\Services\ReportService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -52,6 +55,79 @@ class ReportController extends Controller
             'title' => $result['title'],
             'filters' => $filters,
         ]);
+    }
+
+    public function generatePdf(): Response
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $studentCount = User::where('university_id', $tenantId)->where('role', 'student')->count();
+        $facultyCount = User::where('university_id', $tenantId)->where('role', 'faculty')->count();
+        $courseCount = Course::count();
+        $feedbackCount = Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))->count();
+
+        $ratingQuery = FeedbackAnswer::where('question_id', 'overall_rating')
+            ->whereHas('feedback.faculty', fn ($q) => $q->where('university_id', $tenantId));
+
+        $totalRatings = $ratingQuery->count();
+
+        if ($totalRatings > 0) {
+            $avgRating = round($ratingQuery->avg('rating'), 1);
+            $excellent = (clone $ratingQuery)->where('rating', '>=', 4.5)->count();
+            $good = (clone $ratingQuery)->whereBetween('rating', [3.5, 4.49])->count();
+            $others = (clone $ratingQuery)->where('rating', '<', 3.5)->count();
+            $excellentPct = round(($excellent / $totalRatings) * 100);
+            $goodPct = round(($good / $totalRatings) * 100);
+            $othersPct = 100 - $excellentPct - $goodPct;
+        } else {
+            $avgRating = 0;
+            $excellentPct = 0;
+            $goodPct = 0;
+            $othersPct = 100;
+        }
+
+        $ratingChart = [
+            'avgRating' => $avgRating,
+            'excellentPct' => $excellentPct,
+            'goodPct' => $goodPct,
+            'othersPct' => $othersPct,
+        ];
+
+        $departments = User::where('university_id', $tenantId)
+            ->where('role', 'faculty')
+            ->whereNotNull('department')
+            ->distinct()
+            ->pluck('department');
+
+        $departmentPerformance = collect();
+        foreach ($departments as $dept) {
+            $avg = Feedback::whereHas('faculty', fn ($q) => $q->where('department', $dept)->where('university_id', $tenantId))
+                ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
+                ->where('feedback_answers.question_id', 'overall_rating')
+                ->avg('feedback_answers.rating');
+
+            $score = $avg ? round(($avg / 5) * 100) : 0;
+
+            $departmentPerformance->push([
+                'name' => $dept,
+                'score' => $score,
+                'avg_rating' => $avg ? round($avg, 1) : 0,
+            ]);
+        }
+
+        $departmentPerformance = $departmentPerformance->sortByDesc('score')->values();
+
+        $pdf = Pdf::loadView('users.admin.reports-pdf', [
+            'studentCount' => $studentCount,
+            'facultyCount' => $facultyCount,
+            'courseCount' => $courseCount,
+            'feedbackCount' => $feedbackCount,
+            'ratingChart' => $ratingChart,
+            'departmentPerformance' => $departmentPerformance,
+            'currentTerm' => currentTerm(),
+        ]);
+
+        return $pdf->download('institutional_overview_report_'.date('Y-m-d').'.pdf');
     }
 
     public function export(Request $request, string $format): Response|StreamedResponse

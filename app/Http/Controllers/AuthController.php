@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\PasswordResetLinkCreated;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\University;
@@ -110,16 +109,6 @@ class AuthController extends Controller
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status === Password::RESET_LINK_SENT) {
-            if (session()->has('reset_channel_token')) {
-                $token = Password::getRepository()->create($user);
-                $resetUrl = url('/password/reset/'.$token.'?email='.urlencode($user->email));
-
-                broadcast(new PasswordResetLinkCreated(
-                    resetUrl: $resetUrl,
-                    channelToken: session('reset_channel_token'),
-                ))->toOthers();
-            }
-
             return back()->with('status', __($status));
         }
 

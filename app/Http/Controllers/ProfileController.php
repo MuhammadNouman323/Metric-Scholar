@@ -113,7 +113,6 @@ class ProfileController extends Controller
             }
 
             $currentUser->name = $data['name'];
-            $currentUser->email = $data['email'];
             $currentUser->phone = $data['phone'] ?? null;
             $currentUser->save();
         });
