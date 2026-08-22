@@ -15,7 +15,7 @@ class EvaluationRepository
                 $data['created_by'] = auth()->id();
             } else {
                 // Fallback: use an existing admin user if present (helps in tests)
-                $adminId = User::where('role', Role::Admin)->value('id');
+                $adminId = User::where('role', Role::Admin)->orderBy('id')->value('id');
                 if ($adminId) {
                     $data['created_by'] = $adminId;
                 }

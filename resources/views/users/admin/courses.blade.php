@@ -169,7 +169,7 @@
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="text-[15px] font-bold text-[#1f2937] leading-tight mb-0.5">{{ $course->title }}</span>
-                                            <span class="text-[12px] font-medium text-gray-500">{{ $course->users_count }} Students Enrolled</span>
+                                            <span class="text-[12px] font-medium text-gray-500">{{ $course->students_count }} Students Enrolled</span>
                                         </div>
                                     </div>
                                 </td>

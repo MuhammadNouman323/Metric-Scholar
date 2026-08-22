@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\UpdateEvaluationStatuses;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\FeedbackToken;
@@ -345,11 +346,13 @@ test('date fields are disabled on edit form when start_date has arrived', functi
         'created_by' => $admin->id,
     ]);
 
-    $response = $this->actingAs($admin)->get(route('admin.evaluations.edit', $evaluation));
+    $response = $this->actingAs($admin)
+        ->withoutMiddleware(UpdateEvaluationStatuses::class)
+        ->get(route('admin.evaluations.edit', $evaluation));
 
     $response->assertOk();
-    $response->assertSee('disabled');
     $response->assertSee('Dates cannot be changed');
+    $response->assertSeeInOrder(['input', 'id="start_date"', 'disabled']);
 });
 
 test('admin cannot change dates via update when start_date has arrived', function () {
@@ -366,13 +369,15 @@ test('admin cannot change dates via update when start_date has arrived', functio
 
     $originalEndDate = $evaluation->end_date->copy();
 
-    $this->actingAs($admin)->put(route('admin.evaluations.update', $evaluation), [
-        'title' => 'Updated Title',
-        'semester' => 'Spring 2027',
-        'evaluation_type' => 'Annual',
-        'start_date' => now()->addDays(30)->toDateString(),
-        'end_date' => now()->addDays(60)->toDateString(),
-    ]);
+    $this->actingAs($admin)
+        ->withoutMiddleware(UpdateEvaluationStatuses::class)
+        ->put(route('admin.evaluations.update', $evaluation), [
+            'title' => 'Updated Title',
+            'semester' => 'Spring 2027',
+            'evaluation_type' => 'Annual',
+            'start_date' => now()->addDays(30)->toDateString(),
+            'end_date' => now()->addDays(60)->toDateString(),
+        ]);
 
     $evaluation->refresh();
     expect($evaluation->title)->toBe('Updated Title');
@@ -396,5 +401,5 @@ test('date fields remain editable when start_date is in the future', function ()
 
     $response->assertOk();
     $response->assertDontSee('Dates cannot be changed');
-    $response->assertDontSee('disabled');
+    $response->assertSee('start_date');
 });

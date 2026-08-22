@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class Evaluation extends Model
 {
@@ -47,12 +49,12 @@ class Evaluation extends Model
                 if (auth()->check()) {
                     $model->created_by = auth()->id();
                 } else {
-                    $adminId = User::where('role', Role::Admin)->value('id');
+                    // fallback to any existing admin, deterministically (tests may create faculty/student only)
+                    $adminId = User::where('role', Role::Admin)->orderBy('id')->value('id');
                     if ($adminId) {
                         $model->created_by = $adminId;
                     } else {
-                        // fallback to any existing user (tests may create faculty/student only)
-                        $anyId = User::value('id');
+                        $anyId = User::orderBy('id')->value('id');
                         if ($anyId) {
                             $model->created_by = $anyId;
                         }
@@ -106,5 +108,36 @@ class Evaluation extends Model
     public function scopeArchived($query): void
     {
         $query->where('status', 'archived');
+    }
+
+    /**
+     * Number of students currently eligible for this evaluation, computed from
+     * live course enrollment instead of the tokens generated at publish time.
+     */
+    public function eligibleStudentsCount(): int
+    {
+        return (int) static::eligibleStudentsCounts([$this->id])->get($this->id, 0);
+    }
+
+    /**
+     * Bulk eligible-student counts keyed by evaluation id.
+     *
+     * @param  array<int, int>  $evaluationIds
+     * @return Collection<int|string, int>
+     */
+    public static function eligibleStudentsCounts(array $evaluationIds): Collection
+    {
+        if ($evaluationIds === []) {
+            return collect();
+        }
+
+        return DB::table('evaluation_courses')
+            ->join('course_user', 'course_user.course_id', '=', 'evaluation_courses.course_id')
+            ->join('users', 'users.id', '=', 'course_user.user_id')
+            ->whereIn('evaluation_courses.evaluation_id', $evaluationIds)
+            ->where('users.role', Role::Student->value)
+            ->groupBy('evaluation_courses.evaluation_id')
+            ->selectRaw('evaluation_courses.evaluation_id, COUNT(DISTINCT course_user.user_id) as eligible_students')
+            ->pluck('eligible_students', 'evaluation_courses.evaluation_id');
     }
 }

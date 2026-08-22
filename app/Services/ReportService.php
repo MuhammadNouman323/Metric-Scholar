@@ -33,6 +33,7 @@ class ReportService
             });
             $facultyQuery->where('university_id', $tenantId);
             $studentQuery->where('university_id', $tenantId);
+            $courseQuery->where('university_id', $tenantId);
             $feedbackQuery->whereHas('faculty', function ($q) use ($tenantId) {
                 $q->where('university_id', $tenantId);
             });
@@ -310,6 +311,10 @@ class ReportService
 
         $query = Course::query();
 
+        if ($tenantId) {
+            $query->where('university_id', $tenantId);
+        }
+
         if (! empty($filters['department'])) {
             $query->where('department', $filters['department']);
         }
@@ -546,11 +551,11 @@ class ReportService
         }
 
         return $query->get()->map(function ($evaluation) {
-            $totalEligible = FeedbackToken::where('evaluation_id', $evaluation->id)->count();
+            $totalEligible = $evaluation->eligibleStudentsCount();
             $submitted = FeedbackToken::where('evaluation_id', $evaluation->id)->where('is_used', true)->count();
-            $pending = FeedbackToken::where('evaluation_id', $evaluation->id)->where('is_used', false)->count();
+            $pending = max($totalEligible - $submitted, 0);
 
-            $completion = $totalEligible > 0 ? round(($submitted / $totalEligible) * 100, 1) : 0.0;
+            $completion = $totalEligible > 0 ? round((min($submitted, $totalEligible) / $totalEligible) * 100, 1) : 0.0;
 
             return [
                 'evaluation_id' => $evaluation->id,

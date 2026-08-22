@@ -27,6 +27,13 @@ class Feedback extends Model
 
     public $timestamps = true;
 
+    protected function casts(): array
+    {
+        return [
+            'submitted_at' => 'datetime',
+        ];
+    }
+
     public function evaluation(): BelongsTo
     {
         return $this->belongsTo(Evaluation::class);

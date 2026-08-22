@@ -253,11 +253,19 @@
                 <h3 class="text-[19px] font-bold text-gray-900 mb-7">Recent Activity</h3>
 
                 <div class="space-y-6 flex-1">
-                    <!-- Item 1 -->
+                    @forelse($recentActivity as $item)
+                    @if($item['type'] === 'feedback')
+                    <!-- Feedback Submission -->
                     <div class="flex gap-4">
                         <div class="relative shrink-0">
-                            <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
-                                src="https://i.pravatar.cc/150?img=47" alt="Jane">
+                            <div
+                                class="w-10 h-10 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center text-[#0e48c1]">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                                    </path>
+                                </svg>
+                            </div>
                             <div
                                 class="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-[#0e48c1] rounded-full border-2 border-white flex items-center justify-center text-white">
                                 <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
@@ -269,20 +277,21 @@
                         </div>
                         <div class="pt-0.5">
                             <p class="text-[13.5px] text-gray-800 leading-snug"><span
-                                    class="font-bold text-gray-900">Jane Doe</span> submitted a review for <span
-                                    class="font-bold text-gray-900">Adv. Algorithms</span></p>
-                            <p class="text-[12.5px] text-gray-500 mt-1 italic">"Excellent delivery of complex topics.
-                                Highly recommended."</p>
-                            <p class="text-[9px] font-bold text-gray-400 mt-2 tracking-widest uppercase">2 Minutes Ago
+                                    class="font-bold text-gray-900">{{ $item['actor'] }}</span> submitted feedback for
+                                <span class="font-bold text-gray-900">{{ $item['course'] }}</span></p>
+                            @if(!empty($item['quote']))
+                            <p class="text-[12.5px] text-gray-500 mt-1 italic">"{{ $item['quote'] }}"</p>
+                            @endif
+                            <p class="text-[9px] font-bold text-gray-400 mt-2 tracking-widest uppercase">{{ $item['time'] }}
                             </p>
                         </div>
                     </div>
-
-                    <!-- Item 2 -->
+                    @else
+                    <!-- New Member -->
                     <div class="flex gap-4">
                         <div class="relative shrink-0">
                             <img class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
-                                src="https://i.pravatar.cc/150?img=11" alt="Robert">
+                                src="{{ $item['avatar_url'] }}" alt="{{ $item['name'] }}">
                             <div
                                 class="absolute -bottom-1 -right-1 w-[18px] h-[18px] bg-amber-600 rounded-full border-2 border-white flex items-center justify-center text-white">
                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,39 +302,26 @@
                         </div>
                         <div class="pt-0.5">
                             <p class="text-[13.5px] text-gray-800 leading-snug"><span
-                                    class="font-bold text-gray-900">Dr. Robert Smith</span> joined the <span
-                                    class="font-bold text-gray-900">Engineering faculty</span></p>
+                                    class="font-bold text-gray-900">{{ $item['name'] }}</span> joined as a <span
+                                    class="font-bold text-gray-900">{{ $item['role'] }}</span></p>
                             <div class="flex gap-2 mt-1.5 flex-wrap">
                                 <span
-                                    class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded">Faculty</span>
+                                    class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded">{{ $item['role'] }}</span>
+                                @if(!empty($item['department']))
                                 <span
-                                    class="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded">New
-                                    Hires</span>
+                                    class="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded">{{ $item['department'] }}</span>
+                                @endif
                             </div>
-                            <p class="text-[9px] font-bold text-gray-400 mt-2 tracking-widest uppercase">45 Minutes Ago
+                            <p class="text-[9px] font-bold text-gray-400 mt-2 tracking-widest uppercase">{{ $item['time'] }}
                             </p>
                         </div>
                     </div>
-
-                    <!-- Item 3 -->
-                    <div class="flex gap-4 pb-2">
-                        <div class="shrink-0">
-                            <div
-                                class="w-10 h-10 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center text-[#0e48c1]">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-                                    </path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="pt-0.5">
-                            <p class="text-[13.5px] font-bold text-gray-900 leading-snug">Privacy Policy was updated
-                                for student feedback</p>
-                            <p class="text-[9px] font-bold text-gray-400 mt-2 tracking-widest uppercase">3 Hours Ago
-                            </p>
-                        </div>
+                    @endif
+                    @empty
+                    <div class="text-center py-8">
+                        <p class="text-sm font-medium text-gray-500">No recent activity yet.</p>
                     </div>
+                    @endforelse
                 </div>
 
                 <button

@@ -60,11 +60,10 @@ class GeminiModerationService
                 if ($response->successful()) {
                     $text = data_get($response->json(), 'candidates.0.content.parts.0.text');
                     $json = $this->parseJson($text);
-                    if ($json && isset($json['status'])) {
-                        // Ensure all expected keys exist
+                    if ($json && $this->isValidModerationResult($json)) {
                         return [
-                            'status' => $json['status'] ?? 'approved',
-                            'toxicity_score' => $json['toxicity_score'] ?? 0,
+                            'status' => $json['status'],
+                            'toxicity_score' => $this->normalizeToxicityScore($json['toxicity_score'] ?? 0),
                             'reason' => $json['reason'] ?? '',
                             'categories' => $json['categories'] ?? [],
                             'cleaned_comment' => $json['cleaned_comment'] ?? $comment,
@@ -126,9 +125,12 @@ class GeminiModerationService
         }
 
         if (! empty($matchedRejected)) {
+            // Graduated score: base severity plus escalation for each extra match.
+            $score = min(85 + (count($matchedRejected) - 1) * 2, 95);
+
             return [
                 'status' => 'rejected',
-                'toxicity_score' => 85,
+                'toxicity_score' => $score,
                 'reason' => 'Feedback contains abusive, offensive, or inappropriate language.',
                 'categories' => array_unique($matchedRejected),
                 'cleaned_comment' => $comment,
@@ -145,9 +147,13 @@ class GeminiModerationService
         }
 
         if (! empty($matchedFlagged)) {
+            // Graduated score: single mild slang word scores low, repeated
+            // slang escalates, but never reaches the rejected range.
+            $score = min(30 + (count($matchedFlagged) - 1) * 5, 60);
+
             return [
                 'status' => 'flagged',
-                'toxicity_score' => 40,
+                'toxicity_score' => $score,
                 'reason' => 'Feedback contains mild slang or informal language.',
                 'categories' => array_unique($matchedFlagged),
                 'cleaned_comment' => $cleaned,
@@ -233,5 +239,21 @@ PROMPT;
         $text = trim($text);
 
         return json_decode($text, true);
+    }
+
+    /**
+     * Validate that a parsed moderation result has an allowed status.
+     */
+    private function isValidModerationResult(array $json): bool
+    {
+        return in_array($json['status'] ?? null, ['approved', 'flagged', 'rejected'], true);
+    }
+
+    /**
+     * Coerce the toxicity score to an integer clamped to 0-100.
+     */
+    private function normalizeToxicityScore(mixed $score): int
+    {
+        return max(0, min(100, (int) round(is_numeric($score) ? (float) $score : 0)));
     }
 }

@@ -15,7 +15,6 @@ Route::view('/login', 'auth.login')
     ->name('login');
 
 Route::post('/login', [AuthController::class, 'login'])
-    ->middleware('throttle:10,1')
     ->name('auth.attempt');
 Route::view('/register', 'auth.register')
     ->middleware('guest')

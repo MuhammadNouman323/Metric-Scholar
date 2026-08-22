@@ -64,7 +64,7 @@ class ReportController extends Controller
 
         $studentCount = User::where('university_id', $tenantId)->where('role', Role::Student)->count();
         $facultyCount = User::where('university_id', $tenantId)->where('role', Role::Faculty)->count();
-        $courseCount = Course::count();
+        $courseCount = Course::where('university_id', $tenantId)->count();
         $feedbackCount = Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))->count();
 
         $ratingQuery = FeedbackAnswer::where('question_id', 'overall_rating')
@@ -262,7 +262,7 @@ class ReportController extends Controller
         $departments = $departments->pluck('department');
 
         $faculties = $facultyQuery->select('id', 'name')->get();
-        $courses = Course::select('id', 'code', 'title')->get();
+        $courses = Course::where('university_id', $tenantId)->select('id', 'code', 'title')->get();
         $statuses = ['draft', 'scheduled', 'active', 'closed', 'archived'];
 
         return compact('evaluations', 'semesters', 'departments', 'faculties', 'courses', 'statuses');
