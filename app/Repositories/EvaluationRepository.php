@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Enums\Role;
 use App\Models\Evaluation;
 use App\Models\User;
 
@@ -14,7 +15,7 @@ class EvaluationRepository
                 $data['created_by'] = auth()->id();
             } else {
                 // Fallback: use an existing admin user if present (helps in tests)
-                $adminId = User::where('role', 'admin')->value('id');
+                $adminId = User::where('role', Role::Admin)->value('id');
                 if ($adminId) {
                     $data['created_by'] = $adminId;
                 }

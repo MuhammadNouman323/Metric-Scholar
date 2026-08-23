@@ -30,9 +30,7 @@ class Handler extends ExceptionHandler
         // Handle not found: redirect to appropriate dashboard or login
         if ($e instanceof NotFoundHttpException) {
             if (auth()->check()) {
-                $role = strtolower((string) auth()->user()->role);
-
-                return redirect('/'.$role.'/dashboard');
+                return redirect(auth()->user()->role->dashboardRoute());
             }
 
             return redirect()->route('login')->with('error', 'Please login to continue.');
@@ -40,9 +38,7 @@ class Handler extends ExceptionHandler
 
         if ($e instanceof AuthorizationException) {
             if (auth()->check()) {
-                $role = strtolower((string) auth()->user()->role);
-
-                return redirect('/'.$role.'/dashboard')->with('error', 'You are not authorized to access that page.');
+                return redirect(auth()->user()->role->dashboardRoute())->with('error', 'You are not authorized to access that page.');
             }
 
             return redirect()->route('login')->with('error', 'Please login to continue.');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Role;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,7 +13,7 @@ class StoreEvaluationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === 'admin';
+        return auth()->check() && auth()->user()->role === Role::Admin;
     }
 
     /**

@@ -41,7 +41,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
                             <h2 class="text-[18px] font-extrabold text-gray-900">{{ $user->name }}</h2>
                             <span class="inline-flex self-center sm:self-auto px-2.5 py-0.5 bg-blue-50 text-[#0e48c1] text-[11px] font-extrabold rounded-full uppercase tracking-wider">
-                                {{ ucfirst($user->role) }}
+                                {{ ucfirst($user->role->value) }}
                             </span>
                         </div>
                         <div class="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1 text-sm text-gray-500 font-medium mt-1.5 justify-center sm:justify-start">

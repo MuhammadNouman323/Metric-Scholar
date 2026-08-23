@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -32,6 +33,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'password_change_required' => 'boolean',
+            'role' => Role::class,
         ];
     }
 
@@ -77,17 +79,17 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return strtolower((string) $this->role) === 'admin';
+        return $this->role === Role::Admin;
     }
 
     public function isFaculty(): bool
     {
-        return strtolower((string) $this->role) === 'faculty';
+        return $this->role === Role::Faculty;
     }
 
     public function isStudent(): bool
     {
-        return strtolower((string) $this->role) === 'student';
+        return $this->role === Role::Student;
     }
 
     public function getAvatarUrlAttribute(): string

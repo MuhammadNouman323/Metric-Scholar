@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\StoreEvaluationRequest;
 use App\Http\Requests\StoreUserRequest;
@@ -73,7 +74,7 @@ class AdminController extends Controller
         ];
 
         $departments = User::where('university_id', $tenantId)
-            ->where('role', 'faculty')
+            ->where('role', Role::Faculty)
             ->whereNotNull('department')
             ->distinct()
             ->pluck('department');
@@ -145,7 +146,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
         $students = User::where('university_id', $tenantId)
-            ->where('role', 'student')
+            ->where('role', Role::Student)
             ->with('courses')
             ->withCount('courses')
             ->paginate(10);
@@ -155,7 +156,7 @@ class AdminController extends Controller
             ->pluck('department');
 
         $totalStudents = User::where('university_id', $tenantId)
-            ->where('role', 'student')
+            ->where('role', Role::Student)
             ->count();
 
         return view('users.admin.students', [
@@ -170,19 +171,19 @@ class AdminController extends Controller
         $tenantId = auth()->user()->university_id;
 
         $faculties = User::where('university_id', $tenantId)
-            ->where('role', 'faculty')
+            ->where('role', Role::Faculty)
             ->with('courses')
             ->withCount('courses')
             ->latest()
             ->paginate(10);
 
-        $totalFaculty = User::where('university_id', $tenantId)->where('role', 'faculty')->count();
+        $totalFaculty = User::where('university_id', $tenantId)->where('role', Role::Faculty)->count();
         $activeCourses = Course::withCount('users')->count();
         $pendingReviews = 0; // Can be configured based on your logic
         $tenuredPercentage = 65; // Can be calculated from data
 
         $departments = User::where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
+            ->whereIn('role', [Role::Student, Role::Faculty])
             ->whereNotNull('department')
             ->select('department')
             ->distinct()
@@ -197,7 +198,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+        abort_unless($faculty->university_id === $tenantId && $faculty->role === Role::Faculty, 404);
 
         $departmentSlug = Str::slug($faculty->department ?? '');
 
@@ -216,7 +217,7 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+        abort_unless($faculty->university_id === $tenantId && $faculty->role === Role::Faculty, 404);
 
         $validated = $request->validate([
             'assigned_courses' => ['nullable', 'array'],
@@ -246,7 +247,7 @@ class AdminController extends Controller
 
         $departments = User::query()
             ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
+            ->whereIn('role', [Role::Student, Role::Faculty])
             ->whereNotNull('department')
             ->select('department')
             ->distinct()
@@ -278,7 +279,7 @@ class AdminController extends Controller
 
         $roleCounts = User::query()
             ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
+            ->whereIn('role', [Role::Student, Role::Faculty])
             ->whereNotNull('department')
             ->selectRaw('department, role, COUNT(*) as count')
             ->groupBy('department', 'role')
@@ -290,8 +291,8 @@ class AdminController extends Controller
             return [
                 'slug' => Str::slug($departmentName),
                 'name' => $departmentName,
-                'facultyCount' => $roleCounts->where('department', $department)->where('role', 'faculty')->sum('count'),
-                'studentCount' => $roleCounts->where('department', $department)->where('role', 'student')->sum('count'),
+                'facultyCount' => $roleCounts->where('department', $department)->where('role', Role::Faculty)->sum('count'),
+                'studentCount' => $roleCounts->where('department', $department)->where('role', Role::Student)->sum('count'),
             ];
         })->sortBy('name')->values();
 
@@ -309,17 +310,17 @@ class AdminController extends Controller
 
         $departmentUsers = User::query()
             ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
+            ->whereIn('role', [Role::Student, Role::Faculty])
             ->where('department', $departmentName)
             ->latest()
             ->paginate(50);
 
         $students = $departmentUsers
-            ->where('role', 'student')
+            ->where('role', Role::Student)
             ->values();
 
         $faculty = $departmentUsers
-            ->where('role', 'faculty')
+            ->where('role', Role::Faculty)
             ->values();
 
         $departmentPayload = $this->buildDepartmentPayload(
@@ -391,7 +392,7 @@ class AdminController extends Controller
             'activity' => $users
                 ->take(5)
                 ->map(fn (User $user): array => [
-                    'title' => ucfirst($user->role).' account added',
+                    'title' => ucfirst($user->role->value).' account added',
                     'detail' => $user->name.' was added to '.$departmentName.'.',
                     'time' => $user->created_at->diffForHumans(),
                 ])
@@ -407,7 +408,7 @@ class AdminController extends Controller
         $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
-        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+        abort_unless($faculty->university_id === $tenantId && $faculty->role === Role::Faculty, 404);
         abort_unless($faculty->department === $departmentName, 404);
 
         $term = request()->query('term', currentTerm());
@@ -434,7 +435,7 @@ class AdminController extends Controller
         $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
-        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+        abort_unless($faculty->university_id === $tenantId && $faculty->role === Role::Faculty, 404);
         abort_unless($faculty->department === $departmentName, 404);
 
         $validated = $request->validate([
@@ -471,7 +472,7 @@ class AdminController extends Controller
 
         $students = User::where('university_id', $tenantId)
             ->where('department', $departmentName)
-            ->where('role', 'student')
+            ->where('role', Role::Student)
             ->with('courses')
             ->paginate(50);
 
@@ -500,7 +501,7 @@ class AdminController extends Controller
         ]);
 
         $student = User::findOrFail($validated['student_id']);
-        abort_unless($student->university_id === $tenantId && strtolower($student->role) === 'student', 404);
+        abort_unless($student->university_id === $tenantId && $student->role === Role::Student, 404);
         abort_unless($student->department === $departmentName, 404);
 
         $courseIds = $validated['assigned_courses'] ?? [];
@@ -596,11 +597,11 @@ class AdminController extends Controller
         $department = $request->query('department');
 
         $faculty = User::where('university_id', $tenantId)
-            ->where('role', 'faculty')
+            ->where('role', Role::Faculty)
             ->where('department', $department)
             ->with(['courses' => function ($query) {
                 $query->withCount(['users as students_count' => function ($q) {
-                    $q->where('role', 'student');
+                    $q->where('role', Role::Student);
                 }]);
             }])
             ->get()
@@ -648,7 +649,7 @@ class AdminController extends Controller
 
         $faculty = User::whereIn('id', $step2['selected_faculty'])->get();
         $courses = Course::withCount(['users as students_count' => function ($q) {
-            $q->where('role', 'student');
+            $q->where('role', Role::Student);
         }])->whereIn('id', $step2['selected_courses'])->get();
 
         $totalEligibleStudents = $courses->sum('students_count');
@@ -707,12 +708,14 @@ class AdminController extends Controller
         abort_unless($evaluation->creator->university_id === $tenantId, 403);
         abort_unless($evaluation->status === 'scheduled', 404);
 
+        $datesLocked = $evaluation->start_date->lte(now());
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'semester' => ['required', 'string', 'max:255'],
             'evaluation_type' => ['required', 'string', 'max:255'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after:start_date'],
+            'start_date' => $datesLocked ? ['sometimes'] : ['required', 'date'],
+            'end_date' => $datesLocked ? ['sometimes'] : ['required', 'date', 'after:start_date'],
             'is_anonymous' => ['boolean'],
             'allow_faculty_response' => ['boolean'],
             'send_reminder' => ['boolean'],
@@ -721,6 +724,10 @@ class AdminController extends Controller
         $validated['is_anonymous'] = $request->boolean('is_anonymous');
         $validated['allow_faculty_response'] = $request->boolean('allow_faculty_response');
         $validated['send_reminder'] = $request->boolean('send_reminder');
+
+        if ($datesLocked) {
+            unset($validated['start_date'], $validated['end_date']);
+        }
 
         $evaluation->update($validated);
 
@@ -738,7 +745,7 @@ class AdminController extends Controller
 
         $departments = User::query()
             ->where('university_id', $tenantId)
-            ->whereIn('role', ['student', 'faculty'])
+            ->whereIn('role', [Role::Student, Role::Faculty])
             ->whereNotNull('department')
             ->select('department')
             ->distinct()
@@ -767,14 +774,14 @@ class AdminController extends Controller
         $courses = Course::where('department', $departmentName)->latest()->paginate(50);
         $facultyMembers = User::query()
             ->where('university_id', $tenantId)
-            ->where('role', 'faculty')
+            ->where('role', Role::Faculty)
             ->where('department', $departmentName)
             ->with('courses')
             ->latest()
             ->paginate(50);
         $students = User::query()
             ->where('university_id', $tenantId)
-            ->where('role', 'student')
+            ->where('role', Role::Student)
             ->where('department', $departmentName)
             ->with('courses')
             ->latest()
@@ -894,7 +901,7 @@ class AdminController extends Controller
         $tenantId = auth()->user()->university_id;
 
         $query = User::where('university_id', $tenantId)
-            ->where('role', 'faculty')
+            ->where('role', Role::Faculty)
             ->with('courses');
 
         if ($department) {
@@ -929,7 +936,7 @@ class AdminController extends Controller
         ]);
 
         $faculty = User::findOrFail($validated['faculty_id']);
-        abort_unless($faculty->university_id === $tenantId && strtolower($faculty->role) === 'faculty', 404);
+        abort_unless($faculty->university_id === $tenantId && $faculty->role === Role::Faculty, 404);
 
         $courseIds = $validated['assigned_courses'] ?? [];
         $term = $validated['term'] ?? currentTerm();
@@ -953,7 +960,7 @@ class AdminController extends Controller
         $tenantId = auth()->user()->university_id;
 
         $query = User::where('university_id', $tenantId)
-            ->where('role', 'student')
+            ->where('role', Role::Student)
             ->with('courses');
 
         if ($department) {
@@ -982,7 +989,7 @@ class AdminController extends Controller
         ]);
 
         $student = User::findOrFail($validated['student_id']);
-        abort_unless($student->university_id === $tenantId && strtolower($student->role) === 'student', 404);
+        abort_unless($student->university_id === $tenantId && $student->role === Role::Student, 404);
 
         $courseIds = $validated['assigned_courses'] ?? [];
 
@@ -1027,7 +1034,7 @@ class AdminController extends Controller
             $user->update($validated);
         });
 
-        $redirectRoute = $user->role === 'faculty' ? '/admin/faculty' : '/admin/students';
+        $redirectRoute = $user->role === Role::Faculty ? '/admin/faculty' : '/admin/students';
 
         return redirect($redirectRoute)->with('success', 'User profile updated successfully.');
     }

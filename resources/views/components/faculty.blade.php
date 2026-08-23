@@ -91,7 +91,7 @@
                         class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm bg-slate-200 shrink-0">
                     <div class="flex flex-col min-w-0">
                         <span class="text-[13.5px] font-bold text-slate-900 leading-tight truncate">{{ auth()->user()->name }}</span>
-                        <span class="text-[11.5px] font-medium text-[#0e48c1] leading-tight">{{ auth()->user()->role }}</span>
+                        <span class="text-[11.5px] font-medium text-[#0e48c1] leading-tight">{{ auth()->user()->role->value }}</span>
                     </div>
                 </a>
 

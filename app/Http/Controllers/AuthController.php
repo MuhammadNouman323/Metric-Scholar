@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\University;
@@ -36,7 +37,7 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        if (strtolower($user->role) !== $credentials['role']) {
+        if ($user->role->value !== $credentials['role']) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -46,7 +47,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return redirect()->intended($this->redirectPathForRole($user->role));
+        return redirect()->intended($user->role->dashboardRoute());
     }
 
     public function register(RegisterRequest $request): RedirectResponse
@@ -54,7 +55,7 @@ class AuthController extends Controller
         $validated = $request->validated();
 
         unset($validated['terms']);
-        $validated['role'] = 'admin';
+        $validated['role'] = Role::Admin->value;
         $validated['admin_id'] ??= 'ADM-'.strtoupper((string) str()->random(6));
         $validated['access_level'] ??= 'Full Access';
         $validated['password'] = Hash::make($validated['password']);
@@ -100,7 +101,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || strtolower($user->role) !== 'admin') {
+        if (! $user || $user->role !== Role::Admin) {
             throw ValidationException::withMessages([
                 'email' => 'No admin account found with that email address.',
             ]);
@@ -145,14 +146,5 @@ class AuthController extends Controller
         }
 
         return back()->withErrors(['email' => __($status)]);
-    }
-
-    private function redirectPathForRole(string $role): string
-    {
-        return match (strtolower($role)) {
-            'admin' => '/admin/dashboard',
-            'faculty' => '/faculty/dashboard',
-            default => '/student/dashboard',
-        };
     }
 }

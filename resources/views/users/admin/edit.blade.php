@@ -3,7 +3,7 @@
 
         <!-- Header with Back Button -->
         <div class="flex items-center gap-4">
-            <a href="{{ $user->role === 'faculty' ? '/admin/faculty' : '/admin/students' }}"
+            <a href="{{ $user->role->value === 'faculty' ? '/admin/faculty' : '/admin/students' }}"
                 class="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-all shadow-sm">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -77,9 +77,9 @@
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Primary Role</label>
                             <select name="role"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
-                                <option value="student" @selected(old('role', $user->role) === 'student')>Student</option>
-                                <option value="faculty" @selected(old('role', $user->role) === 'faculty')>Faculty</option>
-                                <option value="admin" @selected(old('role', $user->role) === 'admin')>Admin</option>
+                                <option value="student" @selected(old('role', $user->role->value) === 'student')>Student</option>
+                                <option value="faculty" @selected(old('role', $user->role->value) === 'faculty')>Faculty</option>
+                                <option value="admin" @selected(old('role', $user->role->value) === 'admin')>Admin</option>
                             </select>
                             <div class="absolute inset-y-0 right-4 top-[32px] flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +162,7 @@
 
             <!-- Footer Buttons -->
             <div class="flex items-center justify-end gap-4">
-                <a href="{{ $user->role === 'faculty' ? '/admin/faculty' : '/admin/students' }}"
+            <a href="{{ $user->role->value === 'faculty' ? '/admin/faculty' : '/admin/students' }}"
                     class="bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 px-8 py-3.5 rounded-xl text-sm font-bold transition-all shadow-sm">
                     Cancel
                 </a>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\Feedback;
@@ -61,8 +62,8 @@ class ReportController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
-        $studentCount = User::where('university_id', $tenantId)->where('role', 'student')->count();
-        $facultyCount = User::where('university_id', $tenantId)->where('role', 'faculty')->count();
+        $studentCount = User::where('university_id', $tenantId)->where('role', Role::Student)->count();
+        $facultyCount = User::where('university_id', $tenantId)->where('role', Role::Faculty)->count();
         $courseCount = Course::count();
         $feedbackCount = Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))->count();
 
@@ -94,7 +95,7 @@ class ReportController extends Controller
         ];
 
         $departments = User::where('university_id', $tenantId)
-            ->where('role', 'faculty')
+            ->where('role', Role::Faculty)
             ->whereNotNull('department')
             ->distinct()
             ->pluck('department');
@@ -240,7 +241,7 @@ class ReportController extends Controller
         $tenantId = auth()->user()->university_id ?? null;
 
         $evaluationsQuery = Evaluation::query();
-        $facultyQuery = User::where('role', 'faculty');
+        $facultyQuery = User::where('role', Role::Faculty);
 
         if ($tenantId) {
             $evaluationsQuery->whereHas('creator', function ($q) use ($tenantId) {

@@ -127,9 +127,7 @@ Route::prefix('student')
 // Global fallback: avoid Laravel 404/exception pages for role-based areas.
 Route::fallback(function () {
     if (auth()->check()) {
-        $role = strtolower((string) auth()->user()->role);
-
-        return redirect('/'.$role.'/dashboard');
+        return redirect(auth()->user()->role->dashboardRoute());
     }
 
     return redirect()->route('login')->with('error', 'Please login to continue.');

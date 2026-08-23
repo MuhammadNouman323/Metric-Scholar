@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\Role;
 use App\Models\Course;
 use App\Models\Evaluation;
 use Closure;
@@ -16,8 +17,8 @@ class FacultyAssignedMiddleware
         }
 
         $user = auth()->user();
-        if (strtolower((string) $user->role) !== 'faculty') {
-            return redirect('/'.strtolower((string) $user->role).'/dashboard')
+        if ($user->role !== Role::Faculty) {
+            return redirect($user->role->dashboardRoute())
                 ->with('error', 'You are not authorized to access that page.');
         }
 
@@ -28,7 +29,7 @@ class FacultyAssignedMiddleware
             $courseId = is_numeric($course) ? $course : $course->id ?? null;
             $assigned = Course::find($courseId)?->faculty()->where('users.id', $user->id)->exists();
             if (! $assigned) {
-                return redirect('/faculty/dashboard')->with('error', 'You are not authorized to access that page.');
+                return redirect(Role::Faculty->dashboardRoute())->with('error', 'You are not authorized to access that page.');
             }
         }
 
@@ -36,7 +37,7 @@ class FacultyAssignedMiddleware
             $evaluationId = is_numeric($evaluation) ? $evaluation : $evaluation->id ?? null;
             $assigned = Evaluation::find($evaluationId)?->faculty()->where('users.id', $user->id)->exists();
             if (! $assigned) {
-                return redirect('/faculty/dashboard')->with('error', 'You are not authorized to access that page.');
+                return redirect(Role::Faculty->dashboardRoute())->with('error', 'You are not authorized to access that page.');
             }
         }
 

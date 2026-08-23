@@ -8,6 +8,7 @@ use App\Http\Middleware\FacultyMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\StudentMiddleware;
+use App\Http\Middleware\UpdateEvaluationStatuses;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeadersMiddleware::class);
+        $middleware->append(UpdateEvaluationStatuses::class);
 
         $middleware->alias([
             'role' => RoleMiddleware::class,
@@ -36,13 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Redirect authenticated users on guest routes to their role dashboard
         RedirectIfAuthenticated::redirectUsing(function ($request) {
             if (auth()->check()) {
-                $role = strtolower((string) auth()->user()->role);
-
-                return match ($role) {
-                    'admin' => '/admin/dashboard',
-                    'faculty' => '/faculty/dashboard',
-                    default => '/student/dashboard',
-                };
+                return auth()->user()->role->dashboardRoute();
             }
 
             return '/';

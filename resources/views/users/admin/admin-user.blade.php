@@ -145,7 +145,7 @@
                                     alt="{{ $recentUser->name }}">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-[14px] font-bold text-gray-900 truncate">{{ $recentUser->name }}</p>
-                                    <p class="text-[12px] text-gray-500 truncate font-medium">{{ ucfirst($recentUser->role) }} <span
+                                    <p class="text-[12px] text-gray-500 truncate font-medium">{{ ucfirst($recentUser->role->value) }} <span
                                             class="mx-1">•</span> {{ $recentUser->department ?: 'N/A' }}</p>
                                 </div>
                                 <span class="text-[10px] font-bold text-gray-400 shrink-0">{{ $recentUser->created_at->diffForHumans() }}</span>

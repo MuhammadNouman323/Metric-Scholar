@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Role;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\Feedback;
@@ -20,8 +21,8 @@ class ReportService
 
         // Base queries
         $evalQuery = Evaluation::query();
-        $facultyQuery = User::where('role', 'faculty');
-        $studentQuery = User::where('role', 'student');
+        $facultyQuery = User::where('role', Role::Faculty);
+        $studentQuery = User::where('role', Role::Student);
         $courseQuery = Course::query();
         $feedbackQuery = Feedback::query();
         $tokenQuery = FeedbackToken::query();
@@ -211,7 +212,7 @@ class ReportService
     {
         $tenantId = auth()->user()->university_id ?? null;
 
-        $query = User::where('role', 'faculty');
+        $query = User::where('role', Role::Faculty);
 
         if ($tenantId) {
             $query->where('university_id', $tenantId);
@@ -333,7 +334,7 @@ class ReportService
         return $query->get()->flatMap(function ($course) use ($filters, $tenantId) {
             // Find all faculty assigned to this course via pivot evaluation_courses or course_user
             // Let's get faculty connected to feedbacks, tokens or evaluations
-            $facultyQuery = User::where('role', 'faculty')
+            $facultyQuery = User::where('role', Role::Faculty)
                 ->whereHas('courses', function ($q) use ($course) {
                     $q->where('courses.id', $course->id);
                 });
@@ -441,7 +442,7 @@ class ReportService
 
         return $departments->map(function ($deptName) use ($filters, $tenantId) {
             // Count Faculty
-            $facQuery = User::where('role', 'faculty')->where('department', $deptName);
+            $facQuery = User::where('role', Role::Faculty)->where('department', $deptName);
             if ($tenantId) {
                 $facQuery->where('university_id', $tenantId);
             }
@@ -471,7 +472,7 @@ class ReportService
             $avg = $avg ? round($avg, 2) : 0.00;
 
             // Locate Best & Lowest Performing Faculty
-            $allFaculty = User::where('role', 'faculty')->where('department', $deptName);
+            $allFaculty = User::where('role', Role::Faculty)->where('department', $deptName);
             if ($tenantId) {
                 $allFaculty->where('university_id', $tenantId);
             }
@@ -773,7 +774,7 @@ class ReportService
         $tenantId = auth()->user()->university_id ?? null;
 
         // 1. Faculty Average Ratings (Bar Chart)
-        $facQuery = User::where('role', 'faculty');
+        $facQuery = User::where('role', Role::Faculty);
         if ($tenantId) {
             $facQuery->where('university_id', $tenantId);
         }
@@ -870,7 +871,7 @@ class ReportService
         $topFaculty = [];
         $topRatings = [];
 
-        $allFacultyToRate = User::where('role', 'faculty');
+        $allFacultyToRate = User::where('role', Role::Faculty);
         if ($tenantId) {
             $allFacultyToRate->where('university_id', $tenantId);
         }

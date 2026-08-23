@@ -314,3 +314,87 @@ test('admin cannot update scheduled evaluation to invalid date range', function 
 
     $response->assertSessionHasErrors(['end_date']);
 });
+
+test('middleware activates scheduled evaluations when start_date is today', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $evaluation = Evaluation::create([
+        'title' => 'Today Start Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->toDateString(),
+        'end_date' => now()->addDays(7)->toDateString(),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $this->get(route('admin.evaluations'));
+
+    $evaluation->refresh();
+    expect($evaluation->status)->toBe('active');
+});
+
+test('date fields are disabled on edit form when start_date has arrived', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $evaluation = Evaluation::create([
+        'title' => 'Started Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->subDay(),
+        'end_date' => now()->addDays(6)->toDateString(),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('admin.evaluations.edit', $evaluation));
+
+    $response->assertOk();
+    $response->assertSee('disabled');
+    $response->assertSee('Dates cannot be changed');
+});
+
+test('admin cannot change dates via update when start_date has arrived', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $evaluation = Evaluation::create([
+        'title' => 'Started Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->subDay(),
+        'end_date' => now()->addDays(6)->toDateString(),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $originalEndDate = $evaluation->end_date->copy();
+
+    $this->actingAs($admin)->put(route('admin.evaluations.update', $evaluation), [
+        'title' => 'Updated Title',
+        'semester' => 'Spring 2027',
+        'evaluation_type' => 'Annual',
+        'start_date' => now()->addDays(30)->toDateString(),
+        'end_date' => now()->addDays(60)->toDateString(),
+    ]);
+
+    $evaluation->refresh();
+    expect($evaluation->title)->toBe('Updated Title');
+    expect($evaluation->start_date->startOfDay())->not->toEqual(now()->addDays(30)->startOfDay());
+    expect($evaluation->end_date->startOfDay())->toEqual($originalEndDate->startOfDay());
+});
+
+test('date fields remain editable when start_date is in the future', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $evaluation = Evaluation::create([
+        'title' => 'Future Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Final',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'created_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)->get(route('admin.evaluations.edit', $evaluation));
+
+    $response->assertOk();
+    $response->assertDontSee('Dates cannot be changed');
+    $response->assertDontSee('disabled');
+});

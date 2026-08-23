@@ -19,9 +19,7 @@ class ProfileController extends Controller
     protected function validateProfileAccess(?User $user): ?RedirectResponse
     {
         if ($user && $user->id !== auth()->id()) {
-            $role = strtolower(auth()->user()->role);
-
-            return redirect()->to("/{$role}/dashboard")->with('error', 'You are not authorized to access this page.');
+            return redirect()->to(auth()->user()->role->dashboardRoute())->with('error', 'You are not authorized to access this page.');
         }
 
         return null;

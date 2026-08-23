@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -46,7 +47,7 @@ class Evaluation extends Model
                 if (auth()->check()) {
                     $model->created_by = auth()->id();
                 } else {
-                    $adminId = User::where('role', 'admin')->value('id');
+                    $adminId = User::where('role', Role::Admin)->value('id');
                     if ($adminId) {
                         $model->created_by = $adminId;
                     } else {

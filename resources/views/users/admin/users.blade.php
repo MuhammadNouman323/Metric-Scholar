@@ -162,7 +162,7 @@
                                     alt="{{ $user->name }}">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-[14px] font-bold text-gray-900 truncate">{{ $user->name }}</p>
-                                    <p class="text-[12px] text-gray-500 truncate font-medium">{{ $user->role }} <span
+                                    <p class="text-[12px] text-gray-500 truncate font-medium">{{ ucfirst($user->role->value) }} <span
                                             class="mx-1">•</span> {{ $user->department ?? 'N/A' }}</p>
                                 </div>
                                 <span

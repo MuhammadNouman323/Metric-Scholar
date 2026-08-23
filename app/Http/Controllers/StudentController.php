@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Http\Requests\StoreFeedbackRequest;
 use App\Models\Course;
 use App\Models\FeedbackAnswer;
@@ -349,7 +350,7 @@ class StudentController extends Controller
     {
         $student = auth()->user();
 
-        $courses = $student->courses()->with(['faculty' => fn ($q) => $q->where('role', 'faculty')])->get();
+        $courses = $student->courses()->with(['faculty' => fn ($q) => $q->where('role', Role::Faculty)])->get();
 
         $teachersMap = [];
         $departments = collect();

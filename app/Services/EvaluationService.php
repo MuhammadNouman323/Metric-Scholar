@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Role;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\FeedbackToken;
@@ -85,7 +86,7 @@ class EvaluationService
                 }
             }
 
-            $students = $course->users->where('role', 'student');
+            $students = $course->users->where('role', Role::Student);
 
             foreach ($students as $student) {
                 if (! in_array($student->id, $notifiedStudents)) {

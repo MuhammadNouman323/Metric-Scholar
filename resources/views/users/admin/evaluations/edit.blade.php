@@ -31,9 +31,27 @@
                 </div>
             @endif
 
+            @php
+                $datesLocked = $evaluation->start_date->lte(now());
+            @endphp
+
+            @if($datesLocked)
+                <div class="bg-amber-50 text-amber-700 p-4 rounded-xl font-semibold border border-amber-200 flex items-center gap-3">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    This evaluation cycle has already started. Dates cannot be changed.
+                </div>
+            @endif
+
             <form action="{{ route('admin.evaluations.update', $evaluation) }}" method="POST" class="space-y-8 mt-4">
                 @csrf
                 @method('PUT')
+
+                @if($datesLocked)
+                    <input type="hidden" name="start_date" value="{{ $evaluation->start_date->format('Y-m-d') }}">
+                    <input type="hidden" name="end_date" value="{{ $evaluation->end_date->format('Y-m-d') }}">
+                @endif
 
                 <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-8">
                     <!-- Evaluation Details Card -->
@@ -85,14 +103,14 @@
                             <!-- Start Date -->
                             <div class="space-y-2.5">
                                 <label for="start_date" class="block text-[11px] font-extrabold text-slate-400 tracking-widest uppercase">Start Date</label>
-                                <input id="start_date" name="start_date" type="date" required value="{{ old('start_date', $evaluation->start_date->format('Y-m-d')) }}" class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white" />
+                                <input id="start_date" name="start_date" type="date" required value="{{ old('start_date', $evaluation->start_date->format('Y-m-d')) }}" {{ $datesLocked ? 'disabled' : '' }} class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed" />
                                 @error('start_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <!-- End Date -->
                             <div class="space-y-2.5">
                                 <label for="end_date" class="block text-[11px] font-extrabold text-slate-400 tracking-widest uppercase">End Date</label>
-                                <input id="end_date" name="end_date" type="date" required value="{{ old('end_date', $evaluation->end_date->format('Y-m-d')) }}" class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white" />
+                                <input id="end_date" name="end_date" type="date" required value="{{ old('end_date', $evaluation->end_date->format('Y-m-d')) }}" {{ $datesLocked ? 'disabled' : '' }} class="w-full rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 text-[14px] font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed" />
                                 @error('end_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
