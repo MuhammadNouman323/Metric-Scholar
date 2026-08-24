@@ -5,6 +5,16 @@
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.25); border-radius: 999px; }
         .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.4); }
         .sidebar-scroll { scrollbar-width: thin; scrollbar-color: rgba(100, 116, 139, 0.25) transparent; }
+
+        .sidebar-drawer { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+        .sidebar-drawer.is-open { transform: translateX(0); }
+        @media (min-width: 1024px) {
+            .sidebar-drawer, .sidebar-drawer.is-open { transform: none; }
+        }
+
+        .sidebar-backdrop { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .sidebar-backdrop.is-visible { opacity: 1; pointer-events: auto; }
+
         @media (prefers-reduced-motion: reduce) {
             * { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
         }
@@ -12,15 +22,21 @@
 
     <div class="flex h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50/40 font-sans antialiased text-slate-900 overflow-hidden">
 
+        <!-- Mobile Backdrop -->
+        <div id="sidebar-backdrop" class="sidebar-backdrop fixed inset-0 z-[55] bg-slate-900/40 backdrop-blur-sm lg:hidden" aria-hidden="true"></div>
+
         <!-- Sidebar -->
-        <aside
-            class="hidden md:flex flex-col flex-shrink-0 w-[272px] h-[calc(100vh-24px)] my-3 ml-3 rounded-[28px]
+        <aside id="sidebar-drawer"
+            class="sidebar-drawer flex flex-col flex-shrink-0 fixed lg:relative inset-y-0 left-0
+                   w-[280px] max-w-[85vw] lg:w-[272px]
+                   h-full lg:h-[calc(100vh-24px)] my-0 lg:my-3 ml-0 lg:ml-3
+                   rounded-none lg:rounded-[28px]
                    bg-white/70 backdrop-blur-2xl border border-white/60
                    shadow-[0_8px_32px_rgba(15,23,42,0.07),0_2px_8px_rgba(15,23,42,0.04)]
-                   z-20 overflow-hidden">
+                   z-[60] lg:z-20 overflow-hidden">
 
             <!-- Logo -->
-            <div class="h-24 flex items-center px-7 shrink-0">
+            <div class="h-24 flex items-center justify-between px-7 shrink-0">
                 <a href="/admin/dashboard" class="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-xl">
                     <div class="relative mr-3">
                         <div
@@ -38,6 +54,12 @@
                         <div class="text-[9px] font-bold text-slate-400 tracking-[0.2em] uppercase">Academic Curator</div>
                     </div>
                 </a>
+                <button type="button" data-sidebar-close aria-label="Close navigation menu"
+                    class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100/80 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
 
             <!-- Nav -->
@@ -196,8 +218,15 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto relative z-10 w-full">
             <!-- Mobile Header -->
-            <div class="flex md:hidden items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-slate-100/80 sticky top-0 z-30">
-                <a href="/admin/dashboard" class="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-lg">
+            <div class="flex lg:hidden items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-md border-b border-slate-100/80 sticky top-0 z-30">
+                <div class="flex items-center gap-2">
+                    <button type="button" data-sidebar-toggle aria-controls="sidebar-drawer" aria-expanded="false" aria-label="Open navigation menu"
+                        class="w-11 h-11 flex items-center justify-center rounded-xl border border-slate-200 bg-white/80 text-slate-700 hover:bg-slate-50 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <a href="/admin/dashboard" class="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-lg">
                     <div class="w-8 h-8 bg-gradient-to-br from-[#0e48c1] to-[#3d6ae8] rounded-lg flex items-center justify-center text-white shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z" />
@@ -205,6 +234,7 @@
                     </div>
                     <span class="font-bold text-[15px] text-slate-900 tracking-tight">Scholar Metric</span>
                 </a>
+                </div>
                 <a href="{{ route('admin.profile') }}" class="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-full">
                     <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}"
                         class="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm bg-slate-200">
@@ -217,4 +247,42 @@
         </main>
 
     </div>
+
+    <script>
+        (function () {
+            const drawer = document.getElementById('sidebar-drawer');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const main = document.querySelector('main');
+            if (!drawer) return;
+
+            const setOpen = (open) => {
+                drawer.classList.toggle('is-open', open);
+                if (backdrop) backdrop.classList.toggle('is-visible', open);
+                document.querySelectorAll('[data-sidebar-toggle]').forEach(function (btn) {
+                    btn.setAttribute('aria-expanded', String(open));
+                });
+                if (main && window.innerWidth < 1024) main.style.overflow = open ? 'hidden' : '';
+            };
+
+            document.querySelectorAll('[data-sidebar-toggle]').forEach(function (el) {
+                el.addEventListener('click', function () {
+                    setOpen(!drawer.classList.contains('is-open'));
+                });
+            });
+            document.querySelectorAll('[data-sidebar-close]').forEach(function (el) {
+                el.addEventListener('click', function () { setOpen(false); });
+            });
+            if (backdrop) backdrop.addEventListener('click', function () { setOpen(false); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') setOpen(false);
+            });
+            drawer.querySelectorAll('a').forEach(function (link) {
+                link.addEventListener('click', function () { setOpen(false); });
+            });
+
+            window.matchMedia('(min-width: 1024px)').addEventListener('change', function (e) {
+                if (e.matches) setOpen(false);
+            });
+        })();
+    </script>
 </x-layout>

@@ -8,7 +8,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login');
+Route::view('/', 'landing')->name('landing');
 
 Route::view('/login', 'auth.login')
     ->middleware('guest')
