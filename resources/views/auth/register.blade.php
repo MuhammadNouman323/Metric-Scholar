@@ -96,22 +96,6 @@
                         </div>
                     </div>
 
-                    <!-- Access Level -->
-                    <div class="mb-5 lg:mb-6 relative">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Access Level</label>
-                        <select name="access_level" class="w-full bg-gray-50/50 border border-transparent rounded-xl px-4 py-3 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white focus:border-blue-200 transition-all cursor-pointer">
-                            <option value="Full Access" @selected(old('access_level', 'Full Access') === 'Full Access')>Full Access</option>
-                            <option value="Partial Access" @selected(old('access_level') === 'Partial Access')>Partial Access</option>
-                            <option value="Read Only" @selected(old('access_level') === 'Read Only')>Read Only</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-4 top-[30px] flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                        @error('access_level')
-                            <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <!-- Password -->
                     <div class="mb-6 lg:mb-8 relative">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>

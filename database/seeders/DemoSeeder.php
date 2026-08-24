@@ -23,10 +23,10 @@ class DemoSeeder extends Seeder
         $closedTerm = $this->previousTerm($currentTerm);
 
         // ─── 1. University ───────────────────────────────────────────────
-        $university = University::create([
-            'name' => 'Virtual University of Pakistan',
-            'domain' => 'vu.edu.pk',
-        ]);
+        $university = University::query()->firstOrCreate(
+            ['domain' => 'vu.edu.pk'],
+            ['name' => 'Virtual University of Pakistan']
+        );
 
         // ─── 2. Admin ────────────────────────────────────────────────────
         $admin = User::create([
@@ -34,6 +34,8 @@ class DemoSeeder extends Seeder
             'email' => 'admin@vu.edu.pk',
             'password' => $password,
             'role' => 'admin',
+            'admin_id' => 'ADM-DEMO01',
+            'access_level' => 'Full Access',
             'email_verified_at' => now(),
             'is_active' => true,
             'university_id' => $university->id,
@@ -65,13 +67,20 @@ class DemoSeeder extends Seeder
         [$ahmed, $sara, $usman, $zara] = $faculty;
 
         // ─── 4. Students ────────────────────────────────────────────────
-        for ($i = 1; $i <= 20; $i++) {
+        $studentNames = [
+            'Ali Raza', 'Hamza Tariq', 'Bilal Ahmed', 'Usman Ghani', 'Hassan Javed',
+            'Umar Farooq', 'Abdullah Nasir', 'Salman Haider', 'Fahad Mehmood', 'Zeeshan Ali',
+            'Ayesha Khan', 'Fatima Zahra', 'Zainab Riaz', 'Hira Shahid', 'Mahnoor Asif',
+            'Amna Bibi', 'Rabia Anwar', 'Maryam Tariq', 'Iqra Naz', 'Laiba Yousaf',
+        ];
+
+        foreach ($studentNames as $index => $name) {
             User::create([
-                'name' => fake()->name(),
-                'email' => 'student'.str_pad($i, 2, '0', STR_PAD_LEFT).'@vu.edu.pk',
+                'name' => $name,
+                'email' => str_replace(' ', '.', strtolower($name)).'@vu.edu.pk',
                 'password' => $password,
                 'role' => 'student',
-                'department' => $i <= 10 ? 'Computer Science' : 'Applied Physics',
+                'department' => $index < 10 ? 'Computer Science' : 'Applied Physics',
                 'email_verified_at' => now(),
                 'is_active' => true,
                 'university_id' => $university->id,
@@ -112,6 +121,7 @@ class DemoSeeder extends Seeder
                 'code' => $c['code'],
                 'credit_hours' => $c['credit_hours'],
                 'department' => 'Computer Science',
+                'university_id' => $university->id,
             ]);
         }
 
@@ -122,6 +132,7 @@ class DemoSeeder extends Seeder
                 'code' => $c['code'],
                 'credit_hours' => $c['credit_hours'],
                 'department' => 'Applied Physics',
+                'university_id' => $university->id,
             ]);
         }
 

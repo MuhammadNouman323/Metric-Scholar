@@ -57,14 +57,14 @@ class AuthController extends Controller
         unset($validated['terms']);
         $validated['role'] = Role::Admin->value;
         $validated['admin_id'] ??= 'ADM-'.strtoupper((string) str()->random(6));
-        $validated['access_level'] ??= 'Full Access';
+        $validated['access_level'] = 'Full Access';
         $validated['password'] = Hash::make($validated['password']);
 
-        $domain = explode('@', $validated['email'])[1];
-        $university = University::firstOrCreate(
-            ['domain' => $domain],
-            ['name' => ucfirst(explode('.', $domain)[0]).' University']
-        );
+        $university = $request->resolveUniversity();
+
+        if (! $university instanceof University) {
+            abort(422, 'University not found for the given email domain.');
+        }
 
         $validated['university_id'] = $university->id;
 
