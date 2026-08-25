@@ -9,33 +9,6 @@
                     class="text-[11px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full tracking-wider uppercase">Annual
                     Review {{ date('Y') }}</span>
             </div>
-            <div class="flex items-center gap-3">
-                <!-- Search -->
-                <div class="relative hidden sm:block">
-                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <input type="text" placeholder="Search data points..."
-                        class="bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-[13px] text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1]/20 w-52">
-                </div>
-                <button class="p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                        </path>
-                    </svg>
-                </button>
-                <button class="p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                        </path>
-                    </svg>
-                </button>
-            </div>
         </div>
 
         <!-- Top 4 Stats -->
@@ -276,7 +249,7 @@
 
     <!-- Floating Export Button -->
     <div class="fixed bottom-8 right-8 z-50">
-        <button
+        <a href="{{ route('faculty.reports.analytics-pdf') }}"
             class="flex items-center gap-2.5 bg-[#0e48c1] text-white px-6 py-3.5 rounded-full text-[14px] font-bold shadow-[0_8px_24px_rgba(14,72,193,0.35)] hover:bg-blue-800 hover:shadow-[0_12px_28px_rgba(14,72,193,0.4)] transition-all">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -284,6 +257,6 @@
                 </path>
             </svg>
             Export Full Dossier
-        </button>
+        </a>
     </div>
 </x-faculty>

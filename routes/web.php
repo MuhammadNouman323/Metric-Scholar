@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\FacultyReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
@@ -103,6 +104,10 @@ Route::prefix('faculty')
         Route::post('/profile/avatar/remove/{user?}', [ProfileController::class, 'removeAvatar'])->name('faculty.profile.avatar.remove');
         Route::get('/profile/{user?}', [ProfileController::class, 'showFacultyProfile'])->name('faculty.profile');
         Route::put('/profile/{user?}', [ProfileController::class, 'updateProfile'])->name('faculty.profile.update');
+
+        Route::get('/reports/dashboard-pdf', [FacultyReportController::class, 'dashboardReport'])->name('faculty.reports.dashboard-pdf');
+        Route::get('/reports/feedback-export', [FacultyReportController::class, 'feedbackExport'])->name('faculty.reports.feedback-export');
+        Route::get('/reports/analytics-pdf', [FacultyReportController::class, 'analyticsReport'])->name('faculty.reports.analytics-pdf');
     });
 
 Route::prefix('student')

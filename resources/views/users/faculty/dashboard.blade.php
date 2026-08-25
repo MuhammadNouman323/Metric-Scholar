@@ -4,22 +4,17 @@
         <!-- Header -->
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-5">
             <div>
-                <nav class="text-[13px] text-gray-400 font-medium mb-2">
-                    <span>Faculty Analytics</span>
-                    <span class="mx-2">›</span>
-                    <span class="text-[#0e48c1] font-semibold">Academic Year 2023-24</span>
-                </nav>
                 <h1 class="text-3xl lg:text-[34px] font-bold text-gray-900 mb-1.5 tracking-tight">Faculty Overview</h1>
             </div>
             <div class="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
-                <button
+                <a href="{{ route('faculty.reports.dashboard-pdf') }}"
                     class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-[0_4px_12px_rgba(14,72,193,0.2)] hover:bg-blue-800 transition-colors flex-1 sm:flex-none whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                     </svg>
                     Download Report
-                </button>
+                </a>
             </div>
         </div>
 
@@ -290,10 +285,10 @@
                     comparisons, and sentiment analysis summaries in a single PDF.
                 </p>
             </div>
-            <button
+            <a href="{{ route('faculty.reports.analytics-pdf') }}"
                 class="bg-white text-[#0e48c1] font-bold text-[14px] px-7 py-3.5 rounded-xl shadow-lg hover:shadow-xl hover:bg-blue-50 transition-all whitespace-nowrap flex-shrink-0">
                 Export Dossier {{ date('Y') }}
-            </button>
+            </a>
         </div>
 
     </div>

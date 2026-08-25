@@ -8,25 +8,16 @@
                 <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Welcome back, {{ $student->name }} 👋</h1>
             </div>
             <div class="flex items-center gap-3">
-                <div class="relative hidden sm:block">
-                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <input type="text" placeholder="Search courses..."
-                        class="bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-[13px] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0e48c1]/20 w-48">
-                </div>
-                <button
-                    class="flex items-center gap-2 bg-[#0e48c1] text-white px-5 py-2.5 rounded-xl text-[13px] font-bold hover:bg-blue-800 transition-colors shadow-sm">
+                
+                <a href="/student/feedback"
+                    class="flex items-center gap-2 bg-[#0e48c1] text-white px-5 py-2.5 rounded-xl text-[13px] font-bold hover:bg-blue-800 transition-colors shadow-sm" >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
                         </path>
                     </svg>
                     Submit Feedback
-                </button>
+                </a>
             </div>
         </div>
 
@@ -97,10 +88,17 @@
                                     $endDate = \Carbon\Carbon::parse($token->evaluation->end_date);
                                     $daysLeft = now()->diffInDays($endDate, false); 
                                     $daysLeft = $daysLeft < 0 ? 0 : $daysLeft;
+                                    $daysLabel = match(true) {
+                                        $daysLeft === 0 => 'Less than a day left',
+                                        $daysLeft === 1 => '1 day left',
+                                        $daysLeft >= 7 && ($daysLeft % 7) === 0 => ($daysLeft / 7) . ' week' . (($daysLeft / 7) > 1 ? 's' : '') . ' left',
+                                        $daysLeft >= 7 => floor($daysLeft / 7) . ' week' . (floor($daysLeft / 7) > 1 ? 's' : '') . ', ' . ($daysLeft % 7) . ' day' . (($daysLeft % 7) !== 1 ? 's' : '') . ' left',
+                                        default => $daysLeft . ' days left',
+                                    };
                                 @endphp
                                 <p class="text-[12px] font-bold {{ $daysLeft <= 3 ? 'text-red-500' : 'text-gray-500' }} mb-2">
                                     <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    {{ $daysLeft }} days left
+                                    {{ $daysLabel }}
                                 </p>
                                 <a href="{{ route('student.feedback', ['token' => $token->token]) }}"
                                     class="inline-block bg-[#0e48c1] text-white text-[12px] font-bold px-4 py-2 rounded-xl hover:bg-blue-800 transition-colors">

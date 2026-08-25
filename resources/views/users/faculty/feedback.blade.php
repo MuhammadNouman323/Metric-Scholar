@@ -5,7 +5,7 @@
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-5">
             <h1 class="text-3xl lg:text-[34px] font-bold text-gray-900 tracking-tight">Faculty Feedback</h1>
             <div class="flex items-center gap-3">
-                <a href="{{ request()->fullUrlWithQuery(['export' => 1]) }}"
+                <a href="{{ route('faculty.reports.feedback-export', array_filter(['course_id' => request('course_id'), 'sort' => request('sort')])) }}"
                    class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-[0_4px_12px_rgba(14,72,193,0.2)] hover:bg-blue-800 transition-colors whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
