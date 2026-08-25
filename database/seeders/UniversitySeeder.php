@@ -15,6 +15,7 @@ class UniversitySeeder extends Seeder
     {
         $universities = [
             ['name' => 'Virtual University of Pakistan', 'domain' => 'vu.edu.pk'],
+            ['name' => 'Punjab University', 'domain' => 'pu.edu.pk'],
         ];
 
         foreach ($universities as $university) {
