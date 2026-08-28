@@ -47,6 +47,10 @@ class DemoSeeder extends Seeder
             ['name' => 'Prof. Sara Ali',    'email' => 'sara.ali@vu.edu.pk',    'department' => 'Computer Science'],
             ['name' => 'Dr. Usman Malik',   'email' => 'usman.malik@vu.edu.pk', 'department' => 'Applied Physics'],
             ['name' => 'Prof. Zara Tariq',  'email' => 'zara.tariq@vu.edu.pk',  'department' => 'Applied Physics'],
+            ['name' => 'Dr. Imran Qureshi', 'email' => 'imran.qureshi@vu.edu.pk', 'department' => 'Mathematics'],
+            ['name' => 'Prof. Nadia Jamil', 'email' => 'nadia.jamil@vu.edu.pk',   'department' => 'Mathematics'],
+            ['name' => 'Dr. Farhan Raza',   'email' => 'farhan.raza@vu.edu.pk',   'department' => 'Bio-Chemistry'],
+            ['name' => 'Prof. Sana Munir',  'email' => 'sana.munir@vu.edu.pk',    'department' => 'Bio-Chemistry'],
         ];
 
         $faculty = [];
@@ -64,7 +68,7 @@ class DemoSeeder extends Seeder
             ]);
         }
 
-        [$ahmed, $sara, $usman, $zara] = $faculty;
+        [$ahmed, $sara, $usman, $zara, $imran, $nadia, $farhan, $sana] = $faculty;
 
         // ─── 4. Students ────────────────────────────────────────────────
         $studentNames = [
@@ -75,12 +79,19 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($studentNames as $index => $name) {
+            $dept = match (true) {
+                $index < 5              => 'Computer Science',
+                $index < 10             => 'Applied Physics',
+                $index < 15             => 'Mathematics',
+                default                 => 'Bio-Chemistry',
+            };
+
             User::create([
                 'name' => $name,
                 'email' => str_replace(' ', '.', strtolower($name)).'@vu.edu.pk',
                 'password' => $password,
                 'role' => 'student',
-                'department' => $index < 10 ? 'Computer Science' : 'Applied Physics',
+                'department' => $dept,
                 'email_verified_at' => now(),
                 'is_active' => true,
                 'university_id' => $university->id,
@@ -90,6 +101,8 @@ class DemoSeeder extends Seeder
 
         $csStudents = User::where('role', 'student')->where('department', 'Computer Science')->get();
         $apStudents = User::where('role', 'student')->where('department', 'Applied Physics')->get();
+        $mathStudents = User::where('role', 'student')->where('department', 'Mathematics')->get();
+        $bcStudents = User::where('role', 'student')->where('department', 'Bio-Chemistry')->get();
 
         // ─── 5. Courses ─────────────────────────────────────────────────
         $csCoursesData = [
@@ -114,6 +127,28 @@ class DemoSeeder extends Seeder
             ['title' => 'Astrophysics',       'code' => 'PHY402', 'credit_hours' => 3],
         ];
 
+        $mathCoursesData = [
+            ['title' => 'Calculus I',            'code' => 'MATH101', 'credit_hours' => 3],
+            ['title' => 'Calculus II',           'code' => 'MATH102', 'credit_hours' => 3],
+            ['title' => 'Linear Algebra',        'code' => 'MATH201', 'credit_hours' => 3],
+            ['title' => 'Differential Equations', 'code' => 'MATH202', 'credit_hours' => 3],
+            ['title' => 'Discrete Mathematics',  'code' => 'MATH301', 'credit_hours' => 3],
+            ['title' => 'Probability Theory',    'code' => 'MATH302', 'credit_hours' => 3],
+            ['title' => 'Numerical Analysis',    'code' => 'MATH401', 'credit_hours' => 4],
+            ['title' => 'Abstract Algebra',      'code' => 'MATH402', 'credit_hours' => 3],
+        ];
+
+        $bcCoursesData = [
+            ['title' => 'General Chemistry',     'code' => 'BCH101', 'credit_hours' => 3],
+            ['title' => 'Organic Chemistry',     'code' => 'BCH102', 'credit_hours' => 3],
+            ['title' => 'Biochemistry',          'code' => 'BCH201', 'credit_hours' => 3],
+            ['title' => 'Cell Biology',          'code' => 'BCH202', 'credit_hours' => 3],
+            ['title' => 'Microbiology',          'code' => 'BCH301', 'credit_hours' => 3],
+            ['title' => 'Genetics',              'code' => 'BCH302', 'credit_hours' => 3],
+            ['title' => 'Molecular Biology',     'code' => 'BCH401', 'credit_hours' => 4],
+            ['title' => 'Analytical Chemistry',  'code' => 'BCH402', 'credit_hours' => 3],
+        ];
+
         $csCourses = [];
         foreach ($csCoursesData as $c) {
             $csCourses[] = Course::create([
@@ -136,12 +171,38 @@ class DemoSeeder extends Seeder
             ]);
         }
 
+        $mathCourses = [];
+        foreach ($mathCoursesData as $c) {
+            $mathCourses[] = Course::create([
+                'title' => $c['title'],
+                'code' => $c['code'],
+                'credit_hours' => $c['credit_hours'],
+                'department' => 'Mathematics',
+                'university_id' => $university->id,
+            ]);
+        }
+
+        $bcCourses = [];
+        foreach ($bcCoursesData as $c) {
+            $bcCourses[] = Course::create([
+                'title' => $c['title'],
+                'code' => $c['code'],
+                'credit_hours' => $c['credit_hours'],
+                'department' => 'Bio-Chemistry',
+                'university_id' => $university->id,
+            ]);
+        }
+
         // ─── 6. Assign courses to faculty ───────────────────────────────
         $facultyCourseMap = [
             [$ahmed, array_slice($csCourses, 0, 4)],
             [$sara,  array_slice($csCourses, 4, 4)],
             [$usman, array_slice($apCourses, 0, 4)],
             [$zara,  array_slice($apCourses, 4, 4)],
+            [$imran, array_slice($mathCourses, 0, 4)],
+            [$nadia, array_slice($mathCourses, 4, 4)],
+            [$farhan, array_slice($bcCourses, 0, 4)],
+            [$sana,  array_slice($bcCourses, 4, 4)],
         ];
 
         foreach ($facultyCourseMap as [$f, $courses]) {
@@ -162,6 +223,20 @@ class DemoSeeder extends Seeder
         foreach ($apStudents as $student) {
             $student->courses()->attach(
                 collect($apCourses)->random(rand(4, 6))->pluck('id')->all(),
+                ['term' => $currentTerm]
+            );
+        }
+
+        foreach ($mathStudents as $student) {
+            $student->courses()->attach(
+                collect($mathCourses)->random(rand(4, 6))->pluck('id')->all(),
+                ['term' => $currentTerm]
+            );
+        }
+
+        foreach ($bcStudents as $student) {
+            $student->courses()->attach(
+                collect($bcCourses)->random(rand(4, 6))->pluck('id')->all(),
                 ['term' => $currentTerm]
             );
         }
@@ -204,9 +279,16 @@ class DemoSeeder extends Seeder
 
         // ─── 9. Link evaluations to faculty + courses ───────────────────
         $evalConfigs = [
-            ['eval' => $closedEval,    'completion' => 0.75, 'avgCs' => 4.2, 'avgAp' => 3.5],
-            ['eval' => $activeEval,    'completion' => 0.30, 'avgCs' => 4.2, 'avgAp' => 3.5],
-            ['eval' => $scheduledEval, 'completion' => 0.00, 'avgCs' => 0,   'avgAp' => 0],
+            ['eval' => $closedEval,    'completion' => 0.75, 'avgCs' => 4.2, 'avgAp' => 3.5, 'avgMath' => 3.8, 'avgBc' => 3.7],
+            ['eval' => $activeEval,    'completion' => 0.30, 'avgCs' => 4.2, 'avgAp' => 3.5, 'avgMath' => 3.8, 'avgBc' => 3.7],
+            ['eval' => $scheduledEval, 'completion' => 0.00, 'avgCs' => 0,   'avgAp' => 0,   'avgMath' => 0,   'avgBc' => 0],
+        ];
+
+        $deptStudents = [
+            'Computer Science' => $csStudents,
+            'Applied Physics'  => $apStudents,
+            'Mathematics'      => $mathStudents,
+            'Bio-Chemistry'    => $bcStudents,
         ];
 
         foreach ($evalConfigs as $cfg) {
@@ -253,7 +335,7 @@ class DemoSeeder extends Seeder
 
             foreach ($evalCourseFacultyPairs as $pair) {
                 $dept = Course::find($pair->course_id)->department;
-                $students = $dept === 'Computer Science' ? $csStudents : $apStudents;
+                $students = $deptStudents[$dept];
 
                 foreach ($students as $student) {
                     $token = FeedbackToken::create([
@@ -277,7 +359,13 @@ class DemoSeeder extends Seeder
                         'course_id' => $pair->course_id,
                     ]);
 
-                    $baseRating = $dept === 'Computer Science' ? $cfg['avgCs'] : $cfg['avgAp'];
+                    $avgKey = match ($dept) {
+                        'Computer Science' => 'avgCs',
+                        'Applied Physics'  => 'avgAp',
+                        'Mathematics'      => 'avgMath',
+                        'Bio-Chemistry'    => 'avgBc',
+                    };
+                    $baseRating = $cfg[$avgKey];
 
                     foreach (['overall_rating', 'clarity', 'materials', 'responsiveness', 'organization'] as $qid) {
                         $r = $qid === 'overall_rating'
