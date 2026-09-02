@@ -76,7 +76,7 @@
                                 <div class="relative">
                                     <select id="semester" name="semester" class="w-full appearance-none rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 pr-12 text-[14px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white transition-all duration-200">
                                         @foreach(semesterOptions() as $sem)
-                                            <option value="{{ $sem }}" {{ old('semester', $evaluationData['semester'] ?? '') == $sem ? 'selected' : '' }}>{{ $sem }}</option>
+                                            <option value="{{ $sem }}" {{ old('semester', $evaluationData['semester'] ?? currentTerm()) == $sem ? 'selected' : '' }}>{{ $sem }}</option>
                                         @endforeach
                                     </select>
                                     <svg class="pointer-events-none absolute right-5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
@@ -88,7 +88,7 @@
                                 <label for="evaluation_type" class="block text-[11px] font-extrabold text-slate-400 tracking-widest uppercase">Evaluation Type</label>
                                 <div class="relative">
                                     <select id="evaluation_type" name="evaluation_type" class="w-full appearance-none rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 pr-12 text-[14px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white transition-all duration-200">
-                                        @foreach(['Mid-Term', 'Final', 'Annual', 'Custom'] as $type)
+                                        @foreach(['Mid-Term', 'Final'] as $type)
                                             <option value="{{ $type }}" {{ old('evaluation_type', $evaluationData['evaluation_type'] ?? '') == $type ? 'selected' : '' }}>{{ $type }}</option>
                                         @endforeach
                                     </select>
@@ -124,32 +124,6 @@
                         </div>
 
                         <div class="space-y-7">
-                            <input type="hidden" name="is_anonymous" value="0">
-                            <label class="flex items-start justify-between gap-6 cursor-pointer">
-                                <div class="space-y-1">
-                                    <span class="block text-[15px] font-bold text-slate-800">Anonymous Feedback</span>
-                                    <span class="block text-[13px] text-slate-500 font-medium leading-normal">Do not disclose student identities to faculty or admin.</span>
-                                </div>
-                                <span class="relative inline-flex items-center shrink-0">
-                                    <input type="checkbox" name="is_anonymous" value="1" class="sr-only peer" {{ old('is_anonymous', $evaluationData['is_anonymous'] ?? 1) ? 'checked' : '' }}>
-                                    <span class="h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-[#0e48c1] transition-colors duration-200"></span>
-                                    <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
-                                </span>
-                            </label>
-
-                            <input type="hidden" name="allow_faculty_response" value="0">
-                            <label class="flex items-start justify-between gap-6 cursor-pointer">
-                                <div class="space-y-1">
-                                    <span class="block text-[15px] font-bold text-slate-800">Allow Faculty Responses</span>
-                                    <span class="block text-[13px] text-slate-500 font-medium leading-normal">Enable direct faculty commentary on feedback.</span>
-                                </div>
-                                <span class="relative inline-flex items-center shrink-0">
-                                    <input type="checkbox" name="allow_faculty_response" value="1" class="sr-only peer" {{ old('allow_faculty_response', $evaluationData['allow_faculty_response'] ?? 0) ? 'checked' : '' }}>
-                                    <span class="h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-[#0e48c1] transition-colors duration-200"></span>
-                                    <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
-                                </span>
-                            </label>
-
                             <input type="hidden" name="send_reminder" value="0">
                             <label class="flex items-start justify-between gap-6 cursor-pointer">
                                 <div class="space-y-1">
@@ -162,6 +136,19 @@
                                     <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
                                 </span>
                             </label>
+                            <input type="hidden" name="is_anonymous" value="1">
+                            <div class="flex items-start justify-between gap-6">
+                                <div class="space-y-1">
+                                    <span class="block text-[15px] font-bold text-slate-800">Anonymous Feedback</span>
+                                    <span class="block text-[13px] text-slate-500 font-medium leading-normal">Do not disclose student identities to faculty or admin.</span>
+                                </div>
+                                <span class="relative inline-flex items-center shrink-0">
+                                    <input type="checkbox" name="is_anonymous" value="1" checked disabled class="sr-only peer">
+                                    <span class="h-6 w-11 rounded-full bg-[#0e48c1] peer-checked:bg-[#0e48c1] transition-colors duration-200 opacity-60"></span>
+                                    <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
+                                </span>
+                            </div>
+
                         </div>
                     </section>
                 </div>

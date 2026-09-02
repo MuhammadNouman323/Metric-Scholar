@@ -141,19 +141,6 @@
                                 </span>
                             </label>
 
-                            <input type="hidden" name="allow_faculty_response" value="0">
-                            <label class="flex items-start justify-between gap-6 cursor-pointer">
-                                <div class="space-y-1">
-                                    <span class="block text-[15px] font-bold text-slate-800">Allow Faculty Responses</span>
-                                    <span class="block text-[13px] text-slate-500 font-medium leading-normal">Enable direct faculty commentary on feedback.</span>
-                                </div>
-                                <span class="relative inline-flex items-center shrink-0">
-                                    <input type="checkbox" name="allow_faculty_response" value="1" class="sr-only peer" {{ old('allow_faculty_response', $evaluation->allow_faculty_response) ? 'checked' : '' }}>
-                                    <span class="h-6 w-11 rounded-full bg-slate-200 peer-checked:bg-[#0e48c1] transition-colors duration-200"></span>
-                                    <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-5"></span>
-                                </span>
-                            </label>
-
                             <input type="hidden" name="send_reminder" value="0">
                             <label class="flex items-start justify-between gap-6 cursor-pointer">
                                 <div class="space-y-1">

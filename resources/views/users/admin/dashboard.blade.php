@@ -116,43 +116,27 @@
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-8 gap-4">
                     <div>
                         <h3 class="text-[19px] font-bold text-gray-900 mb-1">Engagement Trends</h3>
-                        <p class="text-[13.5px] text-gray-500 font-medium">Feedback volume over the current semester</p>
+                        <p class="text-[13.5px] text-gray-500 font-medium">Highest &amp; lowest performing departments — semester over semester</p>
                     </div>
-                    <div class="flex items-center gap-4 text-xs font-bold text-gray-600">
+                    <div class="grid grid-cols-2 gap-x-5 gap-y-1.5 text-[11px] font-bold text-gray-600">
                         <div class="flex items-center gap-1.5">
-                            <div class="w-3 h-3 rounded-full bg-[#0e48c1]"></div> Current
+                            <div class="w-2.5 h-2.5 rounded-full bg-[#0e48c1]"></div> Highest
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <div class="w-3 h-3 rounded-full bg-[#cbd5e1]"></div> Last Year
+                            <div class="w-2.5 h-2.5 rounded-full border-2 border-[#0e48c1] border-dashed bg-transparent"></div> Highest (prev)
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full bg-[#ef4444]"></div> Lowest
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full border-2 border-[#ef4444] border-dashed bg-transparent"></div> Lowest (prev)
                         </div>
                     </div>
                 </div>
 
-                <!-- Line Chart Visualization via SVG -->
+                <!-- Chart.js Line Chart -->
                 <div class="w-full h-[220px] relative mt-2">
-                    <svg viewBox="0 0 1000 250" class="w-full h-full overflow-visible preserve-3d"
-                        preserveAspectRatio="none">
-                        <!-- Dashed bottom axis line -->
-                        <path d="M 0 250 L 1000 250" stroke="#f1f5f9" stroke-width="2" fill="none"
-                            stroke-dasharray="4 4" />
-
-                        <!-- Last Year Dashed Line -->
-                        <path d="M 0 220 Q 250 210 500 180 T 1000 120" stroke="#cbd5e1" stroke-width="3" fill="none"
-                            stroke-dasharray="8 6" />
-
-                        <!-- Current Year Solid Line -->
-                        <path d="M 0 200 C 250 140 400 180 600 150 C 750 130 900 60 1000 30" stroke="#0e48c1"
-                            stroke-width="4.5" fill="none" stroke-linecap="round" />
-                    </svg>
-                    <!-- X Axis Labels -->
-                    <div
-                        class="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] mt-6 px-1">
-                        <span>August</span>
-                        <span>September</span>
-                        <span>October</span>
-                        <span>November</span>
-                        <span>December</span>
-                    </div>
+                    <canvas id="engagementChart"></canvas>
                 </div>
             </div>
 
@@ -332,4 +316,141 @@
 
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const data = @json($engagementData);
+            const ctx = document.getElementById('engagementChart');
+            if (!ctx) return;
+
+            const fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+            Chart.defaults.font.family = fontFamily;
+            Chart.defaults.font.size = 11;
+            Chart.defaults.color = '#64748b';
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Highest (current)',
+                            data: data.current.highest,
+                            borderColor: '#0e48c1',
+                            backgroundColor: '#0e48c1',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#0e48c1',
+                            pointBorderWidth: 2.5,
+                            pointHoverRadius: 6,
+                            tension: 0.35,
+                            spanGaps: true,
+                        },
+                        {
+                            label: 'Lowest (current)',
+                            data: data.current.lowest,
+                            borderColor: '#ef4444',
+                            backgroundColor: '#ef4444',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#ef4444',
+                            pointBorderWidth: 2.5,
+                            pointHoverRadius: 6,
+                            tension: 0.35,
+                            spanGaps: true,
+                        },
+                        {
+                            label: 'Highest (prev semester)',
+                            data: data.previous.highest,
+                            borderColor: '#93c5fd',
+                            backgroundColor: '#93c5fd',
+                            borderWidth: 2.5,
+                            borderDash: [8, 5],
+                            pointRadius: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#93c5fd',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 5,
+                            tension: 0.35,
+                            spanGaps: true,
+                        },
+                        {
+                            label: 'Lowest (prev semester)',
+                            data: data.previous.lowest,
+                            borderColor: '#fca5a5',
+                            backgroundColor: '#fca5a5',
+                            borderWidth: 2.5,
+                            borderDash: [8, 5],
+                            pointRadius: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#fca5a5',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 5,
+                            tension: 0.35,
+                            spanGaps: true,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleFont: { family: fontFamily, weight: 'bold', size: 12 },
+                            bodyFont: { family: fontFamily, size: 11 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            boxWidth: 10,
+                            boxHeight: 10,
+                            boxPadding: 4,
+                            callbacks: {
+                                title: function (items) {
+                                    return items[0]?.label || '';
+                                },
+                                label: function (item) {
+                                    const idx = item.datasetIndex;
+                                    const label = idx < 2 ? data.current : data.previous;
+                                    const key = idx % 2 === 0 ? 'highestLabel' : 'lowestLabel';
+                                    const dept = label[key];
+                                    const val = item.parsed.y;
+                                    return val !== null ? `${dept}: ${val.toFixed(2)}` : `${dept}: N/A`;
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            border: { display: false },
+                            ticks: {
+                                font: { family: fontFamily, weight: 'bold', size: 10 },
+                                color: '#94a3b8',
+                            },
+                        },
+                        y: {
+                            min: 1,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                font: { family: fontFamily, weight: 'bold', size: 10 },
+                                color: '#94a3b8',
+                            },
+                            grid: {
+                                color: '#f1f5f9',
+                                drawBorder: false,
+                            },
+                            border: { display: false },
+                        },
+                    },
+                },
+            });
+        });
+    </script>
 </x-admin>

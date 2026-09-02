@@ -153,6 +153,65 @@ class AdminController extends Controller
             ->take(5)
             ->values();
 
+        // Engagement Trends: highest & lowest performing departments per month
+        $currentSemester = currentTerm();
+        $parts = explode(' ', $currentSemester);
+        $semesterType = $parts[0];
+        $semesterYear = (int) ($parts[1] ?? date('Y'));
+
+        $semesterRanges = [
+            'Spring' => ['start' => "{$semesterYear}-01-01", 'end' => "{$semesterYear}-06-30"],
+            'Summer' => ['start' => "{$semesterYear}-05-01", 'end' => "{$semesterYear}-07-31"],
+            'Fall'   => ['start' => "{$semesterYear}-08-01", 'end' => "{$semesterYear}-12-31"],
+        ];
+
+        $prevSemesterMap = [
+            'Spring' => 'Fall '.($semesterYear - 1),
+            'Summer' => "Spring {$semesterYear}",
+            'Fall'   => "Spring {$semesterYear}",
+        ];
+
+        $currentRange = $semesterRanges[$semesterType] ?? $semesterRanges['Fall'];
+        $previousSemester = $prevSemesterMap[$semesterType] ?? null;
+        $previousRange = null;
+        if ($previousSemester) {
+            $prevParts = explode(' ', $previousSemester);
+            $previousRange = $semesterRanges[$prevParts[0]] ?? null;
+        }
+
+        $currentMonthly = $this->getMonthlyRatingsByDepartment($tenantId, $currentRange['start'], $currentRange['end']);
+        $previousMonthly = $previousRange
+            ? $this->getMonthlyRatingsByDepartment($tenantId, $previousRange['start'], $previousRange['end'])
+            : [];
+
+        $currentDepts = $currentMonthly->keys();
+        $currentDeptAvg = $currentDepts->mapWithKeys(fn ($d) => [$d => $currentMonthly[$d]->avg()]);
+        $currentHighest = $currentDeptAvg->sortDesc()->keys()->first();
+        $currentLowest = $currentDeptAvg->sortBy(fn ($v) => $v)->keys()->first();
+
+        $previousDepts = $previousMonthly->keys();
+        $previousDeptAvg = $previousDepts->mapWithKeys(fn ($d) => [$d => $previousMonthly[$d]->avg()]);
+        $previousHighest = $previousDeptAvg->sortDesc()->keys()->first();
+        $previousLowest = $previousDeptAvg->sortBy(fn ($v) => $v)->keys()->first();
+
+        $currentMonthLabels = $this->getSemesterMonthLabels($semesterType);
+
+        $engagementData = [
+            'labels' => $currentMonthLabels,
+            'current' => [
+                'highest' => $currentHighest ? $this->buildMonthlySeries($currentMonthly[$currentHighest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
+                'lowest' => $currentLowest ? $this->buildMonthlySeries($currentMonthly[$currentLowest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
+                'highestLabel' => $currentHighest ?? 'N/A',
+                'lowestLabel' => $currentLowest ?? 'N/A',
+            ],
+            'previous' => [
+                'highest' => $previousHighest ? $this->buildMonthlySeries($previousMonthly[$previousHighest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
+                'lowest' => $previousLowest ? $this->buildMonthlySeries($previousMonthly[$previousLowest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
+                'highestLabel' => $previousHighest ?? 'N/A',
+                'lowestLabel' => $previousLowest ?? 'N/A',
+            ],
+        ];
+
         return view('users.admin.dashboard', compact(
             'studentCount',
             'facultyCount',
@@ -161,6 +220,7 @@ class AdminController extends Controller
             'departmentPerformance',
             'ratingChart',
             'recentActivity',
+            'engagementData',
         ));
     }
 
@@ -573,7 +633,7 @@ class AdminController extends Controller
         $courseIds = $validated['assigned_courses'] ?? [];
 
         DB::transaction(function () use ($student, $courseIds) {
-            $student->courses()->sync($courseIds);
+            $student->courses()->syncWithPivotValues($courseIds, ['term' => currentTerm()]);
         });
 
         return redirect()
@@ -843,6 +903,7 @@ class AdminController extends Controller
     {
         $validated = $request->validated();
         $validated['university_id'] = auth()->user()->university_id;
+        $validated['semester'] = $validated['semester'] ?? currentTerm();
 
         Course::create($validated);
 
@@ -918,6 +979,7 @@ class AdminController extends Controller
 
         $validated['department'] = $departmentName;
         $validated['university_id'] = $tenantId;
+        $validated['semester'] = $validated['semester'] ?? currentTerm();
 
         Course::create($validated);
 
@@ -1086,7 +1148,7 @@ class AdminController extends Controller
         $courseIds = $validated['assigned_courses'] ?? [];
 
         DB::transaction(function () use ($student, $courseIds) {
-            $student->courses()->sync($courseIds);
+            $student->courses()->syncWithPivotValues($courseIds, ['term' => currentTerm()]);
         });
 
         return redirect()->route('admin.courses')
@@ -1180,6 +1242,46 @@ class AdminController extends Controller
         });
 
         return redirect()->route('admin.users.edit', $user)->with('success', 'Temporary password updated successfully. Make sure to communicate it to the user.');
+    }
+
+    private function getMonthlyRatingsByDepartment(?string $tenantId, string $startDate, string $endDate): \Illuminate\Support\Collection
+    {
+        $isSqlite = DB::getDriverName() === 'sqlite';
+        $monthExpr = $isSqlite ? "strftime('%m', feedbacks.submitted_at)" : "MONTH(feedbacks.submitted_at)";
+
+        return Feedback::query()
+            ->when($tenantId, fn ($q) => $q->whereHas('faculty', fn ($qq) => $qq->where('university_id', $tenantId)))
+            ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
+            ->join('users', 'feedbacks.faculty_id', '=', 'users.id')
+            ->where('feedback_answers.question_id', 'overall_rating')
+            ->where('feedbacks.submitted_at', '>=', $startDate)
+            ->where('feedbacks.submitted_at', '<=', $endDate)
+            ->selectRaw("users.department, {$monthExpr} as month_num, AVG(feedback_answers.rating) as avg_rating")
+            ->groupBy('users.department', 'month_num')
+            ->get()
+            ->groupBy('department')
+            ->map(fn ($rows) => $rows->pluck('avg_rating', 'month_num'));
+    }
+
+    private function getSemesterMonthLabels(string $semesterType): array
+    {
+        return match ($semesterType) {
+            'Fall' => ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            'Spring' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            'Summer' => ['May', 'Jun', 'Jul'],
+            default => ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        };
+    }
+
+    private function buildMonthlySeries(\Illuminate\Support\Collection $monthlyRatings, array $monthLabels): array
+    {
+        $monthMap = [
+            'Jan' => 1, 'Feb' => 2, 'Mar' => 3, 'Apr' => 4, 'May' => 5,
+            'Jun' => 6, 'Jul' => 7, 'Aug' => 8, 'Sep' => 9, 'Oct' => 10,
+            'Nov' => 11, 'Dec' => 12,
+        ];
+
+        return array_map(fn ($label) => $monthlyRatings->get($monthMap[$label]) ? round((float) $monthlyRatings[$monthMap[$label]], 2) : null, $monthLabels);
     }
 
     private function resolveDepartmentNameBySlug(string $slug, ?string $tenantId): ?string

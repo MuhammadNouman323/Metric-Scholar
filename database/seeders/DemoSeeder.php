@@ -155,6 +155,7 @@ class DemoSeeder extends Seeder
                 'title' => $c['title'],
                 'code' => $c['code'],
                 'credit_hours' => $c['credit_hours'],
+                'semester' => $currentTerm,
                 'department' => 'Computer Science',
                 'university_id' => $university->id,
             ]);
@@ -166,6 +167,7 @@ class DemoSeeder extends Seeder
                 'title' => $c['title'],
                 'code' => $c['code'],
                 'credit_hours' => $c['credit_hours'],
+                'semester' => $currentTerm,
                 'department' => 'Applied Physics',
                 'university_id' => $university->id,
             ]);
@@ -177,6 +179,7 @@ class DemoSeeder extends Seeder
                 'title' => $c['title'],
                 'code' => $c['code'],
                 'credit_hours' => $c['credit_hours'],
+                'semester' => $currentTerm,
                 'department' => 'Mathematics',
                 'university_id' => $university->id,
             ]);
@@ -188,6 +191,7 @@ class DemoSeeder extends Seeder
                 'title' => $c['title'],
                 'code' => $c['code'],
                 'credit_hours' => $c['credit_hours'],
+                'semester' => $currentTerm,
                 'department' => 'Bio-Chemistry',
                 'university_id' => $university->id,
             ]);
@@ -206,42 +210,58 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($facultyCourseMap as [$f, $courses]) {
+            // Current term
             $f->courses()->attach(
                 collect($courses)->pluck('id')->all(),
                 ['term' => $currentTerm]
+            );
+
+            // Previous term (for trend/comparison data)
+            $f->courses()->attach(
+                collect($courses)->pluck('id')->all(),
+                ['term' => $closedTerm]
             );
         }
 
         // ─── 7. Enroll students in courses ──────────────────────────────
         foreach ($csStudents as $student) {
-            $student->courses()->attach(
-                collect($csCourses)->random(rand(4, 6))->pluck('id')->all(),
-                ['term' => $currentTerm]
-            );
+            $courseIds = collect($csCourses)->random(rand(4, 6))->pluck('id')->all();
+            $student->courses()->attach($courseIds, ['term' => $currentTerm]);
+            $student->courses()->attach($courseIds, ['term' => $closedTerm]);
         }
 
         foreach ($apStudents as $student) {
-            $student->courses()->attach(
-                collect($apCourses)->random(rand(4, 6))->pluck('id')->all(),
-                ['term' => $currentTerm]
-            );
+            $courseIds = collect($apCourses)->random(rand(4, 6))->pluck('id')->all();
+            $student->courses()->attach($courseIds, ['term' => $currentTerm]);
+            $student->courses()->attach($courseIds, ['term' => $closedTerm]);
         }
 
         foreach ($mathStudents as $student) {
-            $student->courses()->attach(
-                collect($mathCourses)->random(rand(4, 6))->pluck('id')->all(),
-                ['term' => $currentTerm]
-            );
+            $courseIds = collect($mathCourses)->random(rand(4, 6))->pluck('id')->all();
+            $student->courses()->attach($courseIds, ['term' => $currentTerm]);
+            $student->courses()->attach($courseIds, ['term' => $closedTerm]);
         }
 
         foreach ($bcStudents as $student) {
-            $student->courses()->attach(
-                collect($bcCourses)->random(rand(4, 6))->pluck('id')->all(),
-                ['term' => $currentTerm]
-            );
+            $courseIds = collect($bcCourses)->random(rand(4, 6))->pluck('id')->all();
+            $student->courses()->attach($courseIds, ['term' => $currentTerm]);
+            $student->courses()->attach($courseIds, ['term' => $closedTerm]);
         }
 
         // ─── 8. Evaluations ─────────────────────────────────────────────
+        // Previous semester (closed) - drives the "previous semester" trend line
+        $prevEval = Evaluation::create([
+            'title' => "Final Evaluation - $closedTerm",
+            'semester' => $closedTerm,
+            'evaluation_type' => 'final',
+            'start_date' => $this->termStartDate($closedTerm),
+            'end_date' => $this->termEndDate($closedTerm),
+            'status' => 'closed',
+            'is_anonymous' => true,
+            'closed_at' => $this->termEndDate($closedTerm)->addDays(3),
+            'created_by' => $admin->id,
+        ]);
+
         $closedEval = Evaluation::create([
             'title' => 'Fall 2025 Evaluation',
             'semester' => 'Fall 2025',
@@ -278,10 +298,12 @@ class DemoSeeder extends Seeder
         ]);
 
         // ─── 9. Link evaluations to faculty + courses ───────────────────
+        // Each config includes a date range so feedback is spread across the semester.
         $evalConfigs = [
-            ['eval' => $closedEval,    'completion' => 0.75, 'avgCs' => 4.2, 'avgAp' => 3.5, 'avgMath' => 3.8, 'avgBc' => 3.7],
-            ['eval' => $activeEval,    'completion' => 0.30, 'avgCs' => 4.2, 'avgAp' => 3.5, 'avgMath' => 3.8, 'avgBc' => 3.7],
-            ['eval' => $scheduledEval, 'completion' => 0.00, 'avgCs' => 0,   'avgAp' => 0,   'avgMath' => 0,   'avgBc' => 0],
+            ['eval' => $prevEval,     'completion' => 0.85, 'avgCs' => 4.0, 'avgAp' => 3.4, 'avgMath' => 3.7, 'avgBc' => 3.6, 'from' => $this->termStartDate($closedTerm), 'to' => $this->termEndDate($closedTerm)],
+            ['eval' => $closedEval,   'completion' => 0.75, 'avgCs' => 4.2, 'avgAp' => 3.5, 'avgMath' => 3.8, 'avgBc' => 3.7, 'from' => now()->subMonths(4)->subDays(14), 'to' => now()->subMonths(4)->addDays(14)],
+            ['eval' => $activeEval,   'completion' => 0.30, 'avgCs' => 4.2, 'avgAp' => 3.5, 'avgMath' => 3.8, 'avgBc' => 3.7, 'from' => now()->startOfMonth(), 'to' => now()],
+            ['eval' => $scheduledEval, 'completion' => 0.00, 'avgCs' => 0,   'avgAp' => 0,   'avgMath' => 0,   'avgBc' => 0,   'from' => now(), 'to' => now()],
         ];
 
         $deptStudents = [
@@ -321,6 +343,17 @@ class DemoSeeder extends Seeder
             'Assignments were relevant and challenging.',
             'The instructor is very approachable.',
             'More office hours would be helpful.',
+            'The exam questions were fair and covered the syllabus.',
+            'I would love more real-world applications.',
+            'Great use of technology in the classroom.',
+        ];
+
+        $moderationPool = [
+            ['status' => 'approved', 'toxicity' => 0.02, 'reason' => null, 'categories' => []],
+            ['status' => 'approved', 'toxicity' => 0.05, 'reason' => null, 'categories' => []],
+            ['status' => 'flagged',  'toxicity' => 0.55, 'reason' => 'Possible mild frustration detected.', 'categories' => ['negative']],
+            ['status' => 'approved', 'toxicity' => 0.10, 'reason' => null, 'categories' => []],
+            ['status' => 'approved', 'toxicity' => 0.01, 'reason' => null, 'categories' => []],
         ];
 
         foreach ($evalConfigs as $cfg) {
@@ -351,12 +384,16 @@ class DemoSeeder extends Seeder
                         continue;
                     }
 
-                    $token->update(['is_used' => true, 'used_at' => now()]);
+                    // Spread feedback across the evaluation window so charts have data per month
+                    $usedAt = fake()->dateTimeBetween($cfg['from'], $cfg['to']);
+
+                    $token->update(['is_used' => true, 'used_at' => $usedAt]);
 
                     $feedback = Feedback::create([
                         'evaluation_id' => $evaluation->id,
                         'faculty_id' => $pair->faculty_id,
                         'course_id' => $pair->course_id,
+                        'submitted_at' => $usedAt,
                     ]);
 
                     $avgKey = match ($dept) {
@@ -380,10 +417,16 @@ class DemoSeeder extends Seeder
                     }
 
                     if (fake()->boolean(60)) {
+                        $mod = fake()->randomElement($moderationPool);
                         FeedbackAnswer::create([
                             'feedback_id' => $feedback->id,
                             'question_id' => 'comments',
                             'text_answer' => fake()->randomElement($commentPool),
+                            'moderation_status' => $mod['status'],
+                            'toxicity_score' => $mod['toxicity'],
+                            'moderation_reason' => $mod['reason'],
+                            'moderation_categories' => $mod['categories'],
+                            'moderated_at' => now(),
                         ]);
                     }
                 }
@@ -402,5 +445,31 @@ class DemoSeeder extends Seeder
         }
 
         return 'Spring '.$year;
+    }
+
+    private function termStartDate(string $term): \Illuminate\Support\Carbon
+    {
+        $parts = explode(' ', $term);
+        $season = $parts[0];
+        $year = (int) ($parts[1] ?? date('Y'));
+
+        return match ($season) {
+            'Spring' => \Illuminate\Support\Carbon::create($year, 1, 1),
+            'Summer' => \Illuminate\Support\Carbon::create($year, 5, 1),
+            default  => \Illuminate\Support\Carbon::create($year, 8, 1),
+        };
+    }
+
+    private function termEndDate(string $term): \Illuminate\Support\Carbon
+    {
+        $parts = explode(' ', $term);
+        $season = $parts[0];
+        $year = (int) ($parts[1] ?? date('Y'));
+
+        return match ($season) {
+            'Spring' => \Illuminate\Support\Carbon::create($year, 6, 30),
+            'Summer' => \Illuminate\Support\Carbon::create($year, 7, 31),
+            default  => \Illuminate\Support\Carbon::create($year, 12, 31),
+        };
     }
 }

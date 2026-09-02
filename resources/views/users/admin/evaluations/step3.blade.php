@@ -117,12 +117,6 @@
                                 </span>
                             </div>
                             <div class="flex justify-between items-center py-3 border-b border-slate-100">
-                                <span class="text-sm font-semibold text-slate-600">Allow Faculty Responses</span>
-                                <span class="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full {{ $step1['allow_faculty_response'] ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500' }}">
-                                    {{ $step1['allow_faculty_response'] ? 'Enabled' : 'Disabled' }}
-                                </span>
-                            </div>
-                            <div class="flex justify-between items-center py-3">
                                 <span class="text-sm font-semibold text-slate-600">Send Automatic Reminders</span>
                                 <span class="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full {{ $step1['send_reminder'] ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500' }}">
                                     {{ $step1['send_reminder'] ? 'Enabled' : 'Disabled' }}
