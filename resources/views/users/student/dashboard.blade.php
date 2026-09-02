@@ -86,15 +86,14 @@
                             <div class="text-left sm:text-right shrink-0 mt-2 sm:mt-0">
                                 @php 
                                     $endDate = \Carbon\Carbon::parse($token->evaluation->end_date);
-                                    $daysLeft = now()->diffInDays($endDate, false); 
-                                    $daysLeft = $daysLeft < 0 ? 0 : $daysLeft;
-                                    $daysLabel = match(true) {
-                                        $daysLeft === 0 => 'Less than a day left',
-                                        $daysLeft === 1 => '1 day left',
-                                        $daysLeft >= 7 && ($daysLeft % 7) === 0 => ($daysLeft / 7) . ' week' . (($daysLeft / 7) > 1 ? 's' : '') . ' left',
-                                        $daysLeft >= 7 => floor($daysLeft / 7) . ' week' . (floor($daysLeft / 7) > 1 ? 's' : '') . ', ' . ($daysLeft % 7) . ' day' . (($daysLeft % 7) !== 1 ? 's' : '') . ' left',
-                                        default => $daysLeft . ' days left',
-                                    };
+                                    $daysLeft = (int) now()->diffInDays($endDate, false);
+                                    $daysLeft = max(0, $daysLeft);
+                                    $weeks = intdiv($daysLeft, 7);
+                                    $days = $daysLeft % 7;
+                                    $parts = [];
+                                    if ($weeks > 0) $parts[] = $weeks . ' week' . ($weeks > 1 ? 's' : '');
+                                    if ($days > 0) $parts[] = $days . ' day' . ($days > 1 ? 's' : '');
+                                    $daysLabel = $daysLeft <= 0 ? 'Less than a day' : (implode(' ', $parts) ?: 'Less than a day');
                                 @endphp
                                 <p class="text-[12px] font-bold {{ $daysLeft <= 3 ? 'text-red-500' : 'text-gray-500' }} mb-2">
                                     <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
