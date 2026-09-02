@@ -121,39 +121,8 @@
                 </div>
             </div>
 
-            <!-- Sidebar (Notifications & History) -->
+            <!-- Sidebar (History) -->
             <div class="space-y-6">
-                <!-- Notifications Panel -->
-                <div class="bg-white rounded-[2rem] p-7 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
-                    <div class="flex items-center justify-between mb-5">
-                        <h3 class="text-[16px] font-bold text-gray-900">Notifications</h3>
-                        @if($student->unreadNotifications->count() > 0)
-                            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-                        @endif
-                    </div>
-                    <div class="space-y-4">
-                        @forelse($notifications as $notification)
-                            <div class="flex gap-3 {{ $notification->unread() ? 'bg-blue-50/50 -mx-2 px-2 py-1 rounded-lg' : '' }}">
-                                <div class="w-8 h-8 rounded-full bg-blue-50 text-[#0e48c1] flex items-center justify-center shrink-0">
-                                    @if(str_contains($notification->type, 'EvaluationAvailableNotification') || str_contains($notification->type, 'NewEvaluationScheduledNotification'))
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    @elseif(str_contains($notification->type, 'EvaluationClosedNotification'))
-                                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    @else
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    @endif
-                                </div>
-                                <div>
-                                    <p class="text-[13px] font-medium text-gray-900 leading-snug">{{ $notification->data['message'] ?? $notification->data['title'] ?? 'New Notification' }}</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                </div>
-                            </div>
-                        @empty
-                            <p class="text-[12px] text-gray-500 text-center py-4">No new notifications.</p>
-                        @endforelse
-                    </div>
-                </div>
-
                 <!-- Submission History Snippet -->
                 <div class="bg-white rounded-[2rem] p-7 border border-gray-100 shadow-[0_4px_16px_rgb(0,0,0,0.04)]">
                     <div class="flex items-center justify-between mb-5">

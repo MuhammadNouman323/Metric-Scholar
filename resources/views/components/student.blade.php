@@ -181,6 +181,8 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto relative z-10 w-full">
+            <x-notification-bell position="global" />
+
             <!-- Mobile Header -->
             <div class="flex lg:hidden items-center justify-between px-4 py-3 bg-white/80 backdrop-blur-md border-b border-slate-100/80 sticky top-0 z-30">
                 <div class="flex items-center gap-2">
@@ -199,10 +201,12 @@
                         <span class="font-bold text-[15px] text-slate-900 tracking-tight">Scholar Metric</span>
                     </a>
                 </div>
-                <a href="/student/profile" class="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-full">
-                    <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}"
-                        class="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm bg-slate-200">
-                </a>
+                <div class="flex items-center gap-1">
+                    <a href="/student/profile" class="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40 rounded-full">
+                        <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}"
+                            class="w-8 h-8 rounded-full object-cover ring-2 ring-white shadow-sm bg-slate-200">
+                    </a>
+                </div>
             </div>
 
             <div class="min-h-full">

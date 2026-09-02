@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyReportController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
@@ -24,6 +25,10 @@ Route::post('/register', [AuthController::class, 'register']);
 // ->middleware(['guest', 'throttle:5,30'])
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::post('/notifications/mark-read', [NotificationController::class, 'markAllRead'])
+    ->middleware('auth')
+    ->name('notifications.mark-read');
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])
