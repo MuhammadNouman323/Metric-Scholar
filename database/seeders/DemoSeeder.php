@@ -31,7 +31,7 @@ class DemoSeeder extends Seeder
         // ─── 2. Admin ────────────────────────────────────────────────────
         $admin = User::create([
             'name' => 'Admin User',
-            'email' => 'admin@vu.edu.pk',
+            'email' => 'bc220410458mno@vu.edu.pk',
             'password' => $password,
             'role' => 'admin',
             'admin_id' => 'ADM-DEMO01',
