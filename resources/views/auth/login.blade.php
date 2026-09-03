@@ -1,6 +1,6 @@
 <x-layout>
     <style>
-        html, body { overflow: hidden; height: 100%; }
+        html, body { overflow-x: clip; }
 
         /* ---- Gradient Shift ---- */
         @keyframes gradient-shift {
