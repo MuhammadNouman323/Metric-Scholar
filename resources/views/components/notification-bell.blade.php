@@ -32,7 +32,7 @@
 
     {{-- Dropdown Panel --}}
     <div id="{{ $panelId }}"
-        class="notif-panel absolute right-0 top-full mt-2.5 w-[calc(100vw-28px)] sm:w-[380px] md:w-[400px] max-h-[calc(100vh-90px)] sm:max-h-[500px] flex flex-col z-[90] bg-white rounded-2xl border border-slate-200/80 overflow-hidden opacity-0 scale-95 pointer-events-none transition-all duration-200 ease-out origin-top-right shadow-[0_20px_50px_rgba(15,23,42,0.12),0_4px_16px_rgba(15,23,42,0.06)]">
+        class="notif-panel fixed left-3 right-3 top-[3.75rem] mt-0 w-auto max-w-[400px] max-h-[calc(100vh-90px)] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2.5 sm:w-[380px] md:w-[400px] sm:max-h-[500px] flex flex-col z-[90] bg-white rounded-2xl border border-slate-200/80 overflow-hidden opacity-0 scale-95 pointer-events-none transition-all duration-200 ease-out origin-top-right shadow-[0_20px_50px_rgba(15,23,42,0.12),0_4px_16px_rgba(15,23,42,0.06)]">
 
         {{-- Arrow --}}
         <div class="absolute -top-1.5 right-3.5 md:right-4 w-3.5 h-3.5 bg-white border-t border-l border-slate-200/80 rotate-45 z-10"></div>
@@ -70,7 +70,7 @@
         </div>
 
         {{-- Notifications List --}}
-        <div class="overflow-y-auto notif-scroll flex-1 divide-y divide-slate-100/80" style="max-height: 380px;">
+        <div class="overflow-y-auto notif-scroll flex-1 divide-y divide-slate-100/80" style="max-height: min(380px, calc(100vh - 170px));">
             @forelse($notifications as $notification)
                 <a href="{{ $notification->data['action_url'] ?? '#'}}"
                    class="notif-row relative flex items-start gap-3 px-4 py-3 md:px-5 md:py-3.5 transition-all duration-150 group no-underline
