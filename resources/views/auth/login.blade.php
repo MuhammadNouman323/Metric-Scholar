@@ -160,7 +160,6 @@
                                 const selected = document.querySelector('input[name="role"]:checked');
                                 const isAdmin = selected && selected.value === 'admin';
                                 registerLink.style.display = isAdmin ? 'block' : 'none';
-                                forgotLink.style.display = isAdmin ? 'inline' : 'none';
                             }
 
                             roleInputs.forEach(input => input.addEventListener('change', toggleAdminOnlyElements));

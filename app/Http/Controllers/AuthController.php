@@ -99,14 +99,6 @@ class AuthController extends Controller
     {
         $request->validate(['email' => ['required', 'email']]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if (! $user || $user->role !== Role::Admin) {
-            throw ValidationException::withMessages([
-                'email' => 'No admin account found with that email address.',
-            ]);
-        }
-
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status === Password::RESET_LINK_SENT) {

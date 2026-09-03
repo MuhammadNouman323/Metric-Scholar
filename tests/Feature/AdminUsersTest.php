@@ -5,7 +5,9 @@ use App\Models\Evaluation;
 use App\Models\Feedback;
 use App\Models\University;
 use App\Models\User;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
@@ -360,7 +362,7 @@ test('admin can access user recovery page', function () {
     $response->assertSee('Account Recovery');
 });
 
-test('admin can simulate sending password recovery email', function () {
+test('admin can send password recovery email', function () {
     $university = University::create([
         'name' => 'Scholar Metric University',
         'domain' => 'scholarmetric.edu',
@@ -376,12 +378,45 @@ test('admin can simulate sending password recovery email', function () {
         'university_id' => $university->id,
     ]);
 
+    Notification::fake();
+
     $this->actingAs($admin);
 
     $response = $this->post("/admin/user/{$student->id}/recovery/email");
 
     $response->assertRedirect();
-    $response->assertSessionHas('success', 'A secure password recovery link has been sent to '.$student->email);
+    $response->assertSessionHas('success', 'A secure password reset email has been sent to '.$student->email);
+
+    Notification::assertSentTo($student, ResetPasswordNotification::class);
+});
+
+test('admin cannot send recovery email to a deactivated account', function () {
+    $university = University::create([
+        'name' => 'Scholar Metric University',
+        'domain' => 'scholarmetric.edu',
+    ]);
+
+    $admin = User::factory()->create([
+        'role' => 'admin',
+        'university_id' => $university->id,
+    ]);
+
+    $student = User::factory()->create([
+        'role' => 'student',
+        'university_id' => $university->id,
+        'is_active' => false,
+    ]);
+
+    Notification::fake();
+
+    $this->actingAs($admin);
+
+    $response = $this->post("/admin/user/{$student->id}/recovery/email");
+
+    $response->assertRedirect();
+    $response->assertSessionHas('error');
+
+    Notification::assertNothingSent();
 });
 
 test('admin can set temporary password and force change requirement', function () {

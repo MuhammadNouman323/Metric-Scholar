@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\Role;
+use App\Events\PasswordResetLinkCreated;
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -90,6 +92,24 @@ class User extends Authenticatable
     public function isStudent(): bool
     {
         return $this->role === Role::Student;
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $resetUrl = \Illuminate\Support\Facades\URL::route('password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ]);
+
+        if (session()->has('reset_channel_token')) {
+            try {
+                event(new PasswordResetLinkCreated($resetUrl, (string) session('reset_channel_token')));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     public function getAvatarUrlAttribute(): string

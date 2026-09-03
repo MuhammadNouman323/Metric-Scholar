@@ -26,6 +26,12 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-sm font-bold text-red-700 shadow-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- Main Grid Layout -->
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
 

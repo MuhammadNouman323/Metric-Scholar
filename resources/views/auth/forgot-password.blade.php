@@ -43,8 +43,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-gray-800 mb-0.5">Admin-Only Access</p>
-                                <p class="text-xs text-gray-500 font-medium">Password reset is restricted to administrator accounts only for security compliance.</p>
+                                <p class="text-sm font-bold text-gray-800 mb-0.5">Secure Account Recovery</p>
+                                <p class="text-xs text-gray-500 font-medium">A time-sensitive reset link is emailed to your institutional address to restore secure access to the portal.</p>
                             </div>
                         </div>
                     </div>
@@ -62,11 +62,11 @@
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
-                                Admin Only
+                                Account Recovery
                             </span>
                         </div>
                         <h2 class="text-[32px] font-bold text-gray-900 mb-2">Forgot your password?</h2>
-                        <p class="text-gray-500 font-medium text-[15px]">Enter your admin email address and we'll send you a secure reset link.</p>
+                        <p class="text-gray-500 font-medium text-[15px]">Enter your institutional email address and we'll send you a secure reset link.</p>
                     </div>
 
                     <!-- Success Message -->

@@ -19,6 +19,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -1221,7 +1222,17 @@ class AdminController extends Controller
         $tenantId = auth()->user()->university_id;
         abort_unless($user->university_id === $tenantId, 403);
 
-        return back()->with('success', 'A secure password recovery link has been sent to '.$user->email);
+        if ($user->is_active === false) {
+            return back()->with('error', 'Cannot send a recovery link to a deactivated account.');
+        }
+
+        $status = Password::sendResetLink(['email' => $user->email]);
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return back()->with('success', 'A secure password reset email has been sent to '.$user->email);
+        }
+
+        return back()->with('error', 'Unable to send the reset email. Please try again later.');
     }
 
     public function updateTemporaryPassword(Request $request, User $user): RedirectResponse
