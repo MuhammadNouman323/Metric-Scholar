@@ -99,8 +99,6 @@
         }
         .btn-shine:hover::after { transform: rotate(25deg) translateX(150%); }
 
-        .magnetic-btn { transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-
         .input-glow { transition: all 0.3s ease; }
         .input-glow:focus { box-shadow: 0 0 0 3px rgba(14,72,193,0.1), 0 0 20px rgba(14,72,193,0.05); }
 
@@ -349,7 +347,7 @@
                         @enderror
 
                         <!-- Submit -->
-                        <button type="submit" class="magnetic-btn btn-shine w-full bg-gradient-to-r from-[#0e48c1] to-[#1a5cd6] hover:from-[#0c3ca1] hover:to-[#0e48c1] text-white font-bold rounded-xl py-4 transition-all duration-300 focus:ring-4 focus:ring-blue-300 focus:outline-none shadow-[0_8px_25px_rgba(14,72,193,0.25)] hover:shadow-[0_12px_35px_rgba(14,72,193,0.4)] flex items-center justify-center gap-2 transform active:scale-[0.98]">
+                        <button type="submit" class="btn-shine w-full bg-gradient-to-r from-[#0e48c1] to-[#1a5cd6] hover:from-[#0c3ca1] hover:to-[#0e48c1] text-white font-bold rounded-xl py-4 transition-all duration-300 focus:ring-4 focus:ring-blue-300 focus:outline-none shadow-[0_8px_25px_rgba(14,72,193,0.25)] hover:shadow-[0_12px_35px_rgba(14,72,193,0.4)] flex items-center justify-center gap-2 transform active:scale-[0.98]">
                             <span>Create Admin Account</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                         </button>
@@ -377,54 +375,6 @@
                                     btn.querySelector('.eye-closed').classList.toggle('hidden', isPw);
                                 });
                             });
-
-                            // Magnetic button
-                            const submitBtn = document.querySelector('.magnetic-btn');
-                            submitBtn.addEventListener('mousemove', (e) => {
-                                const rect = submitBtn.getBoundingClientRect();
-                                const x = e.clientX - rect.left - rect.width / 2;
-                                const y = e.clientY - rect.top - rect.height / 2;
-                                submitBtn.style.transform = 'translate(' + x * 0.15 + 'px, ' + y * 0.15 + 'px)';
-                            });
-                            submitBtn.addEventListener('mouseleave', () => {
-                                submitBtn.style.transform = 'translate(0, 0)';
-                            });
-
-                            // Custom cursor
-                            if (window.matchMedia('(pointer: fine)').matches) {
-                                const dot = document.createElement('div');
-                                const ring = document.createElement('div');
-                                dot.className = 'fixed w-2 h-2 bg-[#0e48c1]/40 rounded-full pointer-events-none z-[9998] mix-blend-difference transition-transform duration-100 ease-out';
-                                ring.className = 'fixed w-7 h-7 border-2 border-[#0e48c1]/15 rounded-full pointer-events-none z-[9998] transition-all duration-300 ease-out';
-                                dot.style.cssText = 'transform: translate(-50%, -50%); display: none;';
-                                ring.style.cssText = 'transform: translate(-50%, -50%); display: none;';
-                                document.body.appendChild(dot);
-                                document.body.appendChild(ring);
-                                let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-                                document.addEventListener('mousemove', (e) => {
-                                    mouseX = e.clientX; mouseY = e.clientY;
-                                    dot.style.display = 'block'; ring.style.display = 'block';
-                                    dot.style.left = mouseX + 'px'; dot.style.top = mouseY + 'px';
-                                });
-                                const animateRing = () => {
-                                    ringX += (mouseX - ringX) * 0.15; ringY += (mouseY - ringY) * 0.15;
-                                    ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px';
-                                    requestAnimationFrame(animateRing);
-                                };
-                                animateRing();
-                                document.querySelectorAll('a, button, label').forEach(el => {
-                                    el.addEventListener('mouseenter', () => {
-                                        ring.style.width = '44px'; ring.style.height = '44px';
-                                        ring.style.borderColor = 'rgba(14,72,193,0.35)';
-                                        dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
-                                    });
-                                    el.addEventListener('mouseleave', () => {
-                                        ring.style.width = '28px'; ring.style.height = '28px';
-                                        ring.style.borderColor = 'rgba(14,72,193,0.15)';
-                                        dot.style.transform = 'translate(-50%, -50%) scale(1)';
-                                    });
-                                });
-                            }
                         })();
                     </script>
                 </div>

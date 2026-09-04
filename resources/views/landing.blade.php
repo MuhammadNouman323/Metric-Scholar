@@ -211,30 +211,6 @@
             transition: width 0.1s linear;
         }
 
-        /* ---- Spotlight Card Effect ---- */
-        .spotlight-card {
-            --mouse-x: 50%;
-            --mouse-y: 50%;
-            position: relative;
-        }
-        .spotlight-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            background: radial-gradient(
-                400px circle at var(--mouse-x) var(--mouse-y),
-                rgba(14,72,193,0.08),
-                transparent 40%
-            );
-            pointer-events: none;
-        }
-        .spotlight-card:hover::after {
-            opacity: 1;
-        }
-
         /* ---- Marquee ---- */
         @keyframes marquee {
             from { transform: translateX(0); }
@@ -312,11 +288,6 @@
         .geo-shape-2 { animation: geo-float-2 15s ease-in-out infinite; }
         .geo-shape-3 { animation: geo-float-3 18s ease-in-out infinite; }
 
-        /* ---- Magnetic Button ---- */
-        .magnetic-btn {
-            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
         /* ---- Glow Border ---- */
         @keyframes border-glow {
             0%, 100% { opacity: 0.3; }
@@ -359,14 +330,6 @@
 
     <!-- Scroll Progress -->
     <div id="scroll-progress"></div>
-
-    <!-- Custom Cursor -->
-    <div id="cursor-dot"
-        class="hidden md:block fixed w-3 h-3 bg-[#0e48c1]/40 rounded-full pointer-events-none z-[9998] mix-blend-difference transition-transform duration-150 ease-out"
-        style="transform: translate(-50%, -50%)"></div>
-    <div id="cursor-ring"
-        class="hidden md:block fixed w-8 h-8 border-2 border-[#0e48c1]/20 rounded-full pointer-events-none z-[9998] transition-all duration-300 ease-out"
-        style="transform: translate(-50%, -50%)"></div>
 
     <!-- ==================== NAVBAR ==================== -->
     <header id="navbar"
@@ -502,14 +465,14 @@
                 <!-- CTAs -->
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
                     <a href="{{ route('register') }}"
-                        class="magnetic-btn btn-shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#0e48c1] to-[#1a5cd6] hover:from-[#0c3ca1] hover:to-[#0e48c1] text-white font-bold rounded-xl shadow-[0_8px_25px_rgba(14,72,193,0.3)] hover:shadow-[0_12px_35px_rgba(14,72,193,0.45)] transition-all duration-300 focus:ring-4 focus:ring-blue-300 focus:outline-none transform active:scale-[0.98]">
+                        class="btn-shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#0e48c1] to-[#1a5cd6] hover:from-[#0c3ca1] hover:to-[#0e48c1] text-white font-bold rounded-xl shadow-[0_8px_25px_rgba(14,72,193,0.3)] hover:shadow-[0_12px_35px_rgba(14,72,193,0.45)] transition-all duration-300 focus:ring-4 focus:ring-blue-300 focus:outline-none transform active:scale-[0.98]">
                         Get Started Free
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
                     </a>
                     <a href="#features"
-                        class="magnetic-btn w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 glass-card hover:bg-white text-gray-800 font-bold rounded-xl shadow-sm hover:shadow-md transition-all duration-300 active:scale-[0.98] premium-border">
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 glass-card hover:bg-white text-gray-800 font-bold rounded-xl shadow-sm hover:shadow-md transition-all duration-300 active:scale-[0.98] premium-border">
                         Explore Features
                     </a>
                 </div>
@@ -857,7 +820,7 @@
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7 stagger-reveal">
                 <!-- Feature 1 -->
                 <div
-                    class="reveal spotlight-card group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
+                    class="reveal group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#0e48c1]/[0.02] to-[#4f83f5]/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div
                         class="relative w-[52px] h-[52px] rounded-2xl bg-gradient-to-br from-[#0e48c1]/10 to-[#4f83f5]/10 text-[#0e48c1] flex items-center justify-center mb-6 group-hover:bg-gradient-to-br group-hover:from-[#0e48c1] group-hover:to-[#4f83f5] group-hover:text-white group-hover:shadow-[0_8px_25px_rgba(14,72,193,0.35)] transition-all duration-500">
@@ -875,7 +838,7 @@
 
                 <!-- Feature 2 -->
                 <div
-                    class="reveal spotlight-card group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
+                    class="reveal group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
                     style="transition-delay: 100ms">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#0e48c1]/[0.02] to-[#4f83f5]/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div
@@ -894,7 +857,7 @@
 
                 <!-- Feature 3 -->
                 <div
-                    class="reveal spotlight-card group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
+                    class="reveal group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
                     style="transition-delay: 200ms">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#0e48c1]/[0.02] to-[#4f83f5]/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div
@@ -912,7 +875,7 @@
 
                 <!-- Feature 4 -->
                 <div
-                    class="reveal spotlight-card group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
+                    class="reveal group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#0e48c1]/[0.02] to-[#4f83f5]/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div
                         class="relative w-[52px] h-[52px] rounded-2xl bg-gradient-to-br from-[#0e48c1]/10 to-[#4f83f5]/10 text-[#0e48c1] flex items-center justify-center mb-6 group-hover:bg-gradient-to-br group-hover:from-[#0e48c1] group-hover:to-[#4f83f5] group-hover:text-white group-hover:shadow-[0_8px_25px_rgba(14,72,193,0.35)] transition-all duration-500">
@@ -929,7 +892,7 @@
 
                 <!-- Feature 5 -->
                 <div
-                    class="reveal spotlight-card group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
+                    class="reveal group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
                     style="transition-delay: 100ms">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#0e48c1]/[0.02] to-[#4f83f5]/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div
@@ -948,7 +911,7 @@
 
                 <!-- Feature 6 -->
                 <div
-                    class="reveal spotlight-card group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
+                    class="reveal group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-[0_10px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_25px_60px_rgba(14,72,193,0.12)] hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
                     style="transition-delay: 200ms">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#0e48c1]/[0.02] to-[#4f83f5]/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div
@@ -1207,8 +1170,8 @@
                     </p>
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <a href="{{ route('register') }}"
-                            class="magnetic-btn btn-shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[#0e48c1] font-extrabold rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.2)] hover:bg-blue-50 hover:shadow-[0_15px_40px_rgba(0,0,0,0.25)] transition-all duration-300 active:scale-[0.98]">
-                            Create Free Account
+                            class="btn-shine w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-[#0e48c1] font-extrabold rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.2)] hover:bg-blue-50 hover:shadow-[0_15px_40px_rgba(0,0,0,0.25)] transition-all duration-300 active:scale-[0.98]">
+                            Create Account
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -1408,102 +1371,5 @@
             animateCounters();
         })();
 
-        // Spotlight Card Effect
-        (function () {
-            document.querySelectorAll('.spotlight-card').forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    card.style.setProperty('--mouse-x', x + 'px');
-                    card.style.setProperty('--mouse-y', y + 'px');
-                });
-            });
-        })();
-
-        // Custom Cursor
-        (function () {
-            if (window.matchMedia('(pointer: fine)').matches) {
-                const dot = document.getElementById('cursor-dot');
-                const ring = document.getElementById('cursor-ring');
-                let mouseX = 0, mouseY = 0;
-                let ringX = 0, ringY = 0;
-
-                document.addEventListener('mousemove', (e) => {
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
-                    dot.style.left = mouseX + 'px';
-                    dot.style.top = mouseY + 'px';
-                });
-
-                const animateRing = () => {
-                    ringX += (mouseX - ringX) * 0.15;
-                    ringY += (mouseY - ringY) * 0.15;
-                    ring.style.left = ringX + 'px';
-                    ring.style.top = ringY + 'px';
-                    requestAnimationFrame(animateRing);
-                };
-                animateRing();
-
-                // Expand ring on interactive elements
-                document.querySelectorAll('a, button, .spotlight-card').forEach(el => {
-                    el.addEventListener('mouseenter', () => {
-                        ring.style.width = '48px';
-                        ring.style.height = '48px';
-                        ring.style.borderColor = 'rgba(14,72,193,0.4)';
-                        dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
-                    });
-                    el.addEventListener('mouseleave', () => {
-                        ring.style.width = '32px';
-                        ring.style.height = '32px';
-                        ring.style.borderColor = 'rgba(14,72,193,0.2)';
-                        dot.style.transform = 'translate(-50%, -50%) scale(1)';
-                    });
-                });
-            }
-        })();
-
-        // Magnetic Button Effect
-        (function () {
-            document.querySelectorAll('.magnetic-btn').forEach(btn => {
-                btn.addEventListener('mousemove', (e) => {
-                    const rect = btn.getBoundingClientRect();
-                    const x = e.clientX - rect.left - rect.width / 2;
-                    const y = e.clientY - rect.top - rect.height / 2;
-                    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
-                });
-                btn.addEventListener('mouseleave', () => {
-                    btn.style.transform = 'translate(0, 0)';
-                });
-            });
-        })();
-
-        // Smooth parallax on floating particles
-        (function () {
-            const particles = document.querySelectorAll('.particle');
-            window.addEventListener('mousemove', (e) => {
-                const x = (e.clientX / window.innerWidth - 0.5) * 20;
-                const y = (e.clientY / window.innerHeight - 0.5) * 20;
-                particles.forEach((p, i) => {
-                    const speed = (i + 1) * 0.5;
-                    p.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
-                });
-            }, { passive: true });
-        })();
-
-        // Feature card tilt on mouse
-        (function () {
-            document.querySelectorAll('.spotlight-card').forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) / rect.width - 0.5;
-                    const y = (e.clientY - rect.top) / rect.height - 0.5;
-                    card.style.transform = `perspective(800px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg) translateY(-8px)`;
-                });
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = 'perspective(800px) rotateY(0) rotateX(0) translateY(0)';
-                });
-            });
-        })();
     </script>
 </x-layout>
