@@ -221,50 +221,6 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- Privacy Controls -->
-                <div class="bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
-                    <div class="flex items-center gap-2 mb-2">
-                        <svg class="w-5 h-5 text-[#0e48c1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                        </svg>
-                        <h3 class="text-lg font-bold text-gray-900">Privacy Controls</h3>
-                    </div>
-                    <p class="text-[13px] text-gray-500 font-medium mb-6">Scholar Metric prioritizes your academic integrity. These settings control how your data is shared with faculty and administrators.</p>
-                    <div class="space-y-4">
-                        <!-- Toggle 1 -->
-                        <div class="flex items-center gap-3 p-4 bg-[#f8fafc] rounded-2xl">
-                            <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center text-[#0e48c1] shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-[13px] font-bold text-gray-900">Feedback Anonymity</p>
-                                <p class="text-[11px] text-gray-400">Hide your identity in reviews</p>
-                            </div>
-                            <div class="w-10 h-6 bg-[#0e48c1] rounded-full relative cursor-pointer shrink-0">
-                                <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
-                            </div>
-                        </div>
-                        <!-- Toggle 2 -->
-                        <div class="flex items-center gap-3 p-4 bg-[#f8fafc] rounded-2xl">
-                            <div class="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center text-[#0e48c1] shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                </svg>
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-[13px] font-bold text-gray-900">Aggregate Sharing</p>
-                                <p class="text-[11px] text-gray-400">Used for institutional metrics</p>
-                            </div>
-                            <div class="w-10 h-6 bg-[#0e48c1] rounded-full relative cursor-pointer shrink-0">
-                                <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
         </div>
