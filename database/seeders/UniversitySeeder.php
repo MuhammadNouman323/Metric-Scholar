@@ -14,8 +14,7 @@ class UniversitySeeder extends Seeder
     public function run(): void
     {
         $universities = [
-            ['name' => 'Virtual University of Pakistan', 'domain' => 'vu.edu.pk'],
-            ['name' => 'Punjab University', 'domain' => 'pu.edu.pk'],
+            ['name' => 'Virtual University of Pakistan', 'domain' => 'vu.edu.pk'], ['name' => 'Punjab University', 'domain' => 'pu.edu.pk'],
         ];
 
         foreach ($universities as $university) {

@@ -24,14 +24,14 @@ class DemoSeeder extends Seeder
 
         // ─── 1. University ───────────────────────────────────────────────
         $university = University::query()->firstOrCreate(
-            ['domain' => 'vu.edu.pk'],
-            ['name' => 'Virtual University of Pakistan']
+            ['domain' => 'pu.edu.pk'],
+            ['name' => 'Punjab University']
         );
 
         // ─── 2. Admin ────────────────────────────────────────────────────
         $admin = User::create([
             'name' => 'Muhammad Nouman',
-            'email' => 'bc220410458mno@vu.edu.pk',
+            'email' => 'nouman@pu.edu.pk',
             'password' => $password,
             'role' => 'admin',
             'admin_id' => 'ADM-DEMO01',
@@ -43,14 +43,14 @@ class DemoSeeder extends Seeder
 
         // ─── 3. Faculty ─────────────────────────────────────────────────
         $facultyData = [
-            ['name' => 'Dr. Ahmed Khan',   'email' => 'ahmed.khan@vu.edu.pk',  'department' => 'Computer Science'],
-            ['name' => 'Prof. Sara Ali',    'email' => 'sara.ali@vu.edu.pk',    'department' => 'Computer Science'],
-            ['name' => 'Dr. Usman Malik',   'email' => 'usman.malik@vu.edu.pk', 'department' => 'Applied Physics'],
-            ['name' => 'Prof. Zara Tariq',  'email' => 'zara.tariq@vu.edu.pk',  'department' => 'Applied Physics'],
-            ['name' => 'Dr. Imran Qureshi', 'email' => 'imran.qureshi@vu.edu.pk', 'department' => 'Mathematics'],
-            ['name' => 'Prof. Nadia Jamil', 'email' => 'nadia.jamil@vu.edu.pk',   'department' => 'Mathematics'],
-            ['name' => 'Dr. Farhan Raza',   'email' => 'farhan.raza@vu.edu.pk',   'department' => 'Bio-Chemistry'],
-            ['name' => 'Prof. Sana Munir',  'email' => 'sana.munir@vu.edu.pk',    'department' => 'Bio-Chemistry'],
+            ['name' => 'Dr. Ahmed Khan',   'email' => 'ahmed.khan@pu.edu.pk',  'department' => 'Computer Science'],
+            ['name' => 'Prof. Sara Ali',    'email' => 'sara.ali@pu.edu.pk',    'department' => 'Computer Science'],
+            ['name' => 'Dr. Usman Malik',   'email' => 'usman.malik@pu.edu.pk', 'department' => 'Applied Physics'],
+            ['name' => 'Prof. Zara Tariq',  'email' => 'zara.tariq@pu.edu.pk',  'department' => 'Applied Physics'],
+            ['name' => 'Dr. Imran Qureshi', 'email' => 'imran.qureshi@pu.edu.pk', 'department' => 'Mathematics'],
+            ['name' => 'Prof. Nadia Jamil', 'email' => 'nadia.jamil@pu.edu.pk',   'department' => 'Mathematics'],
+            ['name' => 'Dr. Farhan Raza',   'email' => 'farhan.raza@pu.edu.pk',   'department' => 'Bio-Chemistry'],
+            ['name' => 'Prof. Sana Munir',  'email' => 'sana.munir@pu.edu.pk',    'department' => 'Bio-Chemistry'],
         ];
 
         $faculty = [];
@@ -88,7 +88,7 @@ class DemoSeeder extends Seeder
 
             User::create([
                 'name' => $name,
-                'email' => str_replace(' ', '.', strtolower($name)).'@vu.edu.pk',
+                'email' => str_replace(' ', '.', strtolower($name)).'@pu.edu.pk',
                 'password' => $password,
                 'role' => 'student',
                 'department' => $dept,
