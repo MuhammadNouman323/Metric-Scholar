@@ -12,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -112,7 +114,25 @@ class AuthController extends Controller
 
     public function showResetForm(string $token): View
     {
-        return view('auth.reset-password', ['token' => $token, 'email' => request('email')]);
+        $email = request('email');
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->first();
+
+        if (! $record || ! Hash::check($token, $record->token)) {
+            return view('auth.reset-link-expired', ['reason' => 'invalid']);
+        }
+
+        $expiresAt = Carbon::parse($record->created_at)->addMinutes(
+            config('auth.passwords.users.expire', 60)
+        );
+
+        if (now()->greaterThan($expiresAt)) {
+            return view('auth.reset-link-expired', ['reason' => 'expired']);
+        }
+
+        return view('auth.reset-password', ['token' => $token, 'email' => $email]);
     }
 
     public function reset(Request $request): RedirectResponse
