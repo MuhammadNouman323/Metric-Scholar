@@ -225,69 +225,6 @@
             {{ $faculties->links('vendor.pagination.admin') }}
         </div>
 
-        <!-- Bottom Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Analytics Card -->
-            <div
-                class="bg-[#f0f4fc] rounded-[1.5rem] p-8 relative overflow-hidden group hover:shadow-md transition-shadow">
-                <!-- Decorative Elements -->
-                <div
-                    class="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4 group-hover:scale-110 transition-transform duration-500">
-                    <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="#0e48c1"
-                        stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                        </path>
-                    </svg>
-                </div>
-
-                <h3 class="text-[18px] font-bold text-[#0e48c1] mb-3 relative z-10">Faculty Performance Analytics</h3>
-                <p class="text-gray-500 text-[14px] font-medium mb-6 relative z-10 max-w-[85%]">
-                    Review aggregated feedback scores and tenure progress across all departments for the current
-                    academic year.
-                </p>
-
-                <a href="#"
-                    class="inline-flex items-center text-[#0e48c1] font-bold text-[14px] hover:text-[#0a389f] transition-colors relative z-10 group-hover:gap-2 gap-1">
-                    Generate Yearly Report
-                    <svg class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                    </svg>
-                </a>
-            </div>
-
-            <!-- Help Card -->
-            <div class="bg-[#f4f6f8] rounded-[1.5rem] p-8 flex flex-col md:flex-row gap-6 items-start md:items-center">
-                <div
-                    class="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm text-[#0e48c1]">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                        </path>
-                    </svg>
-                </div>
-
-                <div>
-                    <h3 class="text-[16px] font-bold text-gray-900 mb-1">Need help managing faculty?</h3>
-                    <p class="text-gray-600 text-[13px] font-medium mb-4">
-                        Access our documentation for onboarding new staff members.
-                    </p>
-                    <div class="flex items-center gap-3">
-                        <button
-                            class="bg-white border-2 border-transparent text-[#0e48c1] px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:border-[#0e48c1]/20 transition-all">
-                            View Guides
-                        </button>
-                        <button
-                            class="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:text-gray-900 transition-colors">
-                            Contact Support
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <script>
             // Department Filter
             const deptFilterFaculty = document.getElementById('departmentFilterFaculty');

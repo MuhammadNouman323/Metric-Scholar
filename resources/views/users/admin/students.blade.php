@@ -213,72 +213,7 @@
             {{ $students->links('vendor.pagination.admin') }}
         </div>
 
-        <!-- Metric Cards -->
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <!-- Graduation Rate -->
-
-            <div class="bg-[#f4f6f8] rounded-[1.5rem] p-7">
-                <div class="flex items-start justify-between mb-8">
-                    <div
-                        class="w-10 h-10 bg-[#e2e8f0] text-gray-600 rounded-xl flex items-center justify-center shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                        </svg>
-                    </div>
-                    <span class="bg-[#d1fae5] text-[#047857] text-[11px] font-bold px-2 py-1 rounded">+4.2%</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1">Graduation Rate</h4>
-                <div class="text-[32px] font-extrabold text-gray-900 leading-none mb-5">94.8%</div>
-                <div class="w-full bg-[#e2e8f0] rounded-full h-[5px] flex">
-                    <div class="bg-[#0e48c1] h-[5px] rounded-full" style="width: 94.8%"></div>
-                </div>
-            </div>
-
-            <!-- Avg Student GPA -->
-            <div class="bg-[#f4f6f8] rounded-[1.5rem] p-7">
-                <div class="flex items-start justify-between mb-8">
-                    <div
-                        class="w-10 h-10 bg-[#fcece3] text-[#c55d31] rounded-xl flex items-center justify-center shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
-                            </path>
-                        </svg>
-                    </div>
-                    <span class="bg-[#dbeafe] text-[#1e40af] text-[11px] font-bold px-2 py-1 rounded">Top Dept</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1">Avg. Student GPA</h4>
-                <div class="text-[32px] font-extrabold text-gray-900 leading-none mb-5">3.62</div>
-                <div class="flex items-end h-[5px] gap-1.5">
-                    <div class="bg-[#0e48c1] h-full rounded-full w-1/5"></div>
-                    <div class="bg-[#0e48c1] h-full rounded-full w-1/5"></div>
-                    <div class="bg-[#0e48c1] h-full rounded-full w-1/5"></div>
-                    <div class="bg-[#cbd5e1] h-full rounded-full w-1/5"></div>
-                    <div class="bg-[#cbd5e1] h-full rounded-full w-1/5"></div>
-                </div>
-            </div>
-
-            <!-- Feedback Sent -->
-            <div class="bg-[#f4f6f8] rounded-[1.5rem] p-7">
-                <div class="flex items-start justify-between mb-8">
-                    <div
-                        class="w-10 h-10 bg-[#e2e8f0] text-gray-500 rounded-xl flex items-center justify-center shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                    </div>
-                    <span class="bg-[#e2e8f0] text-gray-600 text-[11px] font-bold px-2 py-1 rounded">82 Pending</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-1">Feedback Sent</h4>
-                <div class="text-[32px] font-extrabold text-gray-900 leading-none mb-3">1,402</div>
-                <p class="text-[12px] text-gray-500 font-medium leading-snug">92% of students received feedback
-                    this<br>week.</p>
-            </div>
-        </div>
-
+       
         <script>
             // Department Filter
             const deptFilterStudents = document.getElementById('departmentFilterStudents');
