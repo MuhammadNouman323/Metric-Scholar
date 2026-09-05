@@ -53,6 +53,14 @@
         .profile-card:hover::before { opacity: 1; }
         @keyframes profileSpin { to { transform: rotate(360deg); } }
 
+        /* Auto-hiding scrollbar: hidden at rest, visible while scrolling */
+        .scroll-auto-hide { scrollbar-width: thin; scrollbar-color: transparent transparent; scrollbar-gutter: stable; transition: scrollbar-color 0.3s ease; }
+        .scroll-auto-hide::-webkit-scrollbar { width: 8px; height: 8px; }
+        .scroll-auto-hide::-webkit-scrollbar-track { background: transparent; }
+        .scroll-auto-hide::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; transition: background 0.3s ease; }
+        .scroll-auto-hide.scrolling { scrollbar-color: rgba(100,116,139,0.45) transparent; }
+        .scroll-auto-hide.scrolling::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.45); }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
         }
@@ -255,7 +263,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto relative z-10 w-full">
+        <main class="flex-1 overflow-y-auto scroll-auto-hide relative z-10 w-full">
             <x-notification-bell position="global" />
 
             <!-- Mobile Header -->
@@ -324,6 +332,17 @@
             });
             window.matchMedia('(min-width: 1024px)').addEventListener('change', function (e) {
                 if (e.matches) setOpen(false);
+            });
+
+            document.querySelectorAll('.scroll-auto-hide').forEach(function (el) {
+                var hideTimer = null;
+                el.addEventListener('scroll', function () {
+                    el.classList.add('scrolling');
+                    if (hideTimer) clearTimeout(hideTimer);
+                    hideTimer = setTimeout(function () {
+                        el.classList.remove('scrolling');
+                    }, 500);
+                }, { passive: true });
             });
         })();
     </script>

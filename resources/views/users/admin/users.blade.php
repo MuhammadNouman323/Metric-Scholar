@@ -20,7 +20,7 @@
 
                 @if (session('success'))
                     <div
-                        class="mb-4 bg-green-50 text-green-700 p-4 rounded-xl text-sm font-bold border border-green-100">
+                        class="flash-message mb-4 bg-green-50 text-green-700 p-4 rounded-xl text-sm font-bold border border-green-100">
                         {{ session('success') }}
                     </div>
                 @endif
@@ -175,7 +175,7 @@
                     </div>
 
                     <div class="mt-8 pt-4">
-                        <a href="#"
+                        <a href="{{ route('admin.registrations') }}"
                             class="block w-full text-center text-[#0e48c1] hover:text-[#0c3ca1] text-[13px] font-bold transition-colors">
                             View Registration History &rarr;
                         </a>

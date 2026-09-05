@@ -1,6 +1,12 @@
 <x-admin>
     <div class="p-6 md:p-10 lg:p-12 pb-24 max-w-[1400px] mx-auto min-h-screen space-y-8">
 
+        @if (session('success'))
+            <div class="flash-message rounded-2xl border border-green-200 bg-green-50 px-6 py-4 text-sm font-bold text-green-700 shadow-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ">
             <div class="flex flex-col gap-2">
@@ -31,7 +37,7 @@
             </div>
             <div class="flex gap-3">
 
-                <button
+                <button id="exportStudentsBtn"
                     class="flex items-center gap-2 bg-white border-2 border-gray-200 text-gray-700 px-6 py-3 rounded-xl text-sm font-bold hover:border-[#0e48c1] hover:text-[#0e48c1] transition-all duration-200 whitespace-nowrap">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -102,10 +108,6 @@
                             class="flex items-center gap-2 bg-[#0e48c1] text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-[#0e48c1]/30 hover:bg-[#0a389f] hover:shadow-xl hover:shadow-[#0e48c1]/40 transition-all duration-200 whitespace-nowrap">
                             Active
                         </button>
-                        <button
-                            class="flex items-center gap-3 border-2 border-gray-200 text-gray-700 px-6 py-3 rounded-xl text-sm font-bold hover:border-[#0e48c1] hover:text-[#0e48c1] transition-all duration-200 whitespace-nowrap">
-                            On Leave
-                        </button>
                     </div>
                 </div>
             </div>
@@ -164,6 +166,14 @@
                                 </td>
                                 <td class="px-6 py-6 whitespace-nowrap text-right">
                                     <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ route('admin.users.show', $student) }}"
+                                            class="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors duration-150"><svg
+                                                class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg></a>
                                         <a href="{{ route('admin.users.edit', $student) }}"
                                             class="p-1.5 text-[#0e48c1] hover:bg-blue-100 rounded-lg transition-colors duration-150"><svg
                                                 class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,14 +181,20 @@
                                                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
                                                 </path>
                                             </svg></a>
-                                        <button
-                                            class="p-1.5 text-red-500 hover:bg-red-100 rounded-lg transition-colors duration-150"><svg
-                                                class="w-5 h-5" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                                </path>
-                                            </svg></button>
+                                        <form action="{{ route('admin.users.destroy', $student) }}" method="POST"
+                                            class="inline-block"
+                                            onsubmit="return confirm('Are you sure you want to delete {{ $student->name }}? This will permanently remove their account and related records.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="p-1.5 text-red-500 hover:bg-red-100 rounded-lg transition-colors duration-150"><svg
+                                                    class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                                    </path>
+                                                </svg></button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -268,6 +284,7 @@
             const deptFilterStudents = document.getElementById('departmentFilterStudents');
             if (deptFilterStudents) {
                 deptFilterStudents.addEventListener('change', function() {
+
                     const selectedDept = this.value;
                     const rows = document.querySelectorAll('.student-row');
                     let visibleCount = 0;
@@ -287,6 +304,17 @@
                     if (paginationSpans.length >= 2) {
                         paginationSpans[0].textContent = `${visibleCount > 0 ? 1 : 0}-${visibleCount}`;
                     }
+                });
+            }
+
+            // Export List - respect the active department filter
+            const exportStudentsBtn = document.getElementById('exportStudentsBtn');
+            if (exportStudentsBtn) {
+                exportStudentsBtn.addEventListener('click', function() {
+                    const baseUrl = "{{ route('admin.students.export') }}";
+                    const deptValue = deptFilterStudents ? deptFilterStudents.value : '';
+                    const separator = baseUrl.includes('?') ? '&' : '?';
+                    window.location.href = baseUrl + (deptValue ? separator + 'department=' + encodeURIComponent(deptValue) : '');
                 });
             }
         </script>

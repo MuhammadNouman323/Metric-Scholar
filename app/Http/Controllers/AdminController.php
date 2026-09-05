@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminController extends Controller
 {
@@ -185,32 +186,37 @@ class AdminController extends Controller
             ? $this->getMonthlyRatingsByDepartment($tenantId, $previousRange['start'], $previousRange['end'])
             : [];
 
-        $currentDepts = $currentMonthly->keys();
-        $currentDeptAvg = $currentDepts->mapWithKeys(fn ($d) => [$d => $currentMonthly[$d]->avg()]);
-        $currentHighest = $currentDeptAvg->sortDesc()->keys()->first();
-        $currentLowest = $currentDeptAvg->sortBy(fn ($v) => $v)->keys()->first();
-
-        $previousDepts = $previousMonthly->keys();
-        $previousDeptAvg = $previousDepts->mapWithKeys(fn ($d) => [$d => $previousMonthly[$d]->avg()]);
-        $previousHighest = $previousDeptAvg->sortDesc()->keys()->first();
-        $previousLowest = $previousDeptAvg->sortBy(fn ($v) => $v)->keys()->first();
-
         $currentMonthLabels = $this->getSemesterMonthLabels($semesterType);
+
+        $chartColors = [
+            '#0e48c1', '#2563eb', '#6366f1', '#10b981',
+            '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6',
+            '#06b6d4', '#84cc16',
+        ];
+
+        $allDepts = $currentMonthly->keys()->merge(
+            is_array($previousMonthly) ? collect($previousMonthly)->keys() : collect()
+        )->unique()->values();
+
+        $allDepartments = [];
+        foreach ($allDepts as $i => $dept) {
+            $color = $chartColors[$i % count($chartColors)];
+
+            $allDepartments[] = [
+                'name' => $dept,
+                'current' => isset($currentMonthly[$dept])
+                    ? $this->buildMonthlySeries($currentMonthly[$dept], $currentMonthLabels)
+                    : array_fill(0, count($currentMonthLabels), null),
+                'previous' => isset($previousMonthly[$dept])
+                    ? $this->buildMonthlySeries($previousMonthly[$dept], $currentMonthLabels)
+                    : array_fill(0, count($currentMonthLabels), null),
+                'color' => $color,
+            ];
+        }
 
         $engagementData = [
             'labels' => $currentMonthLabels,
-            'current' => [
-                'highest' => $currentHighest ? $this->buildMonthlySeries($currentMonthly[$currentHighest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
-                'lowest' => $currentLowest ? $this->buildMonthlySeries($currentMonthly[$currentLowest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
-                'highestLabel' => $currentHighest ?? 'N/A',
-                'lowestLabel' => $currentLowest ?? 'N/A',
-            ],
-            'previous' => [
-                'highest' => $previousHighest ? $this->buildMonthlySeries($previousMonthly[$previousHighest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
-                'lowest' => $previousLowest ? $this->buildMonthlySeries($previousMonthly[$previousLowest], $currentMonthLabels) : array_fill(0, count($currentMonthLabels), null),
-                'highestLabel' => $previousHighest ?? 'N/A',
-                'lowestLabel' => $previousLowest ?? 'N/A',
-            ],
+            'departments' => $allDepartments,
         ];
 
         return view('users.admin.dashboard', compact(
@@ -231,6 +237,22 @@ class AdminController extends Controller
             ->latest()->take(4)->get();
 
         return view('users.admin.admin-user', compact('recentUsers'));
+    }
+
+    public function registrations(): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $registrations = User::where('university_id', $tenantId)
+            ->whereKeyNot(auth()->id())
+            ->latest()
+            ->paginate(12);
+
+        $totalRegistrations = User::where('university_id', $tenantId)
+            ->whereKeyNot(auth()->id())
+            ->count();
+
+        return view('users.admin.registrations', compact('registrations', 'totalRegistrations'));
     }
 
     public function storeUser(StoreUserRequest $request): RedirectResponse
@@ -272,6 +294,51 @@ class AdminController extends Controller
         ]);
     }
 
+    public function exportStudents(Request $request): StreamedResponse
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $students = User::where('university_id', $tenantId)
+            ->where('role', Role::Student)
+            ->withCount('courses')
+            ->when($request->filled('department'), function ($query) use ($request) {
+                $query->where('department', $request->string('department')->toString());
+            })
+            ->orderBy('name')
+            ->get();
+
+        $callback = function () use ($students) {
+            $file = fopen('php://output', 'w');
+
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($file, ['Student ID', 'Name', 'Email', 'Department', 'Enrolled Courses', 'Status']);
+
+            foreach ($students as $student) {
+                fputcsv($file, [
+                    '#SC-'.$student->id,
+                    $student->name,
+                    $student->email,
+                    $student->department ?? 'General',
+                    $student->courses_count,
+                    $student->is_active ? 'Active' : 'Inactive',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        $filename = 'students_list_'.date('Ymd_His');
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}.csv\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ]);
+    }
+
     public function faculty(): View
     {
         $tenantId = auth()->user()->university_id;
@@ -298,6 +365,51 @@ class AdminController extends Controller
             ->values();
 
         return view('users.admin.faculty', compact('faculties', 'totalFaculty', 'activeCourses', 'departments', 'pendingReviews', 'tenuredPercentage'));
+    }
+
+    public function exportFaculty(Request $request): StreamedResponse
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $faculties = User::where('university_id', $tenantId)
+            ->where('role', Role::Faculty)
+            ->withCount('courses')
+            ->when($request->filled('department'), function ($query) use ($request) {
+                $query->where('department', $request->string('department')->toString());
+            })
+            ->orderBy('name')
+            ->get();
+
+        $callback = function () use ($faculties) {
+            $file = fopen('php://output', 'w');
+
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($file, ['Faculty ID', 'Name', 'Email', 'Department', 'Course Load', 'Status']);
+
+            foreach ($faculties as $faculty) {
+                fputcsv($file, [
+                    'FAC-'.$faculty->id,
+                    $faculty->name,
+                    $faculty->email,
+                    $faculty->department ?? 'General',
+                    $faculty->courses_count,
+                    $faculty->is_active ? 'Active' : 'Inactive',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        $filename = 'faculty_list_'.date('Ymd_His');
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}.csv\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ]);
     }
 
     public function assignCourses(User $faculty): View
@@ -348,9 +460,11 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Course assignments updated successfully.');
     }
 
-    public function courses(): View
+    public function courses(Request $request): View
     {
         $tenantId = auth()->user()->university_id;
+        $selectedSemester = trim((string) $request->query('semester', ''));
+        $selectedDepartment = trim((string) $request->query('department', ''));
 
         $departments = User::query()
             ->where('university_id', $tenantId)
@@ -364,11 +478,18 @@ class AdminController extends Controller
 
         $courses = Course::query()
             ->where('university_id', $tenantId)
+            ->when($selectedSemester !== '', function ($query) use ($selectedSemester) {
+                $query->where('semester', $selectedSemester);
+            })
+            ->when($selectedDepartment !== '', function ($query) use ($selectedDepartment) {
+                $query->where('department', $selectedDepartment);
+            })
             ->withCount(['users as students_count' => function ($q) {
                 $q->where('role', Role::Student);
             }])
             ->latest()
-            ->paginate(50);
+            ->paginate(50)
+            ->withQueryString();
 
         // Tenant-wide stats are computed with aggregate queries so they are
         // not limited to the current page of the paginated course list.
@@ -388,12 +509,22 @@ class AdminController extends Controller
             ->scheduled()
             ->count();
 
+        $semesters = Course::where('university_id', $tenantId)
+            ->whereNotNull('semester')
+            ->where('semester', '!=', '')
+            ->distinct()
+            ->orderBy('semester')
+            ->pluck('semester');
+
         return view('users.admin.courses', [
             'departments' => $departments,
             'courses' => $courses,
             'totalEnrollment' => $totalEnrollment,
             'activeCourses' => $activeCourses,
             'pendingEvaluations' => $pendingEvaluations,
+            'semesters' => $semesters,
+            'selectedSemester' => $selectedSemester,
+            'selectedDepartment' => $selectedDepartment,
         ]);
     }
 
@@ -494,6 +625,7 @@ class AdminController extends Controller
             ],
             'students' => $students
                 ->map(fn (User $user): array => [
+                    'id' => $user->id,
                     'initials' => Str::of($user->name)->explode(' ')->filter()->take(2)->map(fn (string $part): string => Str::upper(Str::substr($part, 0, 1)))->implode(''),
                     'name' => $user->name,
                     'email' => $user->email,
@@ -504,6 +636,7 @@ class AdminController extends Controller
                 ->all(),
             'faculty' => $faculty
                 ->map(fn (User $user): array => [
+                    'id' => $user->id,
                     'initials' => Str::of($user->name)->explode(' ')->filter()->take(2)->map(fn (string $part): string => Str::upper(Str::substr($part, 0, 1)))->implode(''),
                     'name' => $user->name,
                     'role' => 'Faculty Member',
@@ -911,6 +1044,44 @@ class AdminController extends Controller
         return redirect()->route('admin.courses')->with('success', 'Course created successfully.');
     }
 
+    public function editCourse(Course $course): View
+    {
+        $tenantId = auth()->user()->university_id;
+
+        abort_unless($course->university_id === $tenantId, 404);
+
+        return view('users.admin.edit-course', ['course' => $course]);
+    }
+
+    public function updateCourse(Request $request, Course $course): RedirectResponse
+    {
+        $tenantId = auth()->user()->university_id;
+
+        abort_unless($course->university_id === $tenantId, 404);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', 'unique:courses,code,'.$course->id.',id,university_id,'.$tenantId],
+            'semester' => ['nullable', 'string', 'max:255'],
+            'credit_hours' => ['nullable', 'integer', 'min:1', 'max:8'],
+        ]);
+
+        $course->update($validated);
+
+        return redirect()->route('admin.courses')->with('success', 'Course updated successfully.');
+    }
+
+    public function destroyCourse(Course $course): RedirectResponse
+    {
+        $tenantId = auth()->user()->university_id;
+
+        abort_unless($course->university_id === $tenantId, 404);
+
+        $course->delete();
+
+        return redirect()->route('admin.courses')->with('success', 'Course deleted successfully.');
+    }
+
     public function manageDepartment(string $department): View
     {
         $section = request()->string('section')->toString() ?: 'courses';
@@ -1154,6 +1325,29 @@ class AdminController extends Controller
 
         return redirect()->route('admin.courses')
             ->with('success', 'Student course assignment updated successfully.');
+    }
+
+    public function showUser(User $user): View
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+
+        $courses = $user->courses()->withPivot('term')->latest('course_user.created_at')->get();
+
+        return view('users.admin.show', compact('user', 'courses'));
+    }
+
+    public function destroyUser(User $user): RedirectResponse
+    {
+        $tenantId = auth()->user()->university_id;
+        abort_unless($user->university_id === $tenantId, 403);
+        abort_unless($user->role === Role::Student, 404);
+        abort_if($user->id === auth()->id(), 403);
+
+        $name = $user->name;
+        $user->delete();
+
+        return redirect()->route('admin.students')->with('success', "Student {$name} deleted successfully.");
     }
 
     public function editUser(User $user): View

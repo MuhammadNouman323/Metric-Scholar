@@ -17,7 +17,7 @@
             <div
                 class="xl:col-span-2 bg-white rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] h-full flex flex-col">
                 @if (session('success'))
-                    <div class="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+                    <div class="flash-message mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
                         {{ session('success') }}
                     </div>
                 @endif
@@ -156,7 +156,7 @@
                     </div>
 
                     <div class="mt-8 pt-4">
-                        <a href="#"
+                        <a href="{{ route('admin.registrations') }}"
                             class="block w-full text-center text-[#0e48c1] hover:text-[#0c3ca1] text-[13px] font-bold transition-colors">
                             View Registration History &rarr;
                         </a>

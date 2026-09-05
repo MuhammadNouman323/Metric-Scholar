@@ -26,7 +26,7 @@
             </div>
 
             @if(session('success'))
-                <div class="bg-emerald-50 text-emerald-700 p-4 rounded-xl mb-6 font-semibold border border-emerald-200">
+                <div class="flash-message bg-emerald-50 text-emerald-700 p-4 rounded-xl mb-6 font-semibold border border-emerald-200">
                     {{ session('success') }}
                 </div>
             @endif

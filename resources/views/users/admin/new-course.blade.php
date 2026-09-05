@@ -15,7 +15,7 @@
             </div>
 
             @if(session('success'))
-                <div class="bg-green-50 border border-green-200 text-green-700 rounded-xl px-5 py-4 text-sm font-semibold">
+                <div class="flash-message bg-green-50 border border-green-200 text-green-700 rounded-xl px-5 py-4 text-sm font-semibold">
                     {{ session('success') }}
                 </div>
             @endif

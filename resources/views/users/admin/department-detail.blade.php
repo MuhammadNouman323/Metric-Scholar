@@ -24,14 +24,6 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3 shrink-0">
-                    <button
-                        class="inline-flex items-center gap-2 rounded-xl bg-[#eff4ff] px-4 py-3 text-sm font-bold text-[#0e48c1]">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 20l9-5-9-5-9 5 9 5zm0 0V4" />
-                        </svg>
-                        View Curriculum
-                    </button>
                     <a href="{{ route('admin.departments.manage', $department['slug']) }}"
                         class="inline-flex items-center gap-2 rounded-xl bg-[#0e48c1] px-4 py-3 text-sm font-bold text-white shadow-[0_4px_12px_rgba(14,72,193,0.2)]">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,7 +213,7 @@
                             <div class="flex items-center justify-between gap-3">
                                 <span
                                     class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-[11px] font-bold text-gray-500">{{ $member['status'] }}</span>
-                                <a href="#" class="text-sm font-bold text-[#0e48c1]">View Profile -&gt;</a>
+                                <a href="{{ route('admin.users.show', $member['id']) }}" class="text-sm font-bold text-[#0e48c1]">View Profile -&gt;</a>
                             </div>
                         </div>
                     @empty
@@ -278,7 +270,7 @@
                                 <div class="flex items-center justify-between gap-3">
                                     <span
                                         class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-[11px] font-bold text-gray-500">{{ $student['status'] }}</span>
-                                    <a href="#" class="text-sm font-bold text-[#0e48c1]">View Profile -&gt;</a>
+                                    <a href="{{ route('admin.users.show', $student['id']) }}" class="text-sm font-bold text-[#0e48c1]">View Profile -&gt;</a>
                                 </div>
                             </div>
                         @empty

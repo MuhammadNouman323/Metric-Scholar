@@ -110,33 +110,42 @@
 
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 w-full">
-            <!-- Line Chart (2/3 width) -->
+            <!-- Bar Chart (2/3 width) -->
             <div
-                class="lg:col-span-2 bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-8 gap-4">
-                    <div>
-                        <h3 class="text-[19px] font-bold text-gray-900 mb-1">Engagement Trends</h3>
-                        <p class="text-[13.5px] text-gray-500 font-medium">Highest &amp; lowest performing departments — semester over semester</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-x-5 gap-y-1.5 text-[11px] font-bold text-gray-600">
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-2.5 h-2.5 rounded-full bg-[#0e48c1]"></div> Highest
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-2.5 h-2.5 rounded-full border-2 border-[#0e48c1] border-dashed bg-transparent"></div> Highest (prev)
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-2.5 h-2.5 rounded-full bg-[#ef4444]"></div> Lowest
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-2.5 h-2.5 rounded-full border-2 border-[#ef4444] border-dashed bg-transparent"></div> Lowest (prev)
-                        </div>
-                    </div>
-                </div>
+                class="lg:col-span-2 bg-gradient-to-br from-white via-white to-[#f0f4ff] rounded-[2rem] p-8 border border-gray-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden">
+                <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-[#0e48c1]/[0.03] blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-[#6366f1]/[0.04] blur-3xl pointer-events-none"></div>
 
-                <!-- Chart.js Line Chart -->
-                <div class="w-full h-[220px] relative mt-2">
-                    <canvas id="engagementChart"></canvas>
+                <div class="relative z-10">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 gap-4">
+                        <div>
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0e48c1] to-[#6366f1] flex items-center justify-center shadow-md shadow-blue-500/20">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-[19px] font-bold text-gray-900">Engagement Trends</h3>
+                                    <p class="text-[12.5px] text-gray-400 font-medium">Department performance — current vs previous semester</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach($engagementData['departments'] as $dept)
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10.5px] font-bold tracking-wide border"
+                                  style="background-color: {{ $dept['color'] }}08; color: {{ $dept['color'] }}; border-color: {{ $dept['color'] }}20">
+                                <span class="w-2 h-2 rounded-sm" style="background-color: {{ $dept['color'] }}"></span>
+                                {{ $dept['name'] }}
+                            </span>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Chart.js Bar Chart -->
+                    <div class="w-full h-[260px] relative mt-2 bg-gradient-to-b from-transparent to-[#f8fafc]/30 rounded-xl p-2">
+                        <canvas id="engagementChart"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -329,98 +338,78 @@
             Chart.defaults.font.size = 11;
             Chart.defaults.color = '#64748b';
 
+            const chartCtx = ctx.getContext('2d');
+            const datasets = data.departments.flatMap(dept => {
+                const solid = chartCtx.createLinearGradient(0, 0, 0, 260);
+                solid.addColorStop(0, dept.color);
+                solid.addColorStop(1, dept.color + 'aa');
+
+                const fade = chartCtx.createLinearGradient(0, 0, 0, 260);
+                fade.addColorStop(0, dept.color + '55');
+                fade.addColorStop(1, dept.color + '22');
+
+                return [
+                    {
+                        label: dept.name + ' (current)',
+                        data: dept.current,
+                        backgroundColor: solid,
+                        hoverBackgroundColor: dept.color,
+                        borderRadius: { topLeft: 5, topRight: 5 },
+                        borderSkipped: false,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.7,
+                    },
+                    {
+                        label: dept.name + ' (prev)',
+                        data: dept.previous,
+                        backgroundColor: fade,
+                        hoverBackgroundColor: dept.color + '88',
+                        borderRadius: { topLeft: 5, topRight: 5 },
+                        borderSkipped: false,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.7,
+                    },
+                ];
+            });
+
             new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: data.labels,
-                    datasets: [
-                        {
-                            label: 'Highest (current)',
-                            data: data.current.highest,
-                            borderColor: '#0e48c1',
-                            backgroundColor: '#0e48c1',
-                            borderWidth: 3,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#0e48c1',
-                            pointBorderWidth: 2.5,
-                            pointHoverRadius: 6,
-                            tension: 0.35,
-                            spanGaps: true,
-                        },
-                        {
-                            label: 'Lowest (current)',
-                            data: data.current.lowest,
-                            borderColor: '#ef4444',
-                            backgroundColor: '#ef4444',
-                            borderWidth: 3,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#ef4444',
-                            pointBorderWidth: 2.5,
-                            pointHoverRadius: 6,
-                            tension: 0.35,
-                            spanGaps: true,
-                        },
-                        {
-                            label: 'Highest (prev semester)',
-                            data: data.previous.highest,
-                            borderColor: '#93c5fd',
-                            backgroundColor: '#93c5fd',
-                            borderWidth: 2.5,
-                            borderDash: [8, 5],
-                            pointRadius: 3,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#93c5fd',
-                            pointBorderWidth: 2,
-                            pointHoverRadius: 5,
-                            tension: 0.35,
-                            spanGaps: true,
-                        },
-                        {
-                            label: 'Lowest (prev semester)',
-                            data: data.previous.lowest,
-                            borderColor: '#fca5a5',
-                            backgroundColor: '#fca5a5',
-                            borderWidth: 2.5,
-                            borderDash: [8, 5],
-                            pointRadius: 3,
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#fca5a5',
-                            pointBorderWidth: 2,
-                            pointHoverRadius: 5,
-                            tension: 0.35,
-                            spanGaps: true,
-                        },
-                    ],
+                    datasets: datasets,
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
+                    animation: {
+                        duration: 900,
+                        easing: 'easeOutQuart',
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1e293b',
+                            backgroundColor: '#0f172a',
                             titleFont: { family: fontFamily, weight: 'bold', size: 12 },
-                            bodyFont: { family: fontFamily, size: 11 },
-                            padding: 10,
-                            cornerRadius: 8,
+                            bodyFont: { family: fontFamily, size: 11.5 },
+                            padding: { top: 10, bottom: 10, left: 14, right: 14 },
+                            cornerRadius: 10,
                             displayColors: true,
-                            boxWidth: 10,
-                            boxHeight: 10,
+                            boxWidth: 8,
+                            boxHeight: 8,
                             boxPadding: 4,
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            titleMarginBottom: 6,
                             callbacks: {
                                 title: function (items) {
                                     return items[0]?.label || '';
                                 },
                                 label: function (item) {
-                                    const idx = item.datasetIndex;
-                                    const label = idx < 2 ? data.current : data.previous;
-                                    const key = idx % 2 === 0 ? 'highestLabel' : 'lowestLabel';
-                                    const dept = label[key];
                                     const val = item.parsed.y;
-                                    return val !== null ? `${dept}: ${val.toFixed(2)}` : `${dept}: N/A`;
+                                    return val !== null ? `${item.dataset.label}: ${val.toFixed(2)}` : `${item.dataset.label}: N/A`;
                                 },
                             },
                         },
@@ -430,17 +419,19 @@
                             grid: { display: false },
                             border: { display: false },
                             ticks: {
-                                font: { family: fontFamily, weight: 'bold', size: 10 },
+                                font: { family: fontFamily, weight: '700', size: 10.5 },
                                 color: '#94a3b8',
+                                padding: 4,
                             },
                         },
                         y: {
-                            min: 1,
+                            min: 0,
                             max: 5,
                             ticks: {
                                 stepSize: 1,
-                                font: { family: fontFamily, weight: 'bold', size: 10 },
-                                color: '#94a3b8',
+                                font: { family: fontFamily, weight: '700', size: 10 },
+                                color: '#cbd5e1',
+                                padding: 8,
                             },
                             grid: {
                                 color: '#f1f5f9',

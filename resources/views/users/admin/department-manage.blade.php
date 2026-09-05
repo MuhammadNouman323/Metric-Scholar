@@ -34,12 +34,6 @@
         @if ($section === 'courses')
             <!-- Actions -->
             <div class="flex justify-end items-center gap-3 mb-6">
-                <button class="inline-flex items-center gap-2 rounded-xl bg-[#eff4ff] px-4 py-2.5 text-sm font-bold text-[#0e48c1]">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20l9-5-9-5-9 5 9 5zm0 0V4" />
-                    </svg>
-                    View Curriculum
-                </button>
                 <a href="{{ route('admin.departments.courses.new', $department) }}" class="inline-flex items-center gap-2 rounded-xl bg-[#0e48c1] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(14,72,193,0.2)]">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

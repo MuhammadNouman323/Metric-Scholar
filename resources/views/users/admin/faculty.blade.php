@@ -121,19 +121,14 @@
             <div class="p-6 md:p-8 flex flex-col md:flex-row items-center justify-between border-b border-gray-100">
                 <h2 class="text-[18px] font-bold text-[#0e48c1]">Faculty Directory</h2>
                 <div class="flex items-center gap-3">
-                    <button class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+                    <button id="exportFacultyBtn" title="Export List"
+                        class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
                     </button>
-                    <button class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
-                            </path>
-                        </svg>
-                    </button>
+                    
                 </div>
             </div>
 
@@ -191,6 +186,15 @@
                                 </td>
                                 <td class="px-6 md:px-8 py-5 whitespace-nowrap text-right">
                                     <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ route('admin.users.show', $faculty) }}"
+                                            title="View"
+                                            class="text-gray-500 hover:bg-gray-100 p-2 rounded-lg transition-colors duration-150"><svg
+                                                class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg></a>
                                         <a href="{{ route('admin.faculty.assign-courses', $faculty->id) }}"
                                             title="Assign Courses"
                                             class="text-[#0e48c1] hover:bg-blue-50 p-2 rounded-lg transition-colors duration-150"><svg
@@ -308,6 +312,17 @@
                     if (paginationSpans.length >= 2) {
                         paginationSpans[0].textContent = `${visibleCount > 0 ? 1 : 0}-${visibleCount}`;
                     }
+                });
+            }
+
+            // Export List - respect the active department filter
+            const exportFacultyBtn = document.getElementById('exportFacultyBtn');
+            if (exportFacultyBtn) {
+                exportFacultyBtn.addEventListener('click', function() {
+                    const baseUrl = "{{ route('admin.faculty.export') }}";
+                    const deptValue = deptFilterFaculty ? deptFilterFaculty.value : '';
+                    const separator = baseUrl.includes('?') ? '&' : '?';
+                    window.location.href = baseUrl + (deptValue ? separator + 'department=' + encodeURIComponent(deptValue) : '');
                 });
             }
         </script>

@@ -222,7 +222,7 @@
 
                     <!-- Success Message -->
                     @if(session('status'))
-                        <div class="mb-6 bg-emerald-50 border border-emerald-200/60 rounded-xl px-5 py-4 flex items-start gap-3">
+                        <div class="flash-message mb-6 bg-emerald-50 border border-emerald-200/60 rounded-xl px-5 py-4 flex items-start gap-3">
                             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-500 flex items-center justify-center shrink-0 mt-0.5 shadow-[0_2px_8px_rgba(16,185,129,0.3)]">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -237,7 +237,7 @@
 
                     <!-- Error -->
                     @error('email')
-                        <div class="mb-5 flex items-center gap-2 text-red-500 text-sm font-bold bg-red-50 rounded-xl px-4 py-3 border border-red-100">
+                        <div class="flash-message mb-5 flex items-center gap-2 text-red-500 text-sm font-bold bg-red-50 rounded-xl px-4 py-3 border border-red-100">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             {{ $message }}
                         </div>
