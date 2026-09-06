@@ -102,7 +102,7 @@ test('/admin/dashboard shows dynamic recent activity feed', function () {
 
     $activity = $response->viewData('recentActivity');
 
-    expect($activity)->toHaveCount(3);
+    expect($activity)->toHaveCount(2);
     expect($activity->first()['type'])->toBe('user');
     expect($activity->first()['name'])->toBe('Dr. Robert Smith');
     expect($activity->first()['role'])->toBe('Faculty');
@@ -110,18 +110,15 @@ test('/admin/dashboard shows dynamic recent activity feed', function () {
     expect($activity->get(1)['type'])->toBe('feedback');
     expect($activity->get(1)['course'])->toBe('Adv. Algorithms');
     expect($activity->get(1)['quote'])->toBe('Excellent delivery of complex topics.');
-    expect($activity->last()['type'])->toBe('user');
-    expect($activity->last()['name'])->toBe('Jane Doe');
-    expect($activity->last()['role'])->toBe('Student');
 
     $response->assertSee('Anonymous Student');
     $response->assertSee('Adv. Algorithms');
     $response->assertSee('Excellent delivery of complex topics.');
-    $response->assertSee('Jane Doe');
+    $response->assertDontSee('Jane Doe');
     $response->assertSee('Engineering');
 });
 
-test('/admin/dashboard recent activity feed is limited to five newest events', function () {
+test('/admin/dashboard recent activity feed is limited to two newest events', function () {
     $admin = User::factory()->create([
         'role' => 'admin',
     ]);
@@ -165,7 +162,7 @@ test('/admin/dashboard recent activity feed is limited to five newest events', f
 
     $activity = $response->viewData('recentActivity');
 
-    expect($activity)->toHaveCount(5);
+    expect($activity)->toHaveCount(2);
     expect($activity->pluck('timestamp'))->toEqual($activity->pluck('timestamp')->sort()->reverse()->values());
 });
 

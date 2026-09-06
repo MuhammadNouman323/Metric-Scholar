@@ -152,71 +152,87 @@ class AdminController extends Controller
         $recentActivity = $recentFeedbacks
             ->merge($recentUsers)
             ->sortByDesc('timestamp')
-            ->take(5)
+            ->take(2)
             ->values();
 
-        // Engagement Trends: highest & lowest performing departments per month
-        $currentSemester = currentTerm();
-        $parts = explode(' ', $currentSemester);
-        $semesterType = $parts[0];
-        $semesterYear = (int) ($parts[1] ?? date('Y'));
+        // Engagement Trends: year-by-year with Spring (1st sem) and Fall (2nd sem)
+        $currentYear = (int) date('Y');
+        $years = range($currentYear - 1, $currentYear);
 
-        $semesterRanges = [
-            'Spring' => ['start' => "{$semesterYear}-01-01", 'end' => "{$semesterYear}-06-30"],
-            'Summer' => ['start' => "{$semesterYear}-05-01", 'end' => "{$semesterYear}-07-31"],
-            'Fall'   => ['start' => "{$semesterYear}-08-01", 'end' => "{$semesterYear}-12-31"],
-        ];
-
-        $prevSemesterMap = [
-            'Spring' => 'Fall '.($semesterYear - 1),
-            'Summer' => "Spring {$semesterYear}",
-            'Fall'   => "Spring {$semesterYear}",
-        ];
-
-        $currentRange = $semesterRanges[$semesterType] ?? $semesterRanges['Fall'];
-        $previousSemester = $prevSemesterMap[$semesterType] ?? null;
-        $previousRange = null;
-        if ($previousSemester) {
-            $prevParts = explode(' ', $previousSemester);
-            $previousRange = $semesterRanges[$prevParts[0]] ?? null;
+        $semesterDefs = [];
+        $labels = [];
+        foreach ($years as $year) {
+            $semesterDefs[] = [
+                'start' => "{$year}-01-01",
+                'end'   => "{$year}-06-30",
+                'label' => "Spring {$year}",
+            ];
+            $semesterDefs[] = [
+                'start' => "{$year}-08-01",
+                'end'   => "{$year}-12-31",
+                'label' => "Fall {$year}",
+            ];
+            $labels[] = "Spring {$year}";
+            $labels[] = "Fall {$year}";
         }
 
-        $currentMonthly = $this->getMonthlyRatingsByDepartment($tenantId, $currentRange['start'], $currentRange['end']);
-        $previousMonthly = $previousRange
-            ? $this->getMonthlyRatingsByDepartment($tenantId, $previousRange['start'], $previousRange['end'])
-            : [];
+        $semesterData = [];
+        foreach ($semesterDefs as $def) {
+            $monthly = $this->getMonthlyRatingsByDepartment($tenantId, $def['start'], $def['end']);
+            $semesterData[$def['label']] = $monthly->map(function ($months) {
+                $values = $months->filter()->values();
 
-        $currentMonthLabels = $this->getSemesterMonthLabels($semesterType);
+                return $values->isEmpty() ? null : round($values->average(), 2);
+            });
+        }
+
+        $allDepts = collect();
+        foreach ($semesterData as $deptRatings) {
+            $allDepts = $allDepts->merge($deptRatings->keys());
+        }
+        $allDepts = $allDepts->unique()->values();
+
+        $deptAverages = $allDepts->mapWithKeys(function (string $dept) use ($semesterData) {
+            $ratings = collect();
+            foreach ($semesterData as $deptRatings) {
+                $ratings->push($deptRatings->get($dept));
+            }
+            $average = $ratings->filter()->average();
+
+            return [$dept => $average ? round($average, 2) : null];
+        });
+
+        $deptsWithRatings = $deptAverages->filter()->sortByDesc(fn ($avg) => $avg);
 
         $chartColors = [
-            '#0e48c1', '#2563eb', '#6366f1', '#10b981',
-            '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6',
-            '#06b6d4', '#84cc16',
+            '#0e48c1', '#2563eb', '#6366f1', '#8b5cf6',
+            '#10b981', '#14b8a6', '#f59e0b', '#ef4444',
+            '#ec4899', '#0ea5e9',
         ];
 
-        $allDepts = $currentMonthly->keys()->merge(
-            is_array($previousMonthly) ? collect($previousMonthly)->keys() : collect()
-        )->unique()->values();
-
-        $allDepartments = [];
-        foreach ($allDepts as $i => $dept) {
-            $color = $chartColors[$i % count($chartColors)];
-
-            $allDepartments[] = [
-                'name' => $dept,
-                'current' => isset($currentMonthly[$dept])
-                    ? $this->buildMonthlySeries($currentMonthly[$dept], $currentMonthLabels)
-                    : array_fill(0, count($currentMonthLabels), null),
-                'previous' => isset($previousMonthly[$dept])
-                    ? $this->buildMonthlySeries($previousMonthly[$dept], $currentMonthLabels)
-                    : array_fill(0, count($currentMonthLabels), null),
-                'color' => $color,
+        $chartDepartments = [];
+        foreach ($deptsWithRatings->keys() as $index => $dept) {
+            $series = [];
+            foreach ($labels as $label) {
+                $series[] = $semesterData[$label][$dept] ?? null;
+            }
+            $chartDepartments[] = [
+                'name'    => $dept,
+                'current' => $series,
+                'color'   => $chartColors[$index % count($chartColors)],
             ];
         }
 
+        $highestDept = $deptsWithRatings->keys()->first();
+        $lowestDept = $deptsWithRatings->keys()->last();
+
         $engagementData = [
-            'labels' => $currentMonthLabels,
-            'departments' => $allDepartments,
+            'labels'      => $labels,
+            'departments' => $chartDepartments,
+            'summary'     => [
+                'highest' => $highestDept,
+                'lowest'  => $lowestDept,
+            ],
         ];
 
         return view('users.admin.dashboard', compact(
@@ -270,18 +286,39 @@ class AdminController extends Controller
         return back()->with('success', ucfirst($validated['role']).' account created successfully.');
     }
 
-    public function students(): View
+    public function students(Request $request): View
     {
         $tenantId = auth()->user()->university_id;
-        $students = User::where('university_id', $tenantId)
+        $students = User::query()
+            ->where('university_id', $tenantId)
             ->where('role', Role::Student)
             ->with('courses')
             ->withCount('courses')
-            ->paginate(10);
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('department'), function ($query) use ($request) {
+                $query->where('department', $request->string('department')->toString());
+            })
+            ->paginate(10)->withQueryString();
 
-        $departments = User::where('university_id', $tenantId)
+        $departments = User::query()
+            ->where('university_id', $tenantId)
+            ->where('role', Role::Student)
+            ->whereNotNull('department')
+            ->where('department', '!=', '')
+            ->select('department')
             ->distinct()
-            ->pluck('department');
+            ->get()
+            ->map(fn ($user) => trim((string) $user->department))
+            ->filter()
+            ->unique()
+            ->values();
 
         $totalStudents = User::where('university_id', $tenantId)
             ->where('role', Role::Student)
@@ -303,6 +340,14 @@ class AdminController extends Controller
             ->withCount('courses')
             ->when($request->filled('department'), function ($query) use ($request) {
                 $query->where('department', $request->string('department')->toString());
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
             })
             ->orderBy('name')
             ->get();
@@ -339,16 +384,28 @@ class AdminController extends Controller
         ]);
     }
 
-    public function faculty(): View
+    public function faculty(Request $request): View
     {
         $tenantId = auth()->user()->university_id;
 
-        $faculties = User::where('university_id', $tenantId)
+        $faculties = User::query()
+            ->where('university_id', $tenantId)
             ->where('role', Role::Faculty)
             ->with('courses')
             ->withCount('courses')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('department'), function ($query) use ($request) {
+                $query->where('department', $request->string('department')->toString());
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)->withQueryString();
 
         $totalFaculty = User::where('university_id', $tenantId)->where('role', Role::Faculty)->count();
         $activeCourses = Course::where('university_id', $tenantId)->withCount('users')->count();
@@ -376,6 +433,14 @@ class AdminController extends Controller
             ->withCount('courses')
             ->when($request->filled('department'), function ($query) use ($request) {
                 $query->where('department', $request->string('department')->toString());
+            })
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
             })
             ->orderBy('name')
             ->get();
@@ -424,7 +489,7 @@ class AdminController extends Controller
 
         $availableCourses = Course::where('university_id', $tenantId)
             ->where('department', $faculty->department)
-            ->whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term))
+            ->whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term)->where('role', Role::Faculty->value))
             ->paginate(50);
 
         $assignedCourses = $faculty->courses()->wherePivot('term', $term)->get();
@@ -488,7 +553,7 @@ class AdminController extends Controller
                 $q->where('role', Role::Student);
             }])
             ->latest()
-            ->paginate(50)
+            ->paginate(10)
             ->withQueryString();
 
         // Tenant-wide stats are computed with aggregate queries so they are
@@ -647,7 +712,7 @@ class AdminController extends Controller
                 ->values()
                 ->all(),
             'activity' => $users
-                ->take(5)
+->take(4)
                 ->map(fn (User $user): array => [
                     'title' => ucfirst($user->role->value).' account added',
                     'detail' => $user->name.' was added to '.$departmentName.'.',
@@ -672,8 +737,8 @@ class AdminController extends Controller
 
         $availableCourses = Course::where('university_id', $tenantId)
             ->where('department', $departmentName)
-            ->whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term))
-            ->paginate(50);
+            ->whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term)->where('role', Role::Faculty->value))
+            ->paginate(50)->withQueryString();
 
         $assignedCourses = $faculty->courses()->wherePivot('term', $term)->get();
 
@@ -681,6 +746,7 @@ class AdminController extends Controller
             'departmentName' => $departmentName,
             'department' => $department,
             'faculty' => $faculty,
+            'term' => $term,
             'availableCourses' => $availableCourses,
             'assignedCourses' => $assignedCourses,
         ]);
@@ -1086,20 +1152,34 @@ class AdminController extends Controller
     {
         $section = request()->string('section')->toString() ?: 'courses';
         $tenantId = auth()->user()->university_id;
+        $term = currentTerm();
 
         $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
 
         abort_unless($departmentName !== null, 404);
 
+        $search = request()->string('search')->toString();
+        $termFilter = request()->string('semester')->toString();
+
         $courses = Course::where('university_id', $tenantId)
             ->where('department', $departmentName)
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('code', 'like', "%{$search}%")
+                        ->orWhere('title', 'like', "%{$search}%");
+                });
+            })
+            ->when($termFilter !== '', function ($query) use ($termFilter) {
+                $query->where('semester', $termFilter);
+            })
             ->latest()
-            ->paginate(50);
+            ->paginate(50)
+            ->withQueryString();
         $facultyMembers = User::query()
             ->where('university_id', $tenantId)
             ->where('role', Role::Faculty)
             ->where('department', $departmentName)
-            ->with('courses')
+            ->with(['courses' => fn ($q) => $q->wherePivot('term', $term)])
             ->latest()
             ->paginate(50);
         $students = User::query()
@@ -1110,6 +1190,8 @@ class AdminController extends Controller
             ->latest()
             ->paginate(50);
 
+        $deptMetrics = $this->buildDepartmentMetrics($tenantId, $departmentName);
+
         return view('users.admin.department-manage', [
             'departmentName' => $departmentName,
             'department' => $department,
@@ -1117,7 +1199,142 @@ class AdminController extends Controller
             'courses' => $courses,
             'facultyMembers' => $facultyMembers,
             'students' => $students,
+            'deptMetrics' => $deptMetrics,
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildDepartmentMetrics(int $tenantId, string $departmentName): array
+    {
+        $feedbackBase = fn ($query) => $query
+            ->where('users.university_id', $tenantId)
+            ->where('users.department', $departmentName);
+
+        $avgRatingRow = DB::table('feedbacks')
+            ->join('users', 'feedbacks.faculty_id', '=', 'users.id')
+            ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
+            ->where(fn ($q) => $feedbackBase($q))
+            ->where('feedback_answers.question_id', 'overall_rating')
+            ->avg('feedback_answers.rating');
+
+        $trendRows = DB::table('feedbacks')
+            ->join('users', 'feedbacks.faculty_id', '=', 'users.id')
+            ->join('evaluations', 'feedbacks.evaluation_id', '=', 'evaluations.id')
+            ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
+            ->where(fn ($q) => $feedbackBase($q))
+            ->where('feedback_answers.question_id', 'overall_rating')
+            ->select('evaluations.semester', DB::raw('ROUND(AVG(feedback_answers.rating), 2) as avg'))
+            ->groupBy('evaluations.semester')
+            ->get();
+
+        $seasonOrder = ['Spring' => 0, 'Summer' => 1, 'Fall' => 2];
+
+        $semesterTrend = $trendRows
+            ->mapWithKeys(fn ($row): array => [(string) $row->semester => (float) $row->avg])
+            ->sortBy(function (float $avg, string $semester) use ($seasonOrder): int {
+                $parts = explode(' ', $semester);
+
+                return ((int) ($parts[1] ?? 0) * 10) + ($seasonOrder[$parts[0]] ?? 9);
+            })
+            ->take(5);
+
+        return [
+            'courseCount' => Course::where('university_id', $tenantId)
+                ->where('department', $departmentName)
+                ->count(),
+            'facultyCount' => User::where('university_id', $tenantId)
+                ->where('role', Role::Faculty)
+                ->where('department', $departmentName)
+                ->count(),
+            'studentCount' => User::where('university_id', $tenantId)
+                ->where('role', Role::Student)
+                ->where('department', $departmentName)
+                ->count(),
+            'feedbackCount' => Feedback::whereHas('faculty', fn ($q) => $q
+                ->where('university_id', $tenantId)
+                ->where('department', $departmentName))->count(),
+            'avgRating' => $avgRatingRow ? round((float) $avgRatingRow, 2) : 0.0,
+            'semesterTrend' => $semesterTrend,
+            'courseCodes' => Course::where('university_id', $tenantId)
+                ->where('department', $departmentName)
+                ->orderBy('code')
+                ->limit(4)
+                ->pluck('code')
+                ->all(),
+        ];
+    }
+
+    public function suggestDepartmentCourses(string $department): JsonResponse
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $departmentName = $this->resolveDepartmentNameBySlug($department, $tenantId);
+
+        abort_unless($departmentName !== null, 404);
+
+        $search = request()->string('q')->toString();
+
+        $courses = Course::where('university_id', $tenantId)
+            ->where('department', $departmentName)
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('code', 'like', "%{$search}%")
+                        ->orWhere('title', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->limit(10)
+            ->get(['id', 'code', 'title', 'semester', 'credit_hours']);
+
+        return response()->json(['courses' => $courses]);
+    }
+
+    public function suggestStudents(): JsonResponse
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $search = request()->string('q')->toString();
+
+        $students = User::where('university_id', $tenantId)
+            ->where('role', Role::Student)
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'department', 'avatar'])
+            ->append('avatar_url');
+
+        return response()->json(['students' => $students]);
+    }
+
+    public function suggestFaculty(): JsonResponse
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $search = request()->string('q')->toString();
+
+        $faculty = User::where('university_id', $tenantId)
+            ->where('role', Role::Faculty)
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'department', 'avatar'])
+            ->append('avatar_url');
+
+        return response()->json(['faculty' => $faculty]);
     }
 
     public function newDepartmentCourse(string $department): View
@@ -1225,9 +1442,11 @@ class AdminController extends Controller
     {
         $tenantId = auth()->user()->university_id;
 
+        $term = request()->query('term', currentTerm());
+
         $query = User::where('university_id', $tenantId)
             ->where('role', Role::Faculty)
-            ->with('courses');
+            ->with(['courses' => fn ($q) => $q->wherePivot('term', $term)]);
 
         if ($department) {
             $query->where('department', $department);
@@ -1235,18 +1454,36 @@ class AdminController extends Controller
 
         $faculty = $query->latest()->paginate(50);
 
-        $term = request()->query('term', currentTerm());
-
         $courses = Course::where('university_id', $tenantId)
-            ->whereDoesntHave('faculty', fn ($q) => $q->where('course_user.term', $term))
+            ->when($department, fn ($q) => $q->where('department', $department))
             ->latest()
             ->paginate(50);
+
+        $courseIds = $courses->pluck('id');
+
+        $courseAssignments = DB::table('course_user')
+            ->join('users', 'users.id', '=', 'course_user.user_id')
+            ->where('users.role', Role::Faculty->value)
+            ->where('users.university_id', $tenantId)
+            ->where('course_user.term', $term)
+            ->whereIn('course_user.course_id', $courseIds)
+            ->select('course_user.course_id', 'users.id as faculty_id', 'users.name as faculty_name')
+            ->get();
+
+        $courseFacultyMap = $courseAssignments->keyBy('course_id')
+            ->map(fn ($row) => ['id' => $row->faculty_id, 'name' => $row->faculty_name]);
+
+        $facultyCourseMap = collect($faculty->items())->mapWithKeys(
+            fn ($member) => [$member->id => $member->courses->pluck('id')->map(fn ($id) => (string) $id)->all()]
+        );
 
         return view('users.admin.courses-assign-faculty', [
             'faculty' => $faculty,
             'courses' => $courses,
             'selectedDepartment' => $department,
             'term' => $term,
+            'courseFacultyMap' => $courseFacultyMap,
+            'facultyCourseMap' => $facultyCourseMap,
         ]);
     }
 
@@ -1281,26 +1518,32 @@ class AdminController extends Controller
             ->with('success', 'Faculty course assignment updated successfully.');
     }
 
-    public function assignStudentsToCourses(?string $department = null): View
+    public function assignStudentsToCourses(?string $department = null): View|RedirectResponse
     {
         $tenantId = auth()->user()->university_id;
 
-        $query = User::where('university_id', $tenantId)
-            ->where('role', Role::Student)
-            ->with('courses');
-
         if ($department) {
-            $query->where('department', $department);
+            $departmentName = $this->resolveDepartmentNameBySlug(Str::slug($department), $tenantId);
+
+            abort_unless($departmentName !== null, 404);
+
+            return redirect()->route('admin.departments.enrollment.assign-courses', Str::slug($departmentName));
         }
 
-        $students = $query->latest()->paginate(50);
+        $students = User::where('university_id', $tenantId)
+            ->where('role', Role::Student)
+            ->with('courses')
+            ->latest()
+            ->paginate(50);
 
-        $courses = Course::where('university_id', $tenantId)->latest()->paginate(50);
+        $courses = Course::where('university_id', $tenantId)
+            ->latest()
+            ->paginate(50);
 
         return view('users.admin.courses-assign-students', [
             'students' => $students,
             'courses' => $courses,
-            'selectedDepartment' => $department,
+            'selectedDepartment' => null,
         ]);
     }
 
@@ -1449,10 +1692,10 @@ class AdminController extends Controller
         return redirect()->route('admin.users.edit', $user)->with('success', 'Temporary password updated successfully. Make sure to communicate it to the user.');
     }
 
-    private function getMonthlyRatingsByDepartment(?string $tenantId, string $startDate, string $endDate): \Illuminate\Support\Collection
+    private function getMonthlyRatingsByDepartment(?string $tenantId, string $startDate, string $endDate): Collection
     {
         $isSqlite = DB::getDriverName() === 'sqlite';
-        $monthExpr = $isSqlite ? "strftime('%m', feedbacks.submitted_at)" : "MONTH(feedbacks.submitted_at)";
+        $monthExpr = $isSqlite ? "strftime('%m', feedbacks.submitted_at)" : 'MONTH(feedbacks.submitted_at)';
 
         return Feedback::query()
             ->when($tenantId, fn ($q) => $q->whereHas('faculty', fn ($qq) => $qq->where('university_id', $tenantId)))
@@ -1466,27 +1709,6 @@ class AdminController extends Controller
             ->get()
             ->groupBy('department')
             ->map(fn ($rows) => $rows->pluck('avg_rating', 'month_num'));
-    }
-
-    private function getSemesterMonthLabels(string $semesterType): array
-    {
-        return match ($semesterType) {
-            'Fall' => ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            'Spring' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            'Summer' => ['May', 'Jun', 'Jul'],
-            default => ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        };
-    }
-
-    private function buildMonthlySeries(\Illuminate\Support\Collection $monthlyRatings, array $monthLabels): array
-    {
-        $monthMap = [
-            'Jan' => 1, 'Feb' => 2, 'Mar' => 3, 'Apr' => 4, 'May' => 5,
-            'Jun' => 6, 'Jul' => 7, 'Aug' => 8, 'Sep' => 9, 'Oct' => 10,
-            'Nov' => 11, 'Dec' => 12,
-        ];
-
-        return array_map(fn ($label) => $monthlyRatings->get($monthMap[$label]) ? round((float) $monthlyRatings[$monthMap[$label]], 2) : null, $monthLabels);
     }
 
     private function resolveDepartmentNameBySlug(string $slug, ?string $tenantId): ?string
@@ -1552,5 +1774,71 @@ class AdminController extends Controller
         return view('users.admin.moderation', compact(
             'answers', 'totalModerated', 'totalApproved', 'totalFlagged', 'totalRejected', 'avgToxicity'
         ));
+    }
+
+    public function activityLog(Request $request): View
+    {
+        $tenantId = auth()->user()->university_id;
+        $filter = $request->get('filter', 'all');
+        $perPage = 15;
+
+        $feedbackQuery = Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))
+            ->with(['course', 'answers'])
+            ->orderByDesc('submitted_at');
+
+        $userQuery = User::where('university_id', $tenantId)
+            ->whereKeyNot(auth()->id())
+            ->orderByDesc('created_at');
+
+        $feedbacks = $filter === 'all' || $filter === 'feedback'
+            ? $feedbackQuery->get()->map(function (Feedback $feedback): array {
+                $quoteAnswer = $feedback->answers->first(
+                    fn (FeedbackAnswer $answer): bool => filled($answer->text_answer)
+                        && in_array($answer->moderation_status, ['approved', null], true)
+                );
+
+                return [
+                    'type' => 'feedback',
+                    'actor' => 'Anonymous Student',
+                    'course' => $feedback->course?->title ?? $feedback->course?->code ?? 'a course',
+                    'quote' => $quoteAnswer !== null ? Str::limit($quoteAnswer->text_answer, 140) : null,
+                    'time' => $feedback->submitted_at->diffForHumans(),
+                    'timestamp' => $feedback->submitted_at->getTimestamp(),
+                ];
+            })
+            : collect();
+
+        $users = $filter === 'all' || $filter === 'user'
+            ? $userQuery->get()->map(fn (User $user): array => [
+                'type' => 'user',
+                'name' => $user->name,
+                'role' => ucfirst($user->role->value),
+                'department' => $user->department,
+                'avatar_url' => $user->avatar_url,
+                'time' => $user->created_at->diffForHumans(),
+                'timestamp' => $user->created_at->getTimestamp(),
+            ])
+            : collect();
+
+        $activity = $feedbacks->merge($users)
+            ->sortByDesc('timestamp')
+            ->values();
+
+        $paginated = new LengthAwarePaginator(
+            $activity->forPage($request->get('page', 1), $perPage),
+            $activity->count(),
+            $perPage,
+            $request->get('page', 1),
+            ['path' => route('admin.activity-log'), 'query' => ['filter' => $filter]]
+        );
+
+        $counts = [
+            'all' => Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))->count()
+                + User::where('university_id', $tenantId)->whereKeyNot(auth()->id())->count(),
+            'feedback' => Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))->count(),
+            'user' => User::where('university_id', $tenantId)->whereKeyNot(auth()->id())->count(),
+        ];
+
+        return view('users.admin.activity-log', compact('activity', 'paginated', 'counts', 'filter'));
     }
 }

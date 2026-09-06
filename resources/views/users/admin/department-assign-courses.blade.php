@@ -79,9 +79,9 @@
                         <input id="course-search" type="text" placeholder="Search for course code or title..." class="bg-white border border-gray-200 text-gray-900 text-sm font-medium rounded-xl focus:ring-[#0e48c1] focus:border-[#0e48c1] block w-full pl-10 p-3 shadow-sm">
                     </div>
                     <div class="relative">
-                        <select class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl px-4 py-3 pr-10 focus:outline-none shadow-sm">
+                        <select id="term-select" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl px-4 py-3 pr-10 focus:outline-none shadow-sm">
                             @foreach(semesterOptions() as $sem)
-                                <option>{{ $sem }}</option>
+                                <option value="{{ $sem }}" {{ ($term ?? currentTerm()) === $sem ? 'selected' : '' }}>{{ semesterLabel($sem) }}</option>
                             @endforeach
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
@@ -95,6 +95,8 @@
                 {{-- Available Courses --}}
                 <form id="assign-form" action="{{ route('admin.departments.faculty.store-assignments', [$department, $faculty]) }}" method="POST">
                     @csrf
+
+                    <input type="hidden" name="term" value="{{ $term ?? currentTerm() }}">
 
                     {{-- Pre-check already assigned courses --}}
                     @foreach($assignedCourses as $ac)
@@ -135,7 +137,7 @@
                                     <div class="flex items-center gap-3 text-xs text-gray-500 font-medium">
                                         <span>★ {{ number_format($course->credit_hours, 0) }} Credits</span>
                                         @if($course->semester)
-                                            <span>· {{ $course->semester }}</span>
+                                            <span>· {{ semesterLabel($course->semester) }}</span>
                                         @endif
                                     </div>
                                 </div>
@@ -333,6 +335,13 @@
                 const match = item.dataset.title.includes(q) || item.dataset.code.includes(q);
                 item.style.display = match ? '' : 'none';
             });
+        });
+
+        // Term filter
+        document.getElementById('term-select').addEventListener('change', function () {
+            const url = new URL(window.location.href);
+            url.searchParams.set('term', this.value);
+            window.location.href = url.toString();
         });
 
         // Initial sync (replace pre-assigned hidden inputs with JS-managed ones)

@@ -10,30 +10,50 @@
             </div>
 
             <div class="flex items-center gap-3 w-full md:w-auto">
-                <div class="relative w-full md:w-auto">
-                    <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
-                            </path>
-                        </svg>
+                <form method="GET" action="{{ route('admin.faculty') }}" id="facultyFilterForm" class="flex items-center gap-3 w-full md:w-auto">
+                    <div id="faculty-search-wrap" class="relative flex-1 md:flex-initial">
+                        <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" name="search" id="faculty-search-input" value="{{ request('search') }}" placeholder="Search by name, email or phone..." autocomplete="off"
+                            class="w-full md:w-[240px] bg-[#f4f6f8] border border-transparent rounded-xl pl-10 pr-4 py-3.5 text-gray-700 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white text-[14px]">
+                        <div id="faculty-search-suggestions"
+                            class="hidden absolute left-0 right-0 top-full mt-2 z-30 bg-white border border-gray-100 rounded-xl shadow-[0_10px_30px_rgb(15,23,42,0.12)] overflow-hidden max-h-72 overflow-y-auto divide-y divide-gray-50"></div>
                     </div>
-                    <select id="departmentFilterFaculty"
-                        class="w-full md:w-[220px] bg-[#f4f6f8] border border-transparent rounded-xl pl-10 pr-10 py-3.5 text-gray-700 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white text-[14px]">
-                        <option value="">All Departments</option>
-                        @forelse($departments as $dept)
-                            <option value="{{ $dept }}">{{ $dept }}</option>
-                        @empty
-                            <option disabled>No departments available</option>
-                        @endforelse
-                    </select>
-                    <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7">
-                            </path>
-                        </svg>
+                    <div class="relative">
+                        <select name="department" onchange="this.form.submit()"
+                            class="w-full md:w-[180px] bg-[#f4f6f8] border border-transparent rounded-xl pl-10 pr-10 py-3.5 text-gray-700 font-bold appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white text-[14px]">
+                            <option value="">All Departments</option>
+                            @forelse($departments as $dept)
+                                <option value="{{ $dept }}" {{ request('department') === $dept ? 'selected' : '' }}>{{ $dept }}</option>
+                            @empty
+                                <option disabled>No departments available</option>
+                            @endforelse
+                        </select>
+                        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                        <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7">
+                                </path>
+                            </svg>
+                        </div>
                     </div>
-                </div>
+                    @if(request()->filled('search') || request()->filled('department'))
+                        <a href="{{ route('admin.faculty') }}" title="Clear filters"
+                            class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </a>
+                    @endif
+                </form>
 
                 <a href="/admin/user"
                     class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-6 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-[#0e48c1]/30 hover:bg-[#0a389f] hover:shadow-xl hover:shadow-[#0e48c1]/40 transition-all duration-200 whitespace-nowrap">
@@ -213,7 +233,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-6 md:px-8 py-10 text-center">
-                                    <p class="text-gray-500 font-medium">No faculty members available</p>
+                                    <p class="text-gray-500 font-medium">No faculty members match your search or filters.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -226,40 +246,130 @@
         </div>
 
         <script>
-            // Department Filter
-            const deptFilterFaculty = document.getElementById('departmentFilterFaculty');
-            if (deptFilterFaculty) {
-                deptFilterFaculty.addEventListener('change', function() {
-                    const selectedDept = this.value;
-                    const rows = document.querySelectorAll('.faculty-row');
-                    let visibleCount = 0;
+            (function () {
+                var input = document.getElementById('faculty-search-input');
+                var box = document.getElementById('faculty-search-suggestions');
+                if (!input || !box) return;
 
-                    rows.forEach(row => {
-                        const rowDept = row.getAttribute('data-department');
-                        if (selectedDept === '' || rowDept === selectedDept) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
+                var url = "{{ route('admin.faculty.suggest') }}";
+                var timer = null;
+                var items = [];
+                var active = -1;
+
+                function close() {
+                    box.classList.add('hidden');
+                    box.innerHTML = '';
+                    items = [];
+                    active = -1;
+                }
+
+                function render() {
+                    box.innerHTML = '';
+                    items.forEach(function (person, index) {
+                        var el = document.createElement('button');
+                        el.type = 'button';
+                        el.className = 'w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-[#eff4ff] transition-colors ' + (index === active ? 'bg-[#eff4ff]' : 'bg-white');
+                        var img = document.createElement('img');
+                        img.className = 'w-8 h-8 rounded-full object-cover shrink-0 bg-gray-100';
+                        img.src = person.avatar_url || '';
+                        img.alt = person.name;
+                        var mid = document.createElement('span');
+                        mid.className = 'flex flex-col min-w-0 flex-1';
+                        var name = document.createElement('span');
+                        name.className = 'text-[13px] font-bold text-gray-900 truncate';
+                        name.textContent = person.name;
+                        var email = document.createElement('span');
+                        email.className = 'text-[11px] font-medium text-gray-400 truncate';
+                        email.textContent = person.email;
+                        mid.appendChild(name);
+                        mid.appendChild(email);
+                        var badge = document.createElement('span');
+                        badge.className = 'text-[11px] font-bold text-[#3730a3] bg-[#e0e7ff] rounded-full px-2.5 py-0.5 shrink-0';
+                        badge.textContent = person.department || 'General';
+                        el.appendChild(img);
+                        el.appendChild(mid);
+                        el.appendChild(badge);
+                        el.addEventListener('click', function () {
+                            input.value = person.name;
+                            close();
+                            input.form.submit();
+                        });
+                        box.appendChild(el);
                     });
+                    box.classList.remove('hidden');
+                }
 
-                    // Update pagination info
-                    const paginationSpans = document.querySelectorAll('.px-6.md\\:px-8.py-5.border-t .font-bold');
-                    if (paginationSpans.length >= 2) {
-                        paginationSpans[0].textContent = `${visibleCount > 0 ? 1 : 0}-${visibleCount}`;
+                function select(index) {
+                    if (index < 0 || index >= items.length) return;
+                    input.value = items[index].name;
+                    close();
+                    input.form.submit();
+                }
+
+                input.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    var q = input.value.trim();
+                    if (!q) { close(); return; }
+                    timer = setTimeout(function () {
+                        fetch(url + '?q=' + encodeURIComponent(q), {
+                            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                            .then(function (response) { return response.json(); })
+                            .then(function (data) {
+                                items = (data && data.faculty) || [];
+                                active = -1;
+                                if (!items.length) { close(); return; }
+                                render();
+                            })
+                            .catch(function () { close(); });
+                    }, 250);
+                });
+
+                input.addEventListener('keydown', function (e) {
+                    if (box.classList.contains('hidden') || !items.length) return;
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        active = (active + 1) % items.length;
+                        render();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        active = (active - 1 + items.length) % items.length;
+                        render();
+                    } else if (e.key === 'Enter') {
+                        if (active >= 0) {
+                            e.preventDefault();
+                            select(active);
+                        }
+                    } else if (e.key === 'Escape') {
+                        close();
                     }
                 });
-            }
 
-            // Export List - respect the active department filter
+                input.addEventListener('blur', function () {
+                    setTimeout(close, 120);
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!e.target.closest('#faculty-search-wrap')) close();
+                });
+            })();
+        </script>
+
+        <script>
+            // Export List - respect the active search and department filters
             const exportFacultyBtn = document.getElementById('exportFacultyBtn');
             if (exportFacultyBtn) {
                 exportFacultyBtn.addEventListener('click', function() {
-                    const baseUrl = "{{ route('admin.faculty.export') }}";
-                    const deptValue = deptFilterFaculty ? deptFilterFaculty.value : '';
-                    const separator = baseUrl.includes('?') ? '&' : '?';
-                    window.location.href = baseUrl + (deptValue ? separator + 'department=' + encodeURIComponent(deptValue) : '');
+                    const form = document.getElementById('facultyFilterForm');
+                    const params = new URLSearchParams();
+                    if (form) {
+                        const dept = form.elements['department'] ? form.elements['department'].value : '';
+                        const search = form.elements['search'] ? form.elements['search'].value : '';
+                        if (dept) params.set('department', dept);
+                        if (search) params.set('search', search);
+                    }
+                    const qs = params.toString();
+                    window.location.href = "{{ route('admin.faculty.export') }}" + (qs ? '?' + qs : '');
                 });
             }
         </script>

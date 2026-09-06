@@ -122,7 +122,7 @@
                 <div
                     class="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-3 px-0">
                     @forelse($trendPoints as $p)
-                        <span class="{{ $loop->last ? 'text-[#0e48c1]' : '' }}">{{ $p['semester'] }}</span>
+                        <span class="{{ $loop->last ? 'text-[#0e48c1]' : '' }}">{{ semesterLabel($p['semester']) }}</span>
                     @empty
                         <span class="text-gray-400">No historical data</span>
                     @endforelse

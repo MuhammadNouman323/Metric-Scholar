@@ -37,17 +37,17 @@
                 <div class="absolute -right-6 -top-6 w-[140px] h-[140px] bg-blue-500/30 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="absolute right-4 bottom-4 w-12 h-12 border-[5px] border-blue-400/30 rounded-full pointer-events-none"></div>
             </div>
-            <div class="px-8 pb-8">
-                <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 -mt-12">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                        <img class="w-24 h-24 rounded-2xl border-4 border-white shadow-xl object-cover bg-gray-100"
+            <div class="px-6 sm:px-8 pb-8">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-12">
+                    <div class="flex flex-col sm:flex-row sm:items-end gap-4 min-w-0">
+                        <img class="w-24 h-24 rounded-2xl border-4 border-white shadow-xl object-cover bg-gray-100 shrink-0 -mt-16"
                             src="{{ $user->avatar_url }}" alt="{{ $user->name }}">
-                        <div class="pt-14 sm:pt-0">
-                            <h2 class="text-[22px] font-bold text-gray-900">{{ $user->name }}</h2>
-                            <p class="text-[13px] font-medium text-gray-500 mt-1">{{ $isFaculty ? 'FAC-' : '#SC-' }}{{ $user->id }} &middot; {{ $user->email }}</p>
+                        <div class="min-w-0 pb-1">
+                            <h2 class="text-[22px] font-bold text-gray-900 break-words">{{ $user->name }}</h2>
+                            <p class="text-[13px] font-medium text-gray-500 mt-1 truncate">{{ $isFaculty ? 'FAC-' : '#SC-' }}{{ $user->id }} &middot; {{ $user->email }}</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-[12px] font-bold rounded-lg mt-14 sm:mt-0">
+                    <span class="self-start sm:self-end inline-flex items-center gap-2 px-3 py-1.5 text-[12px] font-bold rounded-lg whitespace-nowrap {{ $user->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
                         <span class="w-2 h-2 rounded-full {{ $user->is_active ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>
                         {{ $user->is_active ? 'Active' : 'Inactive' }}
                     </span>
@@ -93,7 +93,7 @@
                             <p class="text-[12px] text-gray-500 font-medium">{{ $course->code }} &middot; {{ $course->credit_hours }} credit hours</p>
                         </div>
                     </div>
-                    <span class="shrink-0 inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">{{ $course->pivot->term ?? '—' }}</span>
+                    <span class="shrink-0 inline-flex px-3 py-1.5 bg-[#e0e7ff] text-[#3730a3] text-[12px] font-bold rounded-full">{{ $course->pivot->term ? semesterLabel($course->pivot->term) : '—' }}</span>
                 </div>
             @empty
                 <div class="px-8 py-10 text-center">

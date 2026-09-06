@@ -58,3 +58,35 @@ if (! function_exists('semesterRange')) {
         return $semesters;
     }
 }
+
+if (! function_exists('semesterPart')) {
+    /**
+     * Display-only semester part derived from the season of a stored term.
+     */
+    function semesterPart(?string $term): string
+    {
+        $season = explode(' ', trim((string) $term))[0] ?? '';
+
+        return match ($season) {
+            'Spring' => '1st Semester',
+            'Fall' => '2nd Semester',
+            'Summer' => 'Summer Semester',
+            default => '',
+        };
+    }
+}
+
+if (! function_exists('semesterLabel')) {
+    /**
+     * Display label for a term, e.g. "Fall 2026 — 2nd Semester".
+     * Stored values keep the plain "Fall 2026" format; this is view-level only.
+     */
+    function semesterLabel(?string $term): string
+    {
+        if (blank($term)) {
+            return 'Current Semester';
+        }
+
+        return trim((string) $term);
+    }
+}

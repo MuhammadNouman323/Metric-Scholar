@@ -76,7 +76,7 @@
                                 <div class="relative">
                                     <select id="semester" name="semester" class="w-full appearance-none rounded-2xl border border-slate-100 bg-[#f8fafc] px-5 py-4 pr-12 text-[14px] font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white transition-all duration-200">
                                         @foreach(semesterOptions() as $sem)
-                                            <option value="{{ $sem }}" {{ old('semester', $evaluationData['semester'] ?? currentTerm()) == $sem ? 'selected' : '' }}>{{ $sem }}</option>
+                                            <option value="{{ $sem }}" {{ old('semester', $evaluationData['semester'] ?? currentTerm()) == $sem ? 'selected' : '' }}>{{ semesterLabel($sem) }}</option>
                                         @endforeach
                                     </select>
                                     <svg class="pointer-events-none absolute right-5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>

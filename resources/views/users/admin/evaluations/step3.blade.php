@@ -71,7 +71,7 @@
                             </div>
                             <div>
                                 <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Semester</span>
-                                <span class="text-sm font-bold text-slate-800">{{ $step1['semester'] }}</span>
+                                <span class="text-sm font-bold text-slate-800">{{ semesterLabel($step1['semester']) }}</span>
                             </div>
                             <div>
                                 <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Evaluation Type</span>

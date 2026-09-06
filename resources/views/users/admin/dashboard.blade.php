@@ -7,18 +7,9 @@
                 <h1 class="text-3xl lg:text-[34px] font-bold text-[#0e48c1] mb-1.5 tracking-tight">Institutional Overview
                 </h1>
                 <p class="text-gray-500 text-[15px] font-medium">Welcome back. Here is the latest performance data for
-                    Semester {{ currentTerm() }}.</p>
+                    Semester {{ currentTerm()}}.</p>
             </div>
             <div class="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
-                <button
-                    class="flex items-center justify-center gap-2 bg-[#f4f7fb] text-[#0e48c1] px-5 py-3 rounded-xl text-sm font-bold shadow-sm border border-blue-50/50 hover:bg-[#eaf1f8] transition-colors flex-1 sm:flex-none whitespace-nowrap">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                        </path>
-                    </svg>
-                    {{ currentTermLabel() }}
-                </button>
                 <button
                     class="flex items-center justify-center gap-2 bg-[#0e48c1] text-white px-5 py-3 rounded-xl text-sm font-bold shadow-[0_4px_12px_rgba(14,72,193,0.2)] hover:bg-blue-800 transition-colors flex-1 sm:flex-none whitespace-nowrap"
                     onclick="window.location.href='{{ route('admin.reports.generate-pdf') }}'"
@@ -110,42 +101,27 @@
 
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 w-full">
-            <!-- Bar Chart (2/3 width) -->
+            <!-- Line Chart (2/3 width) -->
             <div
-                class="lg:col-span-2 bg-gradient-to-br from-white via-white to-[#f0f4ff] rounded-[2rem] p-8 border border-gray-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden">
-                <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-[#0e48c1]/[0.03] blur-3xl pointer-events-none"></div>
-                <div class="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-[#6366f1]/[0.04] blur-3xl pointer-events-none"></div>
-
-                <div class="relative z-10">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 gap-4">
-                        <div>
-                            <div class="flex items-center gap-2.5 mb-2">
-                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0e48c1] to-[#6366f1] flex items-center justify-center shadow-md shadow-blue-500/20">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="text-[19px] font-bold text-gray-900">Engagement Trends</h3>
-                                    <p class="text-[12.5px] text-gray-400 font-medium">Department performance — current vs previous semester</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach($engagementData['departments'] as $dept)
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10.5px] font-bold tracking-wide border"
-                                  style="background-color: {{ $dept['color'] }}08; color: {{ $dept['color'] }}; border-color: {{ $dept['color'] }}20">
-                                <span class="w-2 h-2 rounded-sm" style="background-color: {{ $dept['color'] }}"></span>
-                                {{ $dept['name'] }}
-                            </span>
-                            @endforeach
-                        </div>
+                class="lg:col-span-2 bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-8 gap-4">
+                    <div>
+                        <h3 class="text-[19px] font-bold text-gray-900 mb-1">Engagement Trends</h3>
+                        <p class="text-[13.5px] text-gray-500 font-medium">All departments — Spring & Fall by year</p>
                     </div>
-
-                    <!-- Chart.js Bar Chart -->
-                    <div class="w-full h-[260px] relative mt-2 bg-gradient-to-b from-transparent to-[#f8fafc]/30 rounded-xl p-2">
-                        <canvas id="engagementChart"></canvas>
+                    <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-[11px] font-bold text-gray-600">
+                        @foreach($engagementData['departments'] as $dept)
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $dept['color'] }}"></div>
+                            <span>{{ $dept['name'] }}</span>
+                        </div>
+                        @endforeach
                     </div>
+                </div>
+
+                <!-- Chart.js Line Chart -->
+                <div class="flex-1 min-h-[220px] w-full relative">
+                    <canvas id="engagementChart"></canvas>
                 </div>
             </div>
 
@@ -214,14 +190,14 @@
 
             <!-- Progress Bars -->
             <div
-                class="lg:col-span-2 bg-white rounded-[2rem] p-8 flex flex-col border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
+                class="lg:col-span-2 bg-white rounded-[2rem] p-8 flex flex-col h-full border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                 <div class="flex justify-between items-center mb-8">
                     <h3 class="text-[19px] font-bold text-gray-900">Faculty Performance by Department</h3>
                     <a href="#"
                         class="text-[11px] font-bold text-[#0e48c1] uppercase tracking-wider hover:underline px-2 py-1 bg-blue-50/50 rounded-lg">View
                         All</a>
                 </div>
-                <div class="space-y-6 flex-1 flex flex-col justify-center">
+                <div class="space-y-6 flex-1 flex flex-col">
                     @forelse($departmentPerformance as $dept)
                     <div>
                         <div class="flex justify-between text-[12px] font-bold text-gray-500 mb-2.5 tracking-wide">
@@ -240,8 +216,7 @@
                     @endforelse
                 </div>
             </div>
-
-            <!-- Activity Feed -->
+           <!-- Activity Feed -->
             <div class="bg-[#f2f4f7] rounded-[2rem] p-8 border border-gray-100 shadow-inner flex flex-col h-full">
                 <h3 class="text-[19px] font-bold text-gray-900 mb-7">Recent Activity</h3>
 
@@ -317,14 +292,15 @@
                     @endforelse
                 </div>
 
-                <button
-                    class="w-full mt-4 bg-transparent hover:bg-gray-200/50 text-[#0e48c1] font-bold text-[13px] rounded-xl border border-gray-200/60 py-3 transition-colors">
+                <a href="{{ route('admin.activity-log') }}"
+                    class="w-full mt-4 bg-transparent hover:bg-gray-200/50 text-[#0e48c1] font-bold text-[13px] rounded-xl border border-gray-200/60 py-3 transition-colors text-center block">
                     View Activity Log
-                </button>
+                </a>
             </div>
 
         </div>
     </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -339,41 +315,41 @@
             Chart.defaults.color = '#64748b';
 
             const chartCtx = ctx.getContext('2d');
-            const datasets = data.departments.flatMap(dept => {
-                const solid = chartCtx.createLinearGradient(0, 0, 0, 260);
-                solid.addColorStop(0, dept.color);
-                solid.addColorStop(1, dept.color + 'aa');
+            const deptCount = data.departments.length;
+            const dense = deptCount > 4;
+            const datasets = data.departments.map(dept => {
+                const area = chartCtx.createLinearGradient(0, 0, 0, 260);
+                area.addColorStop(0, dept.color + '22');
+                area.addColorStop(1, dept.color + '00');
 
-                const fade = chartCtx.createLinearGradient(0, 0, 0, 260);
-                fade.addColorStop(0, dept.color + '55');
-                fade.addColorStop(1, dept.color + '22');
-
-                return [
-                    {
-                        label: dept.name + ' (current)',
-                        data: dept.current,
-                        backgroundColor: solid,
-                        hoverBackgroundColor: dept.color,
-                        borderRadius: { topLeft: 5, topRight: 5 },
-                        borderSkipped: false,
-                        barPercentage: 0.8,
-                        categoryPercentage: 0.7,
-                    },
-                    {
-                        label: dept.name + ' (prev)',
-                        data: dept.previous,
-                        backgroundColor: fade,
-                        hoverBackgroundColor: dept.color + '88',
-                        borderRadius: { topLeft: 5, topRight: 5 },
-                        borderSkipped: false,
-                        barPercentage: 0.8,
-                        categoryPercentage: 0.7,
-                    },
-                ];
+                return {
+                    label: dept.name,
+                    data: dept.current,
+                    borderColor: dept.color,
+                    backgroundColor: area,
+                    borderWidth: dense ? 2 : 3,
+                    pointBackgroundColor: dept.color,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: dense ? 1.5 : 2,
+                    pointRadius: dense ? 3 : 4.5,
+                    pointHoverRadius: 6,
+                    pointHoverBorderWidth: 2.5,
+                    tension: 0.4,
+                    fill: !dense,
+                };
             });
 
+            // Build a sensible Y range from the actual data so the
+            // department gaps are visually clear, clamped to 0-5.
+            const allValues = data.departments.flatMap(d => [...d.current])
+                .filter(v => v !== null && v !== undefined);
+            const minVal = allValues.length ? Math.min(...allValues) : 0;
+            const maxVal = allValues.length ? Math.max(...allValues) : 5;
+            const yMin = Math.max(0, Math.floor(minVal - 0.6));
+            const yMax = Math.min(5, Math.ceil(maxVal + 0.6));
+
             new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: data.labels,
                     datasets: datasets,
@@ -399,7 +375,7 @@
                             boxHeight: 8,
                             boxPadding: 4,
                             usePointStyle: true,
-                            pointStyle: 'rectRounded',
+                            pointStyle: 'line',
                             borderColor: 'rgba(255,255,255,0.1)',
                             borderWidth: 1,
                             titleMarginBottom: 6,
@@ -409,7 +385,7 @@
                                 },
                                 label: function (item) {
                                     const val = item.parsed.y;
-                                    return val !== null ? `${item.dataset.label}: ${val.toFixed(2)}` : `${item.dataset.label}: N/A`;
+                                    return val !== null ? `${item.dataset.label}: ${val.toFixed(2)} / 5` : `${item.dataset.label}: N/A`;
                                 },
                             },
                         },
@@ -419,14 +395,14 @@
                             grid: { display: false },
                             border: { display: false },
                             ticks: {
-                                font: { family: fontFamily, weight: '700', size: 10.5 },
+                                font: { family: fontFamily, weight: '700', size: 11 },
                                 color: '#94a3b8',
-                                padding: 4,
+                                padding: 6,
                             },
                         },
                         y: {
-                            min: 0,
-                            max: 5,
+                            min: yMin,
+                            max: yMax,
                             ticks: {
                                 stepSize: 1,
                                 font: { family: fontFamily, weight: '700', size: 10 },

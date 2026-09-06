@@ -57,7 +57,7 @@ test('enrollment stats are tenant-wide instead of limited to the current page', 
 
     expect($response->viewData('activeCourses'))->toBe(55)
         ->and($response->viewData('totalEnrollment'))->toBe(55)
-        ->and($response->viewData('courses')->count())->toBe(50);
+        ->and($response->viewData('courses')->count())->toBe(10);
 });
 
 test('pending evaluations stat counts scheduled evaluation cycles for the tenant', function () {

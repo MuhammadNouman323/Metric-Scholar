@@ -129,7 +129,7 @@
                                 <select name="semester" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0e48c1]/20 focus:border-[#0e48c1] transition-all">
                                     <option value="">All Semesters</option>
                                     @foreach($semesters as $sem)
-                                        <option value="{{ $sem }}" {{ ($filters['semester'] ?? '') === $sem ? 'selected' : '' }}>{{ $sem }}</option>
+                                        <option value="{{ $sem }}" {{ ($filters['semester'] ?? '') === $sem ? 'selected' : '' }}>{{ semesterLabel($sem) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -529,7 +529,7 @@
                                 @forelse($reportData as $row)
                                     <tr class="hover:bg-slate-50/50 transition-colors">
                                         <td class="px-6 py-4 font-bold text-slate-800">{{ $row['title'] }}</td>
-                                        <td class="px-6 py-4 text-sm font-semibold text-slate-500">{{ $row['semester'] }}</td>
+                                        <td class="px-6 py-4 text-sm font-semibold text-slate-500">{{ semesterLabel($row['semester']) }}</td>
                                         <td class="px-6 py-4 text-center text-xs font-medium text-slate-500">
                                             {{ $row['start_date'] }} <span class="text-slate-300">to</span> {{ $row['end_date'] }}
                                         </td>

@@ -14,7 +14,7 @@
                 <div>
                     <h2 class="text-[32px] font-bold text-gray-900 tracking-tight mb-2">My Enrolled Courses</h2>
                     <p class="text-[14px] text-gray-500 font-medium">Managing your academic journey through curated
-                        feedback and performance analytics for the {{ currentTerm() }} Semester.</p>
+                        feedback and performance analytics for {{ semesterLabel(currentTerm()) }}.</p>
                 </div>
                 <div class="flex gap-3 shrink-0">
                     <button
@@ -87,7 +87,7 @@
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                     </path>
                                 </svg>
-                                {{ currentTerm() }} • Course {{ $course->code ?? 'N/A' }}
+                                {{ semesterLabel(currentTerm()) }} • Course {{ $course->code ?? 'N/A' }}
                             </div>
                         </div>
                         <div class="flex gap-2 pt-1 border-t border-gray-50">

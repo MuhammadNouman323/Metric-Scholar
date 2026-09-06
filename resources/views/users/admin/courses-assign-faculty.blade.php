@@ -35,7 +35,8 @@
                         <select id="faculty-select" class="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-[#0e48c1] focus:border-[#0e48c1] shadow-sm w-full">
                             <option value="">-- Choose a faculty member --</option>
                             @foreach($faculty as $member)
-                                <option value="{{ $member->id }}" data-name="{{ $member->name }}" data-email="{{ $member->email }}">
+                                <option value="{{ $member->id }}" data-name="{{ $member->name }}" data-email="{{ $member->email }}"
+                                    data-assigned-courses='{!! json_encode($facultyCourseMap[$member->id] ?? []) !!}'>
                                     {{ $member->name }} ({{ $member->email }})
                                 </option>
                             @endforeach
@@ -72,11 +73,16 @@
                     <input type="hidden" id="selected-faculty-id" name="faculty_id">
 
                     <div>
-                        <h2 class="text-lg font-bold text-gray-900 mb-4">Available Courses</h2>
+                        <h2 class="text-lg font-bold text-gray-900 mb-4">All Courses</h2>
                         <div id="course-list" class="space-y-3">
                             @forelse($courses as $course)
+                            @php
+                                $assignedFaculty = $courseFacultyMap[$course->id] ?? null;
+                            @endphp
                             <div class="course-item bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 shadow-[0_2px_8px_rgb(0,0,0,0.03)]"
-                                 data-title="{{ strtolower($course->title) }}" data-code="{{ strtolower($course->code) }}">
+                                 data-title="{{ strtolower($course->title) }}" data-code="{{ strtolower($course->code) }}"
+                                 data-assigned-faculty="{{ $assignedFaculty['id'] ?? '' }}"
+                                 data-assigned-faculty-name="{{ $assignedFaculty['name'] ?? '' }}">
                                 <div class="w-10 h-10 rounded-xl bg-[#eff4ff] flex items-center justify-center text-[#0e48c1] shrink-0">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
@@ -164,12 +170,14 @@
 
         document.getElementById('faculty-select').addEventListener('change', function () {
             const facultyId = this.value;
+            document.getElementById('assigned-list').innerHTML = '';
             if (!facultyId) {
                 document.getElementById('assign-form').classList.add('hidden');
                 document.getElementById('no-faculty-msg').classList.remove('hidden');
                 document.getElementById('summary-section').classList.add('hidden');
                 currentFacultyId = null;
                 assignedIds.clear();
+                updateDisplay();
                 return;
             }
 
@@ -187,10 +195,32 @@
             document.getElementById('summary-email').textContent = email;
 
             assignedIds.clear();
-            document.querySelectorAll('.assign-btn').forEach(btn => {
-                btn.dataset.assigned = '0';
-                btn.textContent = 'Assign';
-                btn.className = 'assign-btn px-4 py-1.5 rounded-xl text-sm font-bold transition-all bg-[#eff4ff] text-[#0e48c1] hover:bg-[#0e48c1] hover:text-white';
+            let facultyCourses = [];
+            try {
+                facultyCourses = JSON.parse(option.dataset.assignedCourses || '[]').map(Number);
+            } catch (e) {}
+
+            document.querySelectorAll('.course-item').forEach(item => {
+                const btn = item.querySelector('.assign-btn');
+                const id = parseInt(btn.dataset.courseId);
+                if (facultyCourses.includes(id)) {
+                    assignedIds.add(id);
+                    btn.dataset.assigned = '1';
+                    btn.textContent = 'Assigned ✓';
+                    btn.disabled = false;
+                    btn.className = 'assign-btn px-4 py-1.5 rounded-xl text-sm font-bold transition-all bg-green-50 text-green-600 border border-green-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200';
+                    addToSummary(id, btn.dataset.courseCode, btn.dataset.courseTitle);
+                } else if (item.dataset.assignedFaculty) {
+                    btn.dataset.assigned = '0';
+                    btn.textContent = 'Assigned to ' + item.dataset.assignedFacultyName;
+                    btn.disabled = true;
+                    btn.className = 'assign-btn px-4 py-1.5 rounded-xl text-sm font-bold transition-all bg-gray-100 text-gray-500 border border-gray-200 cursor-not-allowed';
+                } else {
+                    btn.dataset.assigned = '0';
+                    btn.textContent = 'Assign';
+                    btn.disabled = false;
+                    btn.className = 'assign-btn px-4 py-1.5 rounded-xl text-sm font-bold transition-all bg-[#eff4ff] text-[#0e48c1] hover:bg-[#0e48c1] hover:text-white';
+                }
             });
             updateDisplay();
         });

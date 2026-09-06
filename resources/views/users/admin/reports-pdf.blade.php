@@ -153,7 +153,7 @@
         <!-- Header -->
         <div class="header">
             <h1>Faculty Evaluation System</h1>
-            <div class="subtitle">Institutional Overview Report &mdash; Semester {{ $currentTerm }}</div>
+            <div class="subtitle">Institutional Overview Report &mdash; Semester {{ semesterLabel($currentTerm) }}</div>
             <div class="meta">Generated: {{ now()->format('F d, Y \a\t h:i A') }} | University ID: {{ strtoupper(substr(auth()->user()->university_id ?? 'N/A', 0, 8)) }}</div>
         </div>
 

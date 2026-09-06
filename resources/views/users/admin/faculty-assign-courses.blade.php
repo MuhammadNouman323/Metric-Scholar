@@ -26,7 +26,7 @@
                     <h1 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-2">
                         Assign Courses - {{ $faculty->name }}
                     </h1>
-                    <p class="text-[15px] font-medium text-gray-500">Manage teaching responsibilities for {{ $term }}. Balance workload and departmental requirements.</p>
+                    <p class="text-[15px] font-medium text-gray-500">Manage teaching responsibilities for {{ semesterLabel($term) }}. Balance workload and departmental requirements.</p>
                 </div>
                 <div class="bg-white border border-gray-100 rounded-2xl px-5 py-3 shadow-sm text-right shrink-0">
                     <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Current Load</p>
@@ -55,7 +55,7 @@
                         </div>
                         <div>
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Term</p>
-                            <p class="text-sm font-bold text-gray-900">{{ $term }}</p>
+                            <p class="text-sm font-bold text-gray-900">{{ semesterLabel($term) }}</p>
                         </div>
                         <div>
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email</p>
@@ -121,7 +121,7 @@
                                     <div class="flex items-center gap-3 text-xs text-gray-500 font-medium">
                                         <span>★ {{ number_format($course->credit_hours, 0) }} Credits</span>
                                         @if($course->semester)
-                                            <span>· {{ $course->semester }}</span>
+                                            <span>· {{ semesterLabel($course->semester) }}</span>
                                         @endif
                                     </div>
                                 </div>
@@ -193,7 +193,7 @@
                     <button type="submit" form="assign-form" class="w-full mt-4 bg-[#0e48c1] hover:bg-[#0a389f] text-white font-bold py-3 rounded-xl shadow-[0_4px_12px_rgba(14,72,193,0.2)] transition-all text-sm">
                         Save Assignments
                     </button>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">This action will update the faculty ledger for {{ $term }}.</p>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">This action will update the faculty ledger for {{ semesterLabel($term) }}.</p>
                 </div>
 
                 {{-- Did you know card --}}

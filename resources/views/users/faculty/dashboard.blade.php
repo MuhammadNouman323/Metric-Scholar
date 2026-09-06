@@ -219,7 +219,7 @@
                 <!-- X Axis Labels -->
                 <div class="flex justify-between text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                     @foreach($svgPoints as $pt)
-                        <span>{{ $pt['semester'] }}</span>
+                        <span>{{ semesterLabel($pt['semester']) }}</span>
                     @endforeach
                 </div>
 

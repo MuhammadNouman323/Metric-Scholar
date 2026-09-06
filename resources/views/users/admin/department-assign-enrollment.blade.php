@@ -130,7 +130,7 @@
                                     <div class="flex items-center gap-3 text-xs text-gray-500 font-medium">
                                         <span>★ {{ number_format($course->credit_hours, 0) }} Credits</span>
                                         @if($course->semester)
-                                            <span>· {{ $course->semester }}</span>
+                                            <span>· {{ semesterLabel($course->semester) }}</span>
                                         @endif
                                     </div>
                                 </div>

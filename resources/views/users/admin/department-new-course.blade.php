@@ -58,7 +58,7 @@
                                     class="w-full border border-gray-100 bg-[#f8fafc] rounded-xl px-4 py-3 text-[14px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white">
                                     <option value="">Select Term</option>
                                     @foreach(semesterOptions() as $sem)
-                                        <option value="{{ $sem }}" {{ old('semester') === $sem ? 'selected' : '' }}>{{ $sem }}</option>
+                                        <option value="{{ $sem }}" {{ old('semester') === $sem ? 'selected' : '' }}>{{ semesterLabel($sem) }}</option>
                                     @endforeach
                                 </select>
                                 @error('semester')

@@ -61,7 +61,7 @@
                     @forelse($pendingCourses->take(3) as $course)
                         <div class="bg-white rounded-2xl p-5 border-l-4 border-[#0e48c1] border border-gray-100 shadow-sm flex items-center justify-between gap-4">
                             <div>
-                                <p class="text-[11px] font-bold text-gray-400 mb-1">{{ $course->code }} • {{ $course->semester ?? 'Current Sem' }}</p>
+                                <p class="text-[11px] font-bold text-gray-400 mb-1">{{ $course->code }} • {{ semesterLabel($course->semester) }}</p>
                                 <p class="text-[18px] font-bold text-gray-900">{{ $course->title }}</p>
                                 <div class="flex items-center gap-1.5 mt-1 text-[12px] text-gray-400">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

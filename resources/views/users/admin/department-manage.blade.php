@@ -43,25 +43,28 @@
             </div>
 
             <!-- Filters -->
-            <div class="flex justify-between items-center bg-gray-50/50 p-2 rounded-2xl mb-6">
-                <div class="flex gap-2">
-                    <div class="relative">
-                            <select class="appearance-none bg-white border border-gray-100 text-gray-700 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 focus:outline-none shadow-sm">
-                                @foreach(semesterOptions(1, 2) as $sem)
-                                    <option>{{ $sem }}</option>
-                                @endforeach
-                            </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            <form method="GET" action="{{ route('admin.departments.manage', $department) }}"
+                class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-gray-50/50 p-2 rounded-2xl mb-6">
+                <input type="hidden" name="section" value="courses">
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                    <div id="course-search-wrap" class="relative w-full sm:w-72">
+                        <div class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center leading-none">
+                            <svg class="block h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
+                        <input type="text" name="search" id="course-search-input" value="{{ request('search') }}" placeholder="Search course code or title..." autocomplete="off"
+                            class="bg-white border border-gray-100 text-gray-700 text-sm font-bold rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0e48c1] shadow-sm w-full">
+                        <div id="course-search-suggestions"
+                            class="hidden absolute left-0 right-0 top-full mt-1.5 z-30 bg-white border border-gray-100 rounded-xl shadow-[0_10px_30px_rgb(15,23,42,0.12)] overflow-hidden max-h-72 overflow-y-auto divide-y divide-gray-50"></div>
                     </div>
                     <div class="relative">
-                        <select class="appearance-none bg-white border border-gray-100 text-gray-700 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 focus:outline-none shadow-sm">
-                            <option>All Statuses</option>
-                            <option>Active</option>
-                            <option>Under Review</option>
+                        <select name="semester" onchange="this.form.submit()"
+                            class="appearance-none bg-white border border-gray-100 text-gray-700 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 focus:outline-none shadow-sm">
+                            <option value="">All Semesters</option>
+                            @foreach(semesterOptions(1, 0) as $sem)
+                                <option value="{{ $sem }}" {{ request('semester') === $sem ? 'selected' : '' }}>{{ $sem }}</option>
+                            @endforeach
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,9 +72,22 @@
                             </svg>
                         </div>
                     </div>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0e48c1] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_12px_rgba(14,72,193,0.2)] hover:bg-[#0a389f] transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Search
+                    </button>
+                    @if(request()->filled('search') || request()->filled('semester'))
+                        <a href="{{ route('admin.departments.manage', ['department' => $department, 'section' => 'courses']) }}"
+                            class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-bold text-gray-600 hover:text-gray-900 rounded-xl bg-white border border-gray-100 shadow-sm transition-colors">
+                            Clear
+                        </a>
+                    @endif
                 </div>
-                
-                <div class="flex items-center gap-2 bg-white border border-gray-100 rounded-xl p-1 shadow-sm">
+
+                <div class="flex items-center gap-2 bg-white border border-gray-100 rounded-xl p-1 shadow-sm self-end md:self-auto">
                     <button class="p-1.5 text-gray-400 hover:text-gray-900 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -84,7 +100,7 @@
                         </svg>
                     </button>
                 </div>
-            </div>
+            </form>
 
             <!-- Table -->
             <div class="bg-white rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden mb-8">
@@ -107,7 +123,7 @@
                                 </td>
                                 <td class="px-6 py-5">
                                     <div class="text-sm font-bold text-gray-900 mb-0.5">{{ $course->title }}</div>
-                                    <div class="text-xs text-gray-500">Semester: {{ $course->semester ?? 'N/A' }}</div>
+                                    <div class="text-xs text-gray-500">Semester: {{ $course->semester ? semesterLabel($course->semester) : 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-5 whitespace-nowrap">
                                     <span class="text-sm font-medium text-gray-500">{{ number_format($course->credit_hours, 1) }} Credits</span>
@@ -151,19 +167,21 @@
                 <div class="bg-white rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] p-6 md:p-8 flex items-center justify-between overflow-hidden relative">
                     <div class="relative z-10 w-2/3">
                         <h3 class="text-[18px] font-bold text-gray-900 mb-2">Curriculum Mapping</h3>
-                        <p class="text-sm text-gray-500 mb-4">Visualize course prerequisites and tracks.</p>
-                        <a href="#" class="inline-flex items-center gap-1 text-sm font-bold text-[#0e48c1] hover:underline">
+                        <p class="text-sm text-gray-500 mb-4">{{ $deptMetrics['courseCount'] }} courses across {{ $deptMetrics['facultyCount'] }} faculty in {{ currentTerm() }}.</p>
+                        <a href="{{ route('admin.departments.show', $department) }}" class="inline-flex items-center gap-1 text-sm font-bold text-[#0e48c1] hover:underline">
                             Open Map
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </a>
                     </div>
-                    <div class="absolute right-0 top-0 bottom-0 w-1/3 md:w-5/12 bg-gray-50 flex items-center justify-end pr-4 rounded-l-[2rem] shadow-inner">
-                        <div class="w-full max-w-[120px] bg-white rounded-lg shadow-sm border border-gray-200 p-2 transform -translate-x-2 translate-y-2 opacity-80">
-                            <div class="h-2 w-1/2 bg-blue-100 rounded mb-1"></div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded mb-1"></div>
-                            <div class="h-1.5 w-3/4 bg-gray-100 rounded"></div>
+                    <div class="absolute right-0 top-0 bottom-0 w-1/3 md:w-5/12 bg-gray-50 flex items-center justify-center pr-4 rounded-l-[2rem] shadow-inner">
+                        <div class="w-full max-w-[150px] bg-white rounded-lg shadow-sm border border-gray-200 p-2.5 space-y-1.5">
+                            @forelse($deptMetrics['courseCodes'] as $courseCode)
+                                <span class="block text-[10px] font-bold text-[#0e48c1] bg-[#eff4ff] rounded-md px-2 py-1 truncate">{{ $courseCode }}</span>
+                            @empty
+                                <span class="block text-[10px] font-medium text-gray-400 text-center">No courses</span>
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -171,25 +189,21 @@
                 <div class="bg-white rounded-[1.5rem] border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] p-6 md:p-8 flex items-center justify-between overflow-hidden relative">
                     <div class="relative z-10 w-2/3">
                         <h3 class="text-[18px] font-bold text-gray-900 mb-2">Department Analytics</h3>
-                        <p class="text-sm text-gray-500 mb-4">Review enrollment trends and faculty load.</p>
-                        <a href="#" class="inline-flex items-center gap-1 text-sm font-bold text-[#0e48c1] hover:underline">
+                        <p class="text-sm text-gray-500 mb-4">Avg rating {{ number_format($deptMetrics['avgRating'], 1) }} / 5 from {{ $deptMetrics['feedbackCount'] }} responses this term.</p>
+                        <a href="{{ route('admin.reports.index', ['department' => $departmentName, 'tab' => 'department']) }}" class="inline-flex items-center gap-1 text-sm font-bold text-[#0e48c1] hover:underline">
                             View Report
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </a>
                     </div>
-                    <div class="absolute right-0 top-0 bottom-0 w-1/3 md:w-5/12 bg-gray-50 flex items-center justify-end pr-4 rounded-l-[2rem] shadow-inner">
-                        <div class="w-full max-w-[120px] bg-white rounded-lg shadow-sm border border-gray-200 p-2 transform -translate-x-2 -translate-y-2 opacity-80">
-                            <div class="flex gap-1 items-end h-8 border-b border-gray-100 pb-1 mb-1">
-                                <div class="w-2 bg-blue-500 h-[60%] rounded-t-sm"></div>
-                                <div class="w-2 bg-blue-200 h-[40%] rounded-t-sm"></div>
-                                <div class="w-2 bg-blue-500 h-[80%] rounded-t-sm"></div>
-                                <div class="w-2 bg-blue-200 h-[50%] rounded-t-sm"></div>
-                                <div class="w-2 bg-blue-500 h-[100%] rounded-t-sm"></div>
+                    <div class="absolute right-0 top-0 bottom-0 w-1/3 md:w-5/12 bg-gray-50 flex items-end justify-center gap-2 px-3 pb-2 pt-6 rounded-l-[2rem] shadow-inner">
+                        @foreach($deptMetrics['semesterTrend'] as $semester => $rating)
+                            <div class="flex flex-col items-center justify-end gap-1" title="{{ $semester }} · {{ number_format($rating, 1) }} / 5">
+                                <div class="w-2.5 bg-gradient-to-t from-[#0e48c1] to-[#4f83f5] rounded-t-sm" style="height: {{ max(8, round(($rating / 5) * 64)) }}px;"></div>
+                                <div class="w-full border-b border-gray-200"></div>
                             </div>
-                            <div class="h-1.5 w-full bg-gray-100 rounded mb-1"></div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -225,6 +239,7 @@
                     </div>
                     <div class="flex items-center gap-4 w-full md:w-auto">
                         <div class="flex gap-2 flex-wrap flex-1 md:flex-initial">
+                            <span class="inline-flex items-center justify-center px-3 py-1 bg-[#0e48c1] text-white text-xs font-bold rounded-md">{{ semesterLabel(currentTerm()) }}</span>
                             @forelse($member->courses as $assignedCourse)
                                 <span class="inline-flex items-center justify-center px-3 py-1 bg-[#e2e8f0] text-gray-600 text-xs font-bold rounded-md">{{ $assignedCourse->code }}</span>
                             @empty
@@ -329,4 +344,111 @@
         @endif
 
     </div>
+
+    @if ($section === 'courses')
+    <script>
+        (function () {
+            var input = document.getElementById('course-search-input');
+            var box = document.getElementById('course-search-suggestions');
+            if (!input || !box) return;
+
+            var url = "{{ route('admin.departments.courses.suggest', $department) }}";
+            var timer = null;
+            var items = [];
+            var active = -1;
+
+            function close() {
+                box.classList.add('hidden');
+                box.innerHTML = '';
+                items = [];
+                active = -1;
+            }
+
+            function render() {
+                box.innerHTML = '';
+                items.forEach(function (course, index) {
+                    var el = document.createElement('button');
+                    el.type = 'button';
+                    el.className = 'w-full text-left px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-[#eff4ff] transition-colors ' + (index === active ? 'bg-[#eff4ff]' : 'bg-white');
+                    var left = document.createElement('span');
+                    left.className = 'flex items-center gap-2 min-w-0';
+                    var code = document.createElement('span');
+                    code.className = 'text-[11px] font-bold text-[#0e48c1] bg-[#eff4ff] rounded-md px-2 py-0.5 shrink-0';
+                    code.textContent = course.code;
+                    var title = document.createElement('span');
+                    title.className = 'text-[13px] font-semibold text-gray-700 truncate';
+                    title.textContent = course.title;
+                    left.appendChild(code);
+                    left.appendChild(title);
+                    var credits = document.createElement('span');
+                    credits.className = 'text-[11px] font-medium text-gray-400 shrink-0';
+                    credits.textContent = course.credit_hours + ' cr';
+                    el.appendChild(left);
+                    el.appendChild(credits);
+                    el.addEventListener('click', function () {
+                        input.value = course.code;
+                        close();
+                        input.form.submit();
+                    });
+                    box.appendChild(el);
+                });
+                box.classList.remove('hidden');
+            }
+
+            function select(index) {
+                if (index < 0 || index >= items.length) return;
+                input.value = items[index].code;
+                close();
+                input.form.submit();
+            }
+
+            input.addEventListener('input', function () {
+                clearTimeout(timer);
+                var q = input.value.trim();
+                if (!q) { close(); return; }
+                timer = setTimeout(function () {
+                    fetch(url + '?q=' + encodeURIComponent(q), {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                        .then(function (response) { return response.json(); })
+                        .then(function (data) {
+                            items = (data && data.courses) || [];
+                            active = -1;
+                            if (!items.length) { close(); return; }
+                            render();
+                        })
+                        .catch(function () { close(); });
+                }, 250);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (box.classList.contains('hidden') || !items.length) return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    active = (active + 1) % items.length;
+                    render();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    active = (active - 1 + items.length) % items.length;
+                    render();
+                } else if (e.key === 'Enter') {
+                    if (active >= 0) {
+                        e.preventDefault();
+                        select(active);
+                    }
+                } else if (e.key === 'Escape') {
+                    close();
+                }
+            });
+
+            input.addEventListener('blur', function () {
+                setTimeout(close, 120);
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('#course-search-wrap')) close();
+            });
+        })();
+    </script>
+    @endif
 </x-admin>

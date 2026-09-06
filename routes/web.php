@@ -62,8 +62,10 @@ Route::prefix('admin')
         Route::post('/user/{user}/toggle-status', [AdminController::class, 'toggleStatus'])->name('admin.users.toggle-status');
         Route::get('/students', [AdminController::class, 'students'])->name('admin.students');
         Route::get('/students/export', [AdminController::class, 'exportStudents'])->name('admin.students.export');
+        Route::get('/students/suggest', [AdminController::class, 'suggestStudents'])->name('admin.students.suggest');
         Route::get('/faculty', [AdminController::class, 'faculty'])->name('admin.faculty');
         Route::get('/faculty/export', [AdminController::class, 'exportFaculty'])->name('admin.faculty.export');
+        Route::get('/faculty/suggest', [AdminController::class, 'suggestFaculty'])->name('admin.faculty.suggest');
         Route::get('/faculty/{faculty}/assign-courses', [AdminController::class, 'assignCourses'])->name('admin.faculty.assign-courses');
         Route::post('/faculty/{faculty}/assign-courses', [AdminController::class, 'storeCourseAssignments'])->name('admin.faculty.store-assignments');
         Route::get('/courses', [AdminController::class, 'courses'])->name('admin.courses');
@@ -79,6 +81,7 @@ Route::prefix('admin')
         Route::get('/departments', [AdminController::class, 'departments'])->name('admin.departments');
         Route::get('/departments/{department}', [AdminController::class, 'department'])->name('admin.departments.show');
         Route::get('/departments/{department}/manage', [AdminController::class, 'manageDepartment'])->name('admin.departments.manage');
+        Route::get('/departments/{department}/courses/suggest', [AdminController::class, 'suggestDepartmentCourses'])->name('admin.departments.courses.suggest');
         Route::get('/departments/{department}/courses/new', [AdminController::class, 'newDepartmentCourse'])->name('admin.departments.courses.new');
         Route::get('/departments/{department}/faculty/{faculty}/assign-courses', [AdminController::class, 'assignDepartmentCourses'])->name('admin.departments.faculty.assign-courses');
         Route::post('/departments/{department}/faculty/{faculty}/assign-courses', [AdminController::class, 'storeDepartmentCourseAssignments'])->name('admin.departments.faculty.store-assignments');
@@ -105,6 +108,7 @@ Route::prefix('admin')
         Route::get('/reports/export/{format}', [ReportController::class, 'export'])->name('admin.reports.export');
         Route::get('/reports/generate-pdf', [ReportController::class, 'generatePdf'])->name('admin.reports.generate-pdf');
         Route::get('/moderation', [AdminController::class, 'moderation'])->name('admin.moderation');
+        Route::get('/activity-log', [AdminController::class, 'activityLog'])->name('admin.activity-log');
     });
 
 Route::prefix('faculty')

@@ -464,6 +464,12 @@ class ReportService
                     });
                 });
 
+            if ($tenantId) {
+                $avgQuery->whereHas('feedback.faculty', function ($q) use ($tenantId) {
+                    $q->where('university_id', $tenantId);
+                });
+            }
+
             if (! empty($filters['evaluation_id'])) {
                 $avgQuery->where('feedbacks.evaluation_id', $filters['evaluation_id']);
             }

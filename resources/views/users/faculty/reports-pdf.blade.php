@@ -172,7 +172,7 @@
         <!-- Header -->
         <div class="header">
             <h1>{{ $type === 'analytics' ? 'Faculty Full Dossier' : 'Faculty Dashboard Report' }}</h1>
-            <div class="subtitle">{{ $faculty->name }} &mdash; {{ $type === 'analytics' ? 'Comprehensive Performance Review' : 'Performance Summary' }} &bull; Term {{ $currentTerm }}</div>
+            <div class="subtitle">{{ $faculty->name }} &mdash; {{ $type === 'analytics' ? 'Comprehensive Performance Review' : 'Performance Summary' }} &bull; Term {{ semesterLabel($currentTerm) }}</div>
             <div class="meta">Generated: {{ now()->format('F d, Y \a\t h:i A') }} | Department: {{ $faculty->department ?? 'N/A' }}</div>
         </div>
 
@@ -251,7 +251,7 @@
             <tbody>
                 @foreach($historicalTrend as $trend)
                 <tr>
-                    <td class="font-bold">{{ $trend['semester'] }}</td>
+                    <td class="font-bold">{{ semesterLabel($trend['semester']) }}</td>
                     <td class="text-center font-bold text-blue">{{ number_format($trend['rating'], 1) }}</td>
                     <td class="text-center">
                         <div class="bar-container"><div class="bar-fill" style="width: {{ ($trend['rating'] / 5) * 100 }}%;"></div></div>

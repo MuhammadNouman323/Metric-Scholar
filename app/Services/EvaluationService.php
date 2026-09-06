@@ -11,6 +11,7 @@ use App\Notifications\NewEvaluationScheduledNotification;
 use App\Repositories\EvaluationRepository;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class EvaluationService
@@ -81,7 +82,7 @@ class EvaluationService
             if ($facultyId && ! in_array($facultyId, $notifiedFaculty)) {
                 $facultyUser = User::find($facultyId);
                 if ($facultyUser) {
-                    $facultyUser->notify(new NewEvaluationScheduledNotification($evaluation, 'faculty'));
+                    $this->notifyQuietly($facultyUser, new NewEvaluationScheduledNotification($evaluation, 'faculty'));
                     $notifiedFaculty[] = $facultyId;
                 }
             }
@@ -90,7 +91,7 @@ class EvaluationService
 
             foreach ($students as $student) {
                 if (! in_array($student->id, $notifiedStudents)) {
-                    $student->notify(new NewEvaluationScheduledNotification($evaluation, 'student'));
+                    $this->notifyQuietly($student, new NewEvaluationScheduledNotification($evaluation, 'student'));
                     $notifiedStudents[] = $student->id;
                 }
 
@@ -110,6 +111,15 @@ class EvaluationService
         // Chunk insertions for scalability
         foreach (array_chunk($tokensToInsert, 500) as $chunk) {
             FeedbackToken::insert($chunk);
+        }
+    }
+
+    protected function notifyQuietly(User $user, NewEvaluationScheduledNotification $notification): void
+    {
+        try {
+            $user->notify($notification);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to notify user '.$user->id.' about evaluation '.$notification->evaluation->id.': '.$e->getMessage());
         }
     }
 }

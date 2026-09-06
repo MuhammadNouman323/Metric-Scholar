@@ -64,7 +64,7 @@
                                     <h3 class="text-2xl font-extrabold text-gray-900">{{ $activeEvaluation->title }}</h3>
                                     <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Active</span>
                                 </div>
-                                <p class="text-sm text-gray-500 font-medium">Semester: {{ $activeEvaluation->semester }} | Ends on {{ $activeEvaluation->end_date->format('M d, Y') }}</p>
+                                <p class="text-sm text-gray-500 font-medium">Semester: {{ semesterLabel($activeEvaluation->semester) }} | Ends on {{ $activeEvaluation->end_date->format('M d, Y') }}</p>
                             </div>
                         </div>
                         
@@ -109,7 +109,7 @@
                                 <h3 class="font-bold text-gray-900">{{ $eval->title }}</h3>
                                 <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">Scheduled</span>
                             </div>
-                            <p class="text-xs text-gray-500">Starts on {{ $eval->start_date->format('M d, Y') }} • {{ $eval->semester }}</p>
+                            <p class="text-xs text-gray-500">Starts on {{ $eval->start_date->format('M d, Y') }} • {{ semesterLabel($eval->semester) }}</p>
                         </div>
                         <a href="{{ route('admin.evaluations.edit', $eval) }}" class="shrink-0 flex items-center gap-1.5 text-xs font-bold text-[#0e48c1] hover:text-blue-800 transition-colors px-3 py-2 rounded-lg hover:bg-blue-50">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@
                     @foreach($draftEvaluations as $eval)
                     <div class="bg-white rounded-2xl p-6 border border-gray-100 border-dashed shadow-sm">
                         <h3 class="font-bold text-gray-900 mb-1">{{ $eval->title }}</h3>
-                        <p class="text-xs text-gray-500 mb-3">{{ $eval->semester }}</p>
+                        <p class="text-xs text-gray-500 mb-3">{{ semesterLabel($eval->semester) }}</p>
                         <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1 rounded-full">Draft</span>
                     </div>
                     @endforeach

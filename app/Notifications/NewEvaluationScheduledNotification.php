@@ -4,10 +4,11 @@ namespace App\Notifications;
 
 use App\Models\Evaluation;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewEvaluationScheduledNotification extends Notification
+class NewEvaluationScheduledNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,19 +19,23 @@ class NewEvaluationScheduledNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database']; // Can add 'mail' if configured
+        return ['mail', 'database'];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        $dashboardUrl = $this->userRole === 'faculty' ? url('/faculty/dashboard') : url('/student/dashboard');
+        $actionUrl = $this->userRole === 'faculty' ? url('/faculty/dashboard') : url('/student/feedback');
 
         return (new MailMessage)
-            ->subject('New Faculty Evaluation Scheduled')
-            ->line('A new faculty evaluation has been scheduled.')
-            ->line('The evaluation will be available from '.$this->evaluation->start_date->format('M d, Y').' to '.$this->evaluation->end_date->format('M d, Y').'.')
-            ->line('Please check your dashboard for details.')
-            ->action('View Evaluation', $dashboardUrl);
+            ->subject('New Evaluation Scheduled: '.$this->evaluation->title)
+            ->greeting('Hello '.$notifiable->name.',')
+            ->line('A new Course evaluation has been scheduled for your '.($this->userRole === 'faculty' ? 'course' : 'course(s)').'.')
+            ->line('**Evaluation:** '.$this->evaluation->title)
+            ->line('**Type:** '.$this->evaluation->evaluation_type)
+            ->line('**Semester:** '.$this->evaluation->semester)
+            ->line('**Open:** '.$this->evaluation->start_date->format('M d, Y').' — '.$this->evaluation->end_date->format('M d, Y'))
+            ->action($this->userRole === 'faculty' ? 'Analyze' : 'Submit Feedback', $actionUrl)
+            ->line($this->userRole === 'faculty' ? 'Please view your course feedback details on your profile.' : 'Please complete your feedback before the deadline passes.');
     }
 
     public function toArray(object $notifiable): array
@@ -38,8 +43,8 @@ class NewEvaluationScheduledNotification extends Notification
         $dashboardUrl = $this->userRole === 'faculty' ? '/faculty/dashboard' : '/student/dashboard';
 
         return [
-            'title' => 'New Faculty Evaluation Scheduled',
-            'message' => 'A new faculty evaluation has been scheduled. The evaluation will be available from '.$this->evaluation->start_date->format('M d, Y').' to '.$this->evaluation->end_date->format('M d, Y').'. Please check your dashboard for details.',
+            'title' => 'New Course Evaluation Scheduled',
+            'message' => 'A new course evaluation has been scheduled. The evaluation will be available from '.$this->evaluation->start_date->format('M d, Y').' to '.$this->evaluation->end_date->format('M d, Y').'. Please check your dashboard for details.',
             'evaluation_id' => $this->evaluation->id,
             'evaluation_title' => $this->evaluation->title,
             'semester' => $this->evaluation->semester,

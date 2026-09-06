@@ -131,7 +131,7 @@
                     $active[] = 'Evaluation ID: ' . $filters['evaluation_id'];
                 }
                 if (!empty($filters['semester'])) {
-                    $active[] = 'Semester: ' . $filters['semester'];
+                    $active[] = 'Semester: ' . semesterLabel($filters['semester']);
                 }
                 if (!empty($filters['department'])) {
                     $active[] = 'Department: ' . $filters['department'];
@@ -261,7 +261,7 @@
                 @forelse($reportData as $row)
                     <tr>
                         <td class="font-bold">{{ $row['title'] }}</td>
-                        <td>{{ $row['semester'] }}</td>
+                        <td>{{ semesterLabel($row['semester']) }}</td>
                         <td class="text-center">{{ $row['start_date'] }}</td>
                         <td class="text-center">{{ $row['end_date'] }}</td>
                         <td class="text-center font-bold">{{ $row['status'] }}</td>
