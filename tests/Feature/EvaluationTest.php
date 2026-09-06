@@ -5,10 +5,12 @@ use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\FeedbackToken;
 use App\Models\User;
+use App\Notifications\EvaluationRescheduledNotification;
 use App\Repositories\EvaluationRepository;
 use App\Repositories\FeedbackRepository;
 use App\Services\EvaluationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
@@ -402,4 +404,86 @@ test('date fields remain editable when start_date is in the future', function ()
     $response->assertOk();
     $response->assertDontSee('Dates cannot be changed');
     $response->assertSee('start_date');
+});
+
+test('rescheduling an evaluation notifies eligible students and faculty', function () {
+    Notification::fake();
+
+    $admin = User::factory()->create(['role' => 'admin']);
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $student = User::factory()->create(['role' => 'student']);
+    $unrelatedStudent = User::factory()->create(['role' => 'student']);
+
+    $course = Course::create([
+        'title' => 'Software Engineering',
+        'code' => 'CS-301',
+        'semester' => 'Fall 2026',
+        'credit_hours' => 3,
+        'department' => 'Computer Science',
+    ]);
+
+    $course->users()->attach($student->id);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Fall 2026 Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'is_anonymous' => true,
+        'created_by' => $admin->id,
+    ]);
+
+    $evaluation->faculty()->attach($faculty->id);
+    $evaluation->courses()->attach($course->id, ['faculty_id' => $faculty->id]);
+
+    $response = $this->actingAs($admin)->put(route('admin.evaluations.update', $evaluation), [
+        'title' => 'Fall 2026 Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->addDays(14)->toDateString(),
+        'end_date' => now()->addDays(28)->toDateString(),
+        'is_anonymous' => '1',
+    ]);
+
+    $response->assertRedirect(route('admin.evaluations'));
+
+    $evaluation->refresh();
+    expect($evaluation->end_date->format('Y-m-d'))->toBe(now()->addDays(28)->toDateString());
+
+    Notification::assertSentTo($student, EvaluationRescheduledNotification::class);
+    Notification::assertSentTo($faculty, EvaluationRescheduledNotification::class);
+    Notification::assertNotSentTo($unrelatedStudent, EvaluationRescheduledNotification::class);
+});
+
+test('updating an evaluation without changing dates does not notify recipients', function () {
+    Notification::fake();
+
+    $admin = User::factory()->create(['role' => 'admin']);
+    $faculty = User::factory()->create(['role' => 'faculty']);
+
+    $evaluation = Evaluation::create([
+        'title' => 'Fall 2026 Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->addDays(14),
+        'end_date' => now()->addDays(21),
+        'status' => 'scheduled',
+        'is_anonymous' => true,
+        'created_by' => $admin->id,
+    ]);
+
+    $evaluation->faculty()->attach($faculty->id);
+
+    $this->actingAs($admin)->put(route('admin.evaluations.update', $evaluation), [
+        'title' => 'Renamed Eval',
+        'semester' => 'Fall 2026',
+        'evaluation_type' => 'Mid-Term',
+        'start_date' => now()->addDays(14)->toDateString(),
+        'end_date' => now()->addDays(21)->toDateString(),
+        'is_anonymous' => '1',
+    ]);
+
+    Notification::assertNotSentTo($faculty, EvaluationRescheduledNotification::class);
 });

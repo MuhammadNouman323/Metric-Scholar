@@ -11,6 +11,7 @@ use App\Models\Evaluation;
 use App\Models\Feedback;
 use App\Models\FeedbackAnswer;
 use App\Models\User;
+use App\Notifications\EvaluationRescheduledNotification;
 use App\Services\EvaluationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -1073,9 +1075,44 @@ class AdminController extends Controller
             unset($validated['start_date'], $validated['end_date']);
         }
 
+        $oldStartDate = $evaluation->start_date->format('Y-m-d');
+        $oldEndDate = $evaluation->end_date->format('Y-m-d');
+
         $evaluation->update($validated);
 
+        if ($evaluation->start_date->format('Y-m-d') !== $oldStartDate || $evaluation->end_date->format('Y-m-d') !== $oldEndDate) {
+            $this->notifyEvaluationReschedule($evaluation, $oldStartDate, $oldEndDate);
+        }
+
         return redirect()->route('admin.evaluations')->with('success', 'Scheduled evaluation updated successfully.');
+    }
+
+    private function notifyEvaluationReschedule(Evaluation $evaluation, string $oldStartDate, string $oldEndDate): void
+    {
+        $tenantId = auth()->user()->university_id;
+
+        $studentIds = DB::table('evaluation_courses')
+            ->join('course_user', 'course_user.course_id', '=', 'evaluation_courses.course_id')
+            ->join('users', 'users.id', '=', 'course_user.user_id')
+            ->where('evaluation_courses.evaluation_id', $evaluation->id)
+            ->where('users.university_id', $tenantId)
+            ->where('users.role', Role::Student->value)
+            ->pluck('course_user.user_id');
+
+        $recipientIds = $studentIds
+            ->merge($evaluation->faculty()->where('users.university_id', $tenantId)->pluck('users.id'))
+            ->unique()
+            ->values();
+
+        User::whereIn('id', $recipientIds)->get()->each(function (User $user) use ($evaluation, $oldStartDate, $oldEndDate) {
+            $role = $user->role === Role::Faculty ? 'faculty' : 'student';
+
+            try {
+                $user->notify(new EvaluationRescheduledNotification($evaluation, $oldStartDate, $oldEndDate, $role));
+            } catch (\Throwable $e) {
+                Log::warning('Failed to notify user '.$user->id.' about rescheduled evaluation '.$evaluation->id.': '.$e->getMessage());
+            }
+        });
     }
 
     public function eval(): View
