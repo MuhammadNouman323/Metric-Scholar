@@ -1,0 +1,116 @@
+@startuml Scholar Metric DB
+' Paste into plantuml.com or PowerPoint iConcise/IguanaTeX embed
+!theme cerulean-outline
+
+entity "universities" as uni {
+  * id : bigint <<PK>>
+  --
+  name : string
+  domain : string <<UK>>
+}
+
+entity "users" as usr {
+  * id : bigint <<PK>>
+  --
+  name : string
+  email : string
+  role : string   ' admin | faculty | student
+  department : string
+  university_id : bigint <<FK>>
+  created_by : bigint <<FK>>
+}
+
+entity "courses" as crs {
+  * id : bigint <<PK>>
+  --
+  title : string
+  code : string
+  semester : string
+  credit_hours : int
+  department : string
+  university_id : bigint <<FK>>
+}
+
+entity "course_user" as cu {
+  * id : bigint <<PK>>
+  --
+  course_id : bigint <<FK>>
+  user_id : bigint <<FK>>
+  term : string <<UK>>
+}
+
+entity "evaluations" as evl {
+  * id : bigint <<PK>>
+  --
+  title : string
+  semester : string
+  evaluation_type : string
+  start_date : date
+  end_date : date
+  status : string   ' draft | active | closed
+  is_anonymous : boolean
+  created_by : bigint <<FK>>
+}
+
+entity "evaluation_faculty" as ef {
+  * id : bigint <<PK>>
+  --
+  evaluation_id : bigint <<FK>>
+  faculty_id : bigint <<FK>>
+}
+
+entity "evaluation_courses" as ec {
+  * id : bigint <<PK>>
+  --
+  evaluation_id : bigint <<FK>>
+  faculty_id : bigint <<FK>>
+  course_id : bigint <<FK>>
+}
+
+entity "feedback_tokens" as ft {
+  * id : bigint <<PK>>
+  --
+  token : uuid <<UK>>
+  is_used : boolean
+  used_at : timestamp
+  evaluation_id : bigint <<FK>>
+  student_id : bigint <<FK, 'ONLY student link'>>
+  faculty_id : bigint <<FK>>
+  course_id : bigint <<FK>>
+}
+
+entity "feedbacks" as fb {
+  * id : bigint <<PK>>
+  --
+  submitted_at : timestamp
+  evaluation_id : bigint <<FK>>
+  faculty_id : bigint <<FK>>
+  course_id : bigint <<FK, 'NO student ref'>>
+}
+
+entity "feedback_answers" as fa {
+  * id : bigint <<PK>>
+  --
+  question_id : string
+  rating : tinyint
+  text_answer : text
+  moderation_status : string
+  toxicity_score : int
+  original_comment : text
+  cleaned_comment : text
+  feedback_id : bigint <<FK>>
+}
+
+uni ||--o{ usr : "tenant · university_id"
+uni ||--o{ crs : "tenant · university_id"
+usr }o--o{ crs : "enrolled · course_user (term)"
+usr ||--o{ evl : "created_by (admin)"
+evl }o--o{ usr : "evaluation_faculty (faculty)"
+evl }o--o{ crs : "evaluation_courses (per faculty)"
+evl ||--o{ ft : "issues single-use tokens"
+ft }o--|| usr : "student_id"
+ft }o--|| usr : "faculty_id"
+ft }o--|| crs : "course_id"
+evl ||--o{ fb : "contains"
+fb ||--o{ fa : "has"
+@enduml

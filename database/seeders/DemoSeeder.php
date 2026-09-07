@@ -219,7 +219,7 @@ class DemoSeeder extends Seeder
             // ─── 7. Enroll students in courses ──────────────────────────
             foreach ($deptStudents as $dept => $students) {
                 foreach ($students as $student) {
-                    $courseIds = collect($coursesByDept[$dept])->random(rand(4, 6))->pluck('id')->all();
+                    $courseIds = collect($coursesByDept[$dept])->random(4)->pluck('id')->all();
 
                     foreach ($demoSemesters as $term) {
                         $student->courses()->attach($courseIds, ['term' => $term]);

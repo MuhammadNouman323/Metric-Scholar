@@ -1,0 +1,92 @@
+erDiagram
+    universities ||--o{ users : "tenant: university_id"
+    universities ||--o{ courses : "tenant: university_id"
+    users }o--o{ courses : "enrolled / course_user · term"
+    users ||--o{ evaluations : "created_by (admin)"
+    evaluations }o--o{ users : "evaluation_faculty"
+    evaluations }o--o{ courses : "evaluation_courses (per faculty)"
+    evaluations ||--o{ feedback_tokens : "issues single-use"
+    feedback_tokens }o--|| users : "student_id"
+    feedback_tokens }o--|| users : "faculty_id"
+    feedback_tokens }o--|| courses : "course_id"
+    evaluations ||--o{ feedbacks : "contains"
+    feedbacks ||--o{ feedback_answers : "has"
+
+    universities {
+        bigint id PK
+        string name
+        string domain UK
+    }
+    users {
+        bigint id PK
+        string name
+        string email
+        string role UK "admin · faculty · student"
+        string department
+        bigint university_id FK
+    }
+    courses {
+        bigint id PK
+        string title
+        string code
+        string semester
+        int credit_hours
+        string department
+        bigint university_id FK
+    }
+    course_user {
+        bigint id PK
+        bigint course_id FK
+        bigint user_id FK
+        string term UK "course+user+term"
+    }
+    evaluations {
+        bigint id PK
+        string title
+        string semester
+        string evaluation_type
+        date start_date
+        date end_date
+        string status "draft · active · closed"
+        boolean is_anonymous
+        bigint created_by FK
+    }
+    evaluation_faculty {
+        bigint id PK
+        bigint evaluation_id FK
+        bigint faculty_id FK UK "evaluation+faculty"
+    }
+    evaluation_courses {
+        bigint id PK
+        bigint evaluation_id FK
+        bigint faculty_id FK
+        bigint course_id FK UK "eval+course+faculty"
+    }
+    feedback_tokens {
+        bigint id PK
+        uuid token UK
+        boolean is_used
+        timestamp used_at
+        bigint evaluation_id FK
+        bigint student_id FK "ONLY student link"
+        bigint faculty_id FK
+        bigint course_id FK
+    }
+    feedbacks {
+        bigint id PK
+        timestamp submitted_at
+        bigint evaluation_id FK
+        bigint faculty_id FK
+        bigint course_id FK "NO student reference"
+    }
+    feedback_answers {
+        bigint id PK
+        string question_id
+        tinyint rating
+        text text_answer
+        string moderation_status
+        int toxicity_score
+        text original_comment
+        text cleaned_comment
+        bigint feedback_id FK
+    }

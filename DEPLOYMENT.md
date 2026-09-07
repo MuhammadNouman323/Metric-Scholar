@@ -60,7 +60,7 @@ sudo apt install -y nodejs
 
 ```bash
 sudo mkdir -p /var/www
-sudo git clone <repository-url> /var/www/scholar_metric
+sudo git clone https://github.com/MuhammadNouman323/Metric-Scholar.git /var/www/scholar_metric
 sudo chown -R "$USER":"$USER" /var/www/scholar_metric
 cd /var/www/scholar_metric
 ```
@@ -396,7 +396,7 @@ Functional smoke checks once Apache, Reverb, and the worker are up:
 
 | Check | Expected |
 |---|---|
-| `curl -I https://your-domain.com` | `200 OK` |
+| `curl -I https://scholarmetric.live` | `200 OK` |
 | `/admin/dashboard` no debug stack | Renders in production (no `APP_DEBUG` output) |
 | Login as a seeded user | Redirected to the role dashboard |
 | `/admin/departments` | Department grid with performance bars |
@@ -436,7 +436,6 @@ Runtime (`composer.json` → `require`, resolved versions from `composer.lock`):
 | `barryvdh/laravel-dompdf` | `*` (`3.1.2`) | HTML → PDF reports |
 | `phpoffice/phpword` | `^1.4` (`1.4.0`) | Word document generation |
 | `symfony/mailtrap-mailer` | `*` (`8.1.0`) | Mailtrap SMTP transport |
-| `laravel/mcp` | `^0.6.7` | MCP tooling |
 | `laravel/tinker` | `^3.0` (`3.0.0`) | REPL/CLI interaction |
 
 ### Composer Development Dependencies
