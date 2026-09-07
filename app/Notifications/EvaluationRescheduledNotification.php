@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\Role;
 use App\Models\Evaluation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,7 +17,7 @@ class EvaluationRescheduledNotification extends Notification implements ShouldQu
         public Evaluation $evaluation,
         public string $oldStartDate,
         public string $oldEndDate,
-        public string $userRole
+        public Role $userRole
     ) {}
 
     public function via(object $notifiable): array
@@ -26,7 +27,8 @@ class EvaluationRescheduledNotification extends Notification implements ShouldQu
 
     public function toMail(object $notifiable): MailMessage
     {
-        $actionUrl = $this->userRole === 'faculty' ? url('/faculty/dashboard') : url('/student/feedback');
+        $isFaculty = $this->userRole === Role::Faculty;
+        $actionUrl = url($isFaculty ? Role::Faculty->dashboardRoute() : Role::Student->dashboardRoute());
 
         return (new MailMessage)
             ->subject('Evaluation Rescheduled: '.$this->evaluation->title)
@@ -34,13 +36,13 @@ class EvaluationRescheduledNotification extends Notification implements ShouldQu
             ->line('The course evaluation **'.$this->evaluation->title.'** has been rescheduled.')
             ->line('**New Schedule:** '.$this->evaluation->start_date->format('M d, Y').' — '.$this->evaluation->end_date->format('M d, Y'))
             ->line('**Previous Schedule:** '.$this->oldStartDate.' — '.$this->oldEndDate)
-            ->action($this->userRole === 'faculty' ? 'View Details' : 'Submit Feedback', $actionUrl)
+            ->action($isFaculty ? 'View Details' : 'Submit Feedback', $actionUrl)
             ->line('Please visit your dashboard and note the updated dates.');
     }
 
     public function toArray(object $notifiable): array
     {
-        $dashboardUrl = $this->userRole === 'faculty' ? '/faculty/dashboard' : '/student/dashboard';
+        $dashboardUrl = $this->userRole->dashboardRoute();
 
         return [
             'title' => 'Course Evaluation Rescheduled',

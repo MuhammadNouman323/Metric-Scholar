@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\Course;
 use App\Models\Evaluation;
 use App\Models\Feedback;
@@ -48,7 +49,7 @@ class DemoSeeder extends Seeder
                 'name' => 'Muhammad Nouman',
                 'email' => 'nouman@pu.edu.pk',
                 'password' => $password,
-                'role' => 'admin',
+                'role' => Role::Admin,
                 'admin_id' => 'ADM-DEMO01',
                 'access_level' => 'Full Access',
                 'email_verified_at' => now(),
@@ -74,7 +75,7 @@ class DemoSeeder extends Seeder
                     'name' => $f['name'],
                     'email' => $f['email'],
                     'password' => $password,
-                    'role' => 'faculty',
+                    'role' => Role::Faculty,
                     'department' => $f['department'],
                     'email_verified_at' => now(),
                     'is_active' => true,
@@ -113,7 +114,7 @@ class DemoSeeder extends Seeder
                     'name' => $name,
                     'email' => str_replace(' ', '.', strtolower($name)).'@pu.edu.pk',
                     'password' => $password,
-                    'role' => 'student',
+                    'role' => Role::Student,
                     'department' => $dept,
                     'email_verified_at' => now(),
                     'is_active' => true,
@@ -123,10 +124,10 @@ class DemoSeeder extends Seeder
             }
 
             $deptStudents = [
-                'Computer Science' => User::where('role', 'student')->where('department', 'Computer Science')->get(),
-                'Applied Physics'  => User::where('role', 'student')->where('department', 'Applied Physics')->get(),
-                'Mathematics'      => User::where('role', 'student')->where('department', 'Mathematics')->get(),
-                'Bio-Chemistry'    => User::where('role', 'student')->where('department', 'Bio-Chemistry')->get(),
+                'Computer Science' => User::where('role', Role::Student)->where('department', 'Computer Science')->get(),
+                'Applied Physics'  => User::where('role', Role::Student)->where('department', 'Applied Physics')->get(),
+                'Mathematics'      => User::where('role', Role::Student)->where('department', 'Mathematics')->get(),
+                'Bio-Chemistry'    => User::where('role', Role::Student)->where('department', 'Bio-Chemistry')->get(),
             ];
 
             // ─── 5. Courses ─────────────────────────────────────────────

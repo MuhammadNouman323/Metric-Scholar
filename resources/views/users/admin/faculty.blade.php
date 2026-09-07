@@ -180,7 +180,7 @@
                         @forelse($faculties as $faculty)
                             <tr class="hover:bg-blue-50/40 transition-colors duration-150 group faculty-row" data-department="{{ $faculty->department ?? 'General' }}">
                                 <td class="px-6 md:px-8 py-5 whitespace-nowrap">
-                                    <div class="text-[13px] font-medium text-gray-500">FAC-{{ $faculty->id }}</div>
+                                    <div class="text-[13px] font-medium text-gray-500">{{ \App\Enums\Role::Faculty->idPrefix() }}{{ $faculty->id }}</div>
                                 </td>
                                 <td class="px-6 md:px-8 py-5 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
@@ -195,7 +195,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 md:px-8 py-5 whitespace-nowrap text-[14px] font-medium text-gray-700">
-                                    {{ $faculty->designation ?? 'Faculty' }}
+                                    {{ $faculty->designation ?? \App\Enums\Role::Faculty->label() }}
                                 </td>
                                 <td class="px-6 md:px-8 py-5 whitespace-nowrap">
                                     <span

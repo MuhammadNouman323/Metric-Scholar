@@ -34,9 +34,9 @@ class AdminController extends Controller
 
         $counts = User::where('university_id', $tenantId)
             ->selectRaw("
-                SUM(CASE WHEN role = 'student' THEN 1 ELSE 0 END) as student_count,
-                SUM(CASE WHEN role = 'faculty' THEN 1 ELSE 0 END) as faculty_count
-            ")
+                SUM(CASE WHEN role = ? THEN 1 ELSE 0 END) as student_count,
+                SUM(CASE WHEN role = ? THEN 1 ELSE 0 END) as faculty_count
+            ", [Role::Student->value, Role::Faculty->value])
             ->first();
 
         $studentCount = $counts->student_count ?? 0;
@@ -329,7 +329,7 @@ class AdminController extends Controller
 
             foreach ($students as $student) {
                 fputcsv($file, [
-                    '#SC-'.$student->id,
+                    Role::Student->idPrefix().$student->id,
                     $student->name,
                     $student->email,
                     $student->department ?? 'General',
@@ -422,7 +422,7 @@ class AdminController extends Controller
 
             foreach ($faculties as $faculty) {
                 fputcsv($file, [
-                    'FAC-'.$faculty->id,
+                    Role::Faculty->idPrefix().$faculty->id,
                     $faculty->name,
                     $faculty->email,
                     $faculty->department ?? 'General',
@@ -1078,7 +1078,7 @@ class AdminController extends Controller
             ->values();
 
         User::whereIn('id', $recipientIds)->get()->each(function (User $user) use ($evaluation, $oldStartDate, $oldEndDate) {
-            $role = $user->role === Role::Faculty ? 'faculty' : 'student';
+            $role = $user->role === Role::Faculty ? Role::Faculty : Role::Student;
 
             try {
                 $user->notify(new EvaluationRescheduledNotification($evaluation, $oldStartDate, $oldEndDate, $role));
@@ -1624,7 +1624,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'role' => ['required', 'in:student,faculty,admin'],
+            'role' => ['required', 'in:'.implode(',', [Role::Student->value, Role::Faculty->value, Role::Admin->value])],
             'department' => ['required', 'string', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
         ]);
@@ -1636,7 +1636,7 @@ class AdminController extends Controller
             $user->update($validated);
         });
 
-        $redirectRoute = $user->role === Role::Faculty ? '/admin/faculty' : '/admin/students';
+        $redirectRoute = $user->role === Role::Faculty ? route('admin.faculty') : route('admin.students');
 
         return redirect($redirectRoute)->with('success', 'User profile updated successfully.');
     }

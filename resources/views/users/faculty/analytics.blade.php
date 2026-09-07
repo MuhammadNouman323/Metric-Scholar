@@ -103,8 +103,12 @@
                             stroke="#0e48c1" stroke-width="3" fill="none" stroke-linecap="round" />
 
                         @foreach($trendPoints as $p)
-                        <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="white" stroke="#0e48c1"
-                            stroke-width="2.5" />
+                        <g class="cursor-pointer">
+                            <title>{{ $p['semester'] }} - {{ number_format($p['rating'], 1) }}/5</title>
+                            <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="5" fill="white" stroke="#0e48c1"
+                                stroke-width="2.5" />
+                            <circle cx="{{ $p['x'] }}" cy="{{ $p['y'] }}" r="14" fill="transparent" />
+                        </g>
                         @endforeach
                         @endif
 

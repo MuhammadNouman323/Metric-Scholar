@@ -82,7 +82,7 @@ class EvaluationService
             if ($facultyId && ! in_array($facultyId, $notifiedFaculty)) {
                 $facultyUser = User::find($facultyId);
                 if ($facultyUser) {
-                    $this->notifyQuietly($facultyUser, new NewEvaluationScheduledNotification($evaluation, 'faculty'));
+                    $this->notifyQuietly($facultyUser, new NewEvaluationScheduledNotification($evaluation, Role::Faculty));
                     $notifiedFaculty[] = $facultyId;
                 }
             }
@@ -91,7 +91,7 @@ class EvaluationService
 
             foreach ($students as $student) {
                 if (! in_array($student->id, $notifiedStudents)) {
-                    $this->notifyQuietly($student, new NewEvaluationScheduledNotification($evaluation, 'student'));
+                    $this->notifyQuietly($student, new NewEvaluationScheduledNotification($evaluation, Role::Student));
                     $notifiedStudents[] = $student->id;
                 }
 

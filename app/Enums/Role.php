@@ -25,4 +25,13 @@ enum Role: string
             self::Student => '/student/dashboard',
         };
     }
+
+    public function idPrefix(): string
+    {
+        return match ($this) {
+            self::Faculty => 'FAC-',
+            self::Student => '#SC-',
+            self::Admin => 'ADM-',
+        };
+    }
 }

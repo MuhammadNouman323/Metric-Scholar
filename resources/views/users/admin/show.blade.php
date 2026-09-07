@@ -1,11 +1,11 @@
-@php($isFaculty = $user->role->value === 'faculty')
+@php($isFaculty = $user->role === \App\Enums\Role::Faculty)
 <x-admin>
     <div class="p-6 md:p-10 lg:p-12 pb-24 max-w-[1100px] mx-auto min-h-screen space-y-8">
 
         <!-- Header with Back Button -->
         <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <a href="{{ $isFaculty ? '/admin/faculty' : '/admin/students' }}"
+                <a href="{{ $isFaculty ? route('admin.faculty') : route('admin.students') }}"
                     class="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-all shadow-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -44,7 +44,7 @@
                             src="{{ $user->avatar_url }}" alt="{{ $user->name }}">
                         <div class="min-w-0 pb-1">
                             <h2 class="text-[22px] font-bold text-gray-900 break-words">{{ $user->name }}</h2>
-                            <p class="text-[13px] font-medium text-gray-500 mt-1 truncate">{{ $isFaculty ? 'FAC-' : '#SC-' }}{{ $user->id }} &middot; {{ $user->email }}</p>
+                            <p class="text-[13px] font-medium text-gray-500 mt-1 truncate">{{ $isFaculty ? \App\Enums\Role::Faculty->idPrefix() : \App\Enums\Role::Student->idPrefix() }}{{ $user->id }} &middot; {{ $user->email }}</p>
                         </div>
                     </div>
                     <span class="self-start sm:self-end inline-flex items-center gap-2 px-3 py-1.5 text-[12px] font-bold rounded-lg whitespace-nowrap {{ $user->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">

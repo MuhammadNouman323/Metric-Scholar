@@ -163,7 +163,7 @@
                         @forelse($students as $student)
                             <tr class="hover:bg-blue-50/40 transition-colors duration-150 group student-row" data-department="{{ $student->department ?? 'General' }}">
                                 <td class="px-6 py-6 whitespace-nowrap">
-                                    <span class="text-[13px] font-bold text-[#0e48c1]">#SC-{{ $student->id }}</span>
+                                    <span class="text-[13px] font-bold text-[#0e48c1]">{{ \App\Enums\Role::Student->idPrefix() }}{{ $student->id }}</span>
                                 </td>
                                 <td class="px-6 py-6 whitespace-nowrap">
                                     <div class="flex items-center gap-3">

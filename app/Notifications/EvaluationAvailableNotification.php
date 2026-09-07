@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\Role;
 use App\Models\Evaluation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -29,7 +30,7 @@ class EvaluationAvailableNotification extends Notification
             ->line('Semester: '.$this->evaluation->semester)
             ->line('Start Date: '.$this->evaluation->start_date->format('M d, Y'))
             ->line('End Date: '.$this->evaluation->end_date->format('M d, Y'))
-            ->action('Start Evaluation', url('/student/dashboard'))
+            ->action('Start Evaluation', url(Role::Student->dashboardRoute()))
             ->line('Please submit your feedback before the deadline.');
     }
 
@@ -40,7 +41,7 @@ class EvaluationAvailableNotification extends Notification
             'message' => 'A new anonymous faculty evaluation has been opened. Please submit your feedback before the deadline.',
             'evaluation_id' => $this->evaluation->id,
             'evaluation_title' => $this->evaluation->title,
-            'action_url' => '/student/dashboard', // Adjust if route differs
+            'action_url' => Role::Student->dashboardRoute(), // Adjust if route differs
         ];
     }
 }

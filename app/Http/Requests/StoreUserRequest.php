@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Role;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
@@ -26,7 +27,7 @@ class StoreUserRequest extends FormRequest
                     }
                 },
             ],
-            'role' => ['required', 'in:student,faculty'],
+            'role' => ['required', 'in:'.implode(',', [Role::Student->value, Role::Faculty->value])],
             'department' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:8'],
         ];

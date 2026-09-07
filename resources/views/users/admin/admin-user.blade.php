@@ -54,8 +54,8 @@
                             <select name="role"
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
                                 <option value="">Select user role</option>
-                                <option value="student" @selected(old('role') === 'student')>Student</option>
-                                <option value="faculty" @selected(old('role') === 'faculty')>Faculty</option>
+                                <option value="{{ \App\Enums\Role::Student->value }}" @selected(old('role') === \App\Enums\Role::Student->value)>Student</option>
+                                <option value="{{ \App\Enums\Role::Faculty->value }}" @selected(old('role') === \App\Enums\Role::Faculty->value)>Faculty</option>
                             </select>
                             <div class="absolute inset-y-0 right-4 top-[32px] flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor"

@@ -210,8 +210,12 @@
 
                         <!-- Data Points -->
                         @foreach($svgPoints as $pt)
-                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="5" fill="white" stroke="#0e48c1"
-                                stroke-width="2.5" />
+                            <g class="trend-point cursor-pointer">
+                                <title>{{ $pt['semester'] }} - {{ number_format($pt['rating'], 1) }}/5</title>
+                                <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="5" fill="white" stroke="#0e48c1"
+                                    stroke-width="2.5" />
+                                <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="14" fill="transparent" />
+                            </g>
                         @endforeach
                     </svg>
                 </div>

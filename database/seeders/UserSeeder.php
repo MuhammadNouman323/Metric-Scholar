@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -21,7 +22,7 @@ class UserSeeder extends Seeder
                 'name' => fake()->name(),
                 'email' => 'student'.str_pad($i, 2, '0', STR_PAD_LEFT).'@vu.edu.pk',
                 'password' => Hash::make('123456789'),
-                'role' => 'student',
+                'role' => Role::Student,
                 'email_verified_at' => now(),
                 'is_active' => true,
             ]);
@@ -34,7 +35,7 @@ class UserSeeder extends Seeder
                 'name' => fake()->name(),
                 'email' => 'faculty'.str_pad($i, 2, '0', STR_PAD_LEFT).'@vu.edu.pk',
                 'password' => Hash::make('123456789'),
-                'role' => 'faculty',
+                'role' => Role::Faculty,
                 'department' => 'Computer Science',
                 'email_verified_at' => now(),
                 'is_active' => true,

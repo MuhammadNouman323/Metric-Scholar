@@ -332,7 +332,7 @@
                     <div class="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
                         <!-- Admin -->
                         <label class="cursor-pointer group">
-                            <input type="radio" name="role" value="admin" form="login-form" class="peer sr-only" @checked(old('role', 'admin') === 'admin')>
+                            <input type="radio" name="role" value="{{ \App\Enums\Role::Admin->value }}" form="login-form" class="peer sr-only" @checked(old('role', \App\Enums\Role::Admin->value) === \App\Enums\Role::Admin->value)>
                             <div class="role-glow border-2 border-gray-100 rounded-2xl p-4 sm:py-5 flex flex-col items-center justify-center gap-2 bg-white text-gray-400 peer-checked:border-[#0e48c1] peer-checked:text-[#0e48c1] peer-checked:bg-gradient-to-b peer-checked:from-[#f0f4ff] peer-checked:to-white peer-checked:shadow-[0_8px_25px_rgba(14,72,193,0.12)] hover:bg-gray-50 hover:border-gray-200 transition-all duration-300">
                                 <div class="w-10 h-10 rounded-xl bg-current/5 flex items-center justify-center peer-checked:shadow-[0_4px_12px_rgba(14,72,193,0.15)] transition-all duration-300">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -342,7 +342,7 @@
                         </label>
                         <!-- Student -->
                         <label class="cursor-pointer group">
-                            <input type="radio" name="role" value="student" form="login-form" class="peer sr-only" @checked(old('role') === 'student')>
+                            <input type="radio" name="role" value="{{ \App\Enums\Role::Student->value }}" form="login-form" class="peer sr-only" @checked(old('role') === \App\Enums\Role::Student->value)>
                             <div class="role-glow border-2 border-gray-100 rounded-2xl p-4 sm:py-5 flex flex-col items-center justify-center gap-2 bg-gray-50/50 text-gray-500 peer-checked:border-[#0e48c1] peer-checked:bg-white peer-checked:text-[#0e48c1] peer-checked:bg-gradient-to-b peer-checked:from-[#f0f4ff] peer-checked:to-white peer-checked:shadow-[0_8px_25px_rgba(14,72,193,0.12)] hover:bg-gray-100/50 hover:border-gray-200 transition-all duration-300">
                                 <div class="w-10 h-10 rounded-xl bg-current/5 flex items-center justify-center transition-all duration-300">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -352,7 +352,7 @@
                         </label>
                         <!-- Faculty -->
                         <label class="cursor-pointer group">
-                            <input type="radio" name="role" value="faculty" form="login-form" class="peer sr-only" @checked(old('role') === 'faculty')>
+                            <input type="radio" name="role" value="{{ \App\Enums\Role::Faculty->value }}" form="login-form" class="peer sr-only" @checked(old('role') === \App\Enums\Role::Faculty->value)>
                             <div class="role-glow border-2 border-gray-100 rounded-2xl p-4 sm:py-5 flex flex-col items-center justify-center gap-2 bg-gray-50/50 text-gray-500 peer-checked:border-[#0e48c1] peer-checked:bg-white peer-checked:text-[#0e48c1] peer-checked:bg-gradient-to-b peer-checked:from-[#f0f4ff] peer-checked:to-white peer-checked:shadow-[0_8px_25px_rgba(14,72,193,0.12)] hover:bg-gray-100/50 hover:border-gray-200 transition-all duration-300">
                                 <div class="w-10 h-10 rounded-xl bg-current/5 flex items-center justify-center transition-all duration-300">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
@@ -446,7 +446,7 @@
 
                             function toggleAdminOnlyElements() {
                                 const selected = document.querySelector('input[name="role"]:checked');
-                                const isAdmin = selected && selected.value === 'admin';
+                                const isAdmin = selected && selected.value === '{{ \App\Enums\Role::Admin->value }}';
                                 registerLink.style.display = isAdmin ? 'block' : 'none';
                             }
 
