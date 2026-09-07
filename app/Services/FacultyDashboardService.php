@@ -92,7 +92,10 @@ class FacultyDashboardService
         $comments = FeedbackAnswer::whereIn('question_id', ['comments', 'what_worked_well', 'what_could_improve'])
             ->whereNotNull('text_answer')
             ->where('text_answer', '!=', '')
-            ->whereIn('moderation_status', ['approved', null])
+            ->where(function ($q) {
+                $q->whereNull('moderation_status')
+                    ->orWhere('moderation_status', 'approved');
+            })
             ->whereHas('feedback', function ($q) use ($faculty) {
                 $q->where('faculty_id', $faculty->id);
             })

@@ -3,6 +3,7 @@
 use App\Http\Middleware\UpdateEvaluationStatuses;
 use App\Models\Course;
 use App\Models\Evaluation;
+use App\Models\FeedbackAnswer;
 use App\Models\FeedbackToken;
 use App\Models\User;
 use App\Notifications\EvaluationRescheduledNotification;
@@ -10,6 +11,7 @@ use App\Repositories\EvaluationRepository;
 use App\Repositories\FeedbackRepository;
 use App\Services\EvaluationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -132,6 +134,78 @@ test('student can submit anonymous feedback using token', function () {
         'question_id' => 'overall_rating',
         'rating' => 5,
     ]);
+});
+
+test('written feedback stores gemini moderation status and toxicity via the submit route', function () {
+    config()->set('services.gemini.api_key', 'test-key');
+
+    Http::fake([
+        'generativelanguage.googleapis.com/*' => Http::response([
+            'candidates' => [
+                ['content' => ['parts' => [['text' => json_encode([
+                    'status' => 'flagged',
+                    'toxicity_score' => '65.4',
+                    'reason' => 'Mild slang.',
+                    'categories' => ['slang'],
+                    'cleaned_comment' => 'The pace was decent but ****.',
+                ])]]]],
+            ],
+        ]),
+    ]);
+
+    $student = User::factory()->create(['role' => 'student']);
+    $faculty = User::factory()->create(['role' => 'faculty']);
+    $course = Course::create([
+        'title' => 'Operating Systems',
+        'code' => 'CS-303',
+        'semester' => 'Spring 2025',
+        'credit_hours' => 4,
+        'department' => 'Computer Science',
+    ]);
+    $evaluation = Evaluation::create([
+        'title' => 'Test Eval',
+        'semester' => 'Fall',
+        'evaluation_type' => 'mid-term',
+        'start_date' => now(),
+        'end_date' => now()->addDays(7),
+        'status' => 'active',
+        'is_anonymous' => true,
+    ]);
+
+    $token = FeedbackToken::create([
+        'evaluation_id' => $evaluation->id,
+        'student_id' => $student->id,
+        'faculty_id' => $faculty->id,
+        'course_id' => $course->id,
+        'token' => Str::uuid(),
+        'is_used' => false,
+    ]);
+
+    $response = $this->actingAs($student)->postJson(route('student.feedback.store'), [
+        'token' => $token->token,
+        'clarity' => 5,
+        'materials' => 4,
+        'responsiveness' => 5,
+        'fairness' => 5,
+        'practical' => 4,
+        'organization' => 5,
+        'overall_rating' => 5,
+        'comments' => 'Great class!',
+        'what_worked_well' => 'Clear lectures and helpful labs.',
+        'what_could_improve' => 'Nothing at all.',
+        'recommendation' => 'yes_definitely',
+    ]);
+
+    $response->assertJson(['success' => true]);
+
+    $answer = FeedbackAnswer::where('question_id', 'what_worked_well')->first();
+
+    expect($answer)->not->toBeNull()
+        ->and($answer->original_comment)->toBe('Clear lectures and helpful labs.')
+        ->and($answer->cleaned_comment)->toBe('The pace was decent but ****.')
+        ->and($answer->moderation_status)->toBe('flagged')
+        ->and($answer->toxicity_score)->toBe(65)
+        ->and($answer->moderation_categories)->toBe(['slang']);
 });
 
 test('admin can view edit form for scheduled evaluation', function () {

@@ -137,3 +137,103 @@ test('moderate falls back to local filter when gemini returns invalid status', f
         ->and($result['toxicity_score'])->toBe(30)
         ->and($result['reason'])->toBe('Feedback contains mild slang or informal language.');
 });
+
+test('moderate parses gemini json embedded in prose and markdown fences', function () {
+    config()->set('services.gemini.api_key', 'test-key');
+
+    Http::fake([
+        'generativelanguage.googleapis.com/*' => Http::response([
+            'candidates' => [
+                ['content' => ['parts' => [['text' => "Here is the moderation result:\n"
+                    ."```json\n"
+                    .json_encode([
+                        'status' => 'flagged',
+                        'toxicity_score' => 42,
+                        'reason' => 'Mild slang detected.',
+                        'categories' => ['slang'],
+                        'cleaned_comment' => 'This course ****.',
+                    ], JSON_PRETTY_PRINT)
+                    ."\n```\nHope that helps!"]]]],
+            ],
+        ]),
+    ]);
+
+    $result = (new GeminiModerationService)->moderate('This course is garbage but great ethics.');
+
+    expect($result['status'])->toBe('flagged')
+        ->and($result['toxicity_score'])->toBe(42)
+        ->and($result['cleaned_comment'])->toBe('This course ****.');
+});
+
+test('moderate normalizes gemini status casing', function () {
+    config()->set('services.gemini.api_key', 'test-key');
+
+    Http::fake([
+        'generativelanguage.googleapis.com/*' => Http::response([
+            'candidates' => [
+                ['content' => ['parts' => [['text' => json_encode([
+                    'status' => 'Flagged',
+                    'toxicity_score' => 30,
+                    'reason' => 'Slang.',
+                    'cleaned_comment' => 'x',
+                ])]]]],
+            ],
+        ]),
+    ]);
+
+    $flagged = (new GeminiModerationService)->moderate('This class sucks.');
+
+    expect($flagged['status'])->toBe('flagged');
+});
+
+test('moderate maps gemini status aliases to canonical values', function () {
+    config()->set('services.gemini.api_key', 'test-key');
+
+    Http::fake([
+        'generativelanguage.googleapis.com/*' => Http::response([
+            'candidates' => [
+                ['content' => ['parts' => [['text' => json_encode([
+                    'status' => 'reject',
+                    'toxicity_score' => 80,
+                    'reason' => 'Toxic.',
+                    'cleaned_comment' => 'x',
+                ])]]]],
+            ],
+        ]),
+    ]);
+
+    $rejected = (new GeminiModerationService)->moderate('This class sucks and the professor is a moron.');
+
+    expect($rejected['status'])->toBe('rejected');
+});
+
+test('local filter catches inflectional and compound variants', function () {
+    $service = new GeminiModerationService;
+
+    $bullshit = $service->localModerate('This syllabus is complete bullshit.');
+    expect($bullshit['status'])->toBe('rejected');
+
+    $crappy = $service->localModerate("The lab equipment is crappy.");
+    expect($crappy['status'])->toBe('flagged')
+        ->and($crappy['cleaned_comment'])->toContain('****');
+
+    $stretched = $service->localModerate('These lectures were shiiit.');
+    expect($stretched['status'])->toBe('rejected');
+
+    $leet = $service->localModerate('Absolutely cr4p experience.');
+    expect($leet['status'])->toBe('flagged');
+});
+
+test('local filter does not flag benign words via suffix or stretch matching', function () {
+    $service = new GeminiModerationService;
+
+    $approved = $service->localModerate('The course was well organized, clear, and helped me learn.');
+    expect($approved['status'])->toBe('approved')
+        ->and($approved['toxicity_score'])->toBe(0);
+
+    $fantastic = $service->localModerate('This was a fantastic class and I recommend it.');
+    expect($fantastic['status'])->toBe('approved');
+
+    $diet = $service->localModerate('The professor discussed healthy diet during the break.');
+    expect($diet['status'])->toBe('approved');
+});

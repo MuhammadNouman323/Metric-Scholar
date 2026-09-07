@@ -102,9 +102,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
                                 </div>
-                                <input type="password" name="password"
+                                <input type="password" name="password" required minlength="8"
                                     class="w-full bg-transparent px-3 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px] tracking-widest"
-                                    placeholder="••••••••" required autofocus>
+                                    placeholder="••••••••" autofocus>
                             </div>
                             @error('password')
                                 <p class="mt-1.5 text-xs font-semibold text-red-500">{{ $message }}</p>
@@ -119,9 +119,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
                                 </div>
-                                <input type="password" name="password_confirmation"
+                                <input type="password" name="password_confirmation" required minlength="8"
                                     class="w-full bg-transparent px-3 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px] tracking-widest"
-                                    placeholder="••••••••" required>
+                                    placeholder="••••••••">
                             </div>
                         </div>
 
@@ -132,6 +132,31 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                         </button>
+
+                        <script>
+                            (function () {
+                                const form = document.querySelector('form');
+                                const password = form.querySelector('input[name="password"]');
+                                const confirmation = form.querySelector('input[name="password_confirmation"]');
+
+                                password.addEventListener('input', function () {
+                                    const pw = password.value;
+                                    if (pw.length < 8 || !/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/\d/.test(pw) || !/[^A-Za-z0-9]/.test(pw)) {
+                                        password.setCustomValidity('Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.');
+                                    } else {
+                                        password.setCustomValidity('');
+                                    }
+                                });
+
+                                confirmation.addEventListener('input', function () {
+                                    if (confirmation.value && confirmation.value !== password.value) {
+                                        confirmation.setCustomValidity('Password confirmation does not match.');
+                                    } else {
+                                        confirmation.setCustomValidity('');
+                                    }
+                                });
+                            })();
+                        </script>
                     </form>
 
                     <div class="mt-8 text-center">

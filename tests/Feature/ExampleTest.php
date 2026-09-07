@@ -11,7 +11,7 @@ test('the landing page renders for guests', function () {
     $response->assertOk();
     $response->assertViewIs('landing');
     $response->assertSee('Scholar');
-    $response->assertSee('Elevating Academic');
+    $response->assertSeeInOrder(['Elevating', 'Academic', 'Excellence', 'Informed', 'Feedback.']);
 });
 
 test('the landing page renders for authenticated users', function () {
