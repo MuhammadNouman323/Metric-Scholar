@@ -89,7 +89,7 @@
             <div>
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-[18px] font-bold text-gray-900">History</h3>
-                    <a href="/student/feedback/history"
+                    <a href="{{ route('student.feedback.history') }}"
                         class="text-[13px] font-bold text-[#0e48c1] hover:underline">View All</a>
                 </div>
                 <div class="relative pl-6">
