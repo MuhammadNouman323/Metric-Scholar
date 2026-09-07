@@ -86,7 +86,7 @@
             <!-- Nav -->
             <nav class="sidebar-scroll flex-1 overflow-y-auto px-3.5 space-y-1 text-[14px] font-semibold text-slate-500 pb-4">
                 <a href="/student/dashboard"
-                    class="{{ request()->is('student/dashboard')
+                    class="{{ request()->is('student/dashboard') || request()->is('student/dashboard/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
@@ -97,7 +97,7 @@
                     Dashboard
                 </a>
                 <a href="/student/courses"
-                    class="{{ request()->is('student/courses')
+                    class="{{ request()->is('student/courses') || request()->is('student/courses/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
@@ -108,7 +108,7 @@
                     Courses
                 </a>
                 <a href="/student/teachers"
-                    class="{{ request()->is('student/teachers')
+                    class="{{ request()->is('student/teachers') || request()->is('student/teachers/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">

@@ -124,7 +124,7 @@
                     Dashboard
                 </a>
                 <a href="/admin/user"
-                    class="{{ request()->is('admin/user')
+                    class="{{ request()->is('admin/user') || request()->is('admin/user/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
@@ -135,7 +135,7 @@
                     Users
                 </a>
                 <a href="/admin/departments"
-                    class="{{ request()->is('admin/departments')
+                    class="{{ request()->is('admin/departments') || request()->is('admin/departments/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
@@ -146,7 +146,7 @@
                     Departments
                 </a>
                 <a href="/admin/students"
-                    class="{{ request()->is('admin/students')
+                    class="{{ request()->is('admin/students') || request()->is('admin/students/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
@@ -157,7 +157,7 @@
                     Students
                 </a>
                 <a href="/admin/faculty"
-                    class="{{ request()->is('admin/faculity') || request()->is('admin/faculty')
+                    class="{{ request()->is('admin/faculity') || request()->is('admin/faculty') || request()->is('admin/faculty/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
@@ -179,7 +179,7 @@
                     Courses
                 </a>
                 <a href="/admin/reports"
-                    class="{{ request()->is('admin/reports')
+                    class="{{ request()->is('admin/reports') || request()->is('admin/reports/*')
                         ? 'text-white bg-gradient-to-r from-[#0e48c1] to-[#3d6ae8] shadow-[0_6px_16px_rgba(14,72,193,0.3)] nav-link-active'
                         : 'text-slate-500 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm hover:shadow-[0_2px_8px_rgba(14,72,193,0.06)]' }}
                         group flex items-center px-4 py-3 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e48c1]/40">
