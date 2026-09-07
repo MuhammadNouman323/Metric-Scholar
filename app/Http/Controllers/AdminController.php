@@ -77,41 +77,7 @@ class AdminController extends Controller
             'goodRotation' => $excellentPct * 3.6,
         ];
 
-        $departments = User::where('university_id', $tenantId)
-            ->where('role', Role::Faculty)
-            ->whereNotNull('department')
-            ->distinct()
-            ->pluck('department');
-
-        $departmentPerformance = [];
-        $colors = [
-            ['bar' => '#0e48c1', 'shadow' => 'shadow-blue-500/20'],
-            ['bar' => '#2563eb', 'shadow' => 'shadow-blue-400/20'],
-            ['bar' => '#6366f1', 'shadow' => 'shadow-indigo-400/20'],
-            ['bar' => '#10b981', 'shadow' => 'shadow-emerald-400/20'],
-            ['bar' => '#f59e0b', 'shadow' => 'shadow-amber-400/20'],
-            ['bar' => '#ef4444', 'shadow' => 'shadow-red-400/20'],
-        ];
-
-        foreach ($departments as $i => $dept) {
-            $avg = Feedback::whereHas('faculty', function ($q) use ($dept, $tenantId) {
-                $q->where('department', $dept)->where('university_id', $tenantId);
-            })
-                ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
-                ->where('feedback_answers.question_id', 'overall_rating')
-                ->avg('feedback_answers.rating');
-
-            $score = $avg ? round(($avg / 5) * 100) : 0;
-
-            $departmentPerformance[] = [
-                'name' => $dept,
-                'score' => $score,
-                'avg_rating' => $avg ? round($avg, 1) : 0,
-                'color' => $colors[$i % count($colors)],
-            ];
-        }
-
-        usort($departmentPerformance, fn ($a, $b) => $b['score'] <=> $a['score']);
+        $departmentPerformance = $this->computeDepartmentPerformance($tenantId);
 
         $recentFeedbacks = Feedback::whereHas('faculty', fn ($q) => $q->where('university_id', $tenantId))
             ->with(['course', 'answers'])
@@ -607,16 +573,23 @@ class AdminController extends Controller
             ->groupBy('department', 'role')
             ->get();
 
-        $departments = $roleCounts->pluck('department')->unique()->map(function (?string $department) use ($roleCounts): array {
+        $performance = collect($this->computeDepartmentPerformance($tenantId))
+            ->keyBy(fn (array $dept): string => $dept['name']);
+
+        $departments = $roleCounts->pluck('department')->unique()->map(function (?string $department) use ($roleCounts, $performance): array {
             $departmentName = trim((string) $department);
+            $perf = $performance->get($departmentName, ['score' => 0, 'avg_rating' => 0, 'color' => ['bar' => '#0e48c1', 'shadow' => 'shadow-blue-500/20']]);
 
             return [
                 'slug' => Str::slug($departmentName),
                 'name' => $departmentName,
                 'facultyCount' => $roleCounts->where('department', $department)->where('role', Role::Faculty)->sum('count'),
                 'studentCount' => $roleCounts->where('department', $department)->where('role', Role::Student)->sum('count'),
+                'score' => $perf['score'],
+                'avg_rating' => $perf['avg_rating'],
+                'color' => $perf['color'],
             ];
-        })->sortBy('name')->values();
+        })->sortBy('name')->sortByDesc('score')->values();
 
         return view('users.admin.departments', compact('departments'));
     }
@@ -1727,6 +1700,51 @@ class AdminController extends Controller
         });
 
         return redirect()->route('admin.users.edit', $user)->with('success', 'Temporary password updated successfully. Make sure to communicate it to the user.');
+    }
+
+    /**
+     * @return array<int, array{name: string, score: int, avg_rating: float|int, color: array{bar: string, shadow: string}}>
+     */
+    private function computeDepartmentPerformance(?int $tenantId): array
+    {
+        $departments = User::where('university_id', $tenantId)
+            ->where('role', Role::Faculty)
+            ->whereNotNull('department')
+            ->distinct()
+            ->pluck('department');
+
+        $colors = [
+            ['bar' => '#0e48c1', 'shadow' => 'shadow-blue-500/20'],
+            ['bar' => '#2563eb', 'shadow' => 'shadow-blue-400/20'],
+            ['bar' => '#6366f1', 'shadow' => 'shadow-indigo-400/20'],
+            ['bar' => '#10b981', 'shadow' => 'shadow-emerald-400/20'],
+            ['bar' => '#f59e0b', 'shadow' => 'shadow-amber-400/20'],
+            ['bar' => '#ef4444', 'shadow' => 'shadow-red-400/20'],
+        ];
+
+        $performance = [];
+
+        foreach ($departments as $i => $dept) {
+            $avg = Feedback::whereHas('faculty', function ($q) use ($dept, $tenantId) {
+                $q->where('department', $dept)->where('university_id', $tenantId);
+            })
+                ->join('feedback_answers', 'feedbacks.id', '=', 'feedback_answers.feedback_id')
+                ->where('feedback_answers.question_id', 'overall_rating')
+                ->avg('feedback_answers.rating');
+
+            $score = $avg ? round(($avg / 5) * 100) : 0;
+
+            $performance[] = [
+                'name' => $dept,
+                'score' => $score,
+                'avg_rating' => $avg ? round($avg, 1) : 0,
+                'color' => $colors[$i % count($colors)],
+            ];
+        }
+
+        usort($performance, fn ($a, $b) => $b['score'] <=> $a['score']);
+
+        return $performance;
     }
 
     private function getMonthlyRatingsByDepartment(?string $tenantId, string $startDate, string $endDate): Collection

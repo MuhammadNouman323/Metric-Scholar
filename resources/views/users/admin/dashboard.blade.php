@@ -193,7 +193,7 @@
                 class="lg:col-span-2 bg-white rounded-[2rem] p-8 flex flex-col h-full border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                 <div class="flex justify-between items-center mb-8">
                     <h3 class="text-[19px] font-bold text-gray-900">Faculty Performance by Department</h3>
-                    <a href="#"
+                    <a href="{{ route('admin.departments') }}"
                         class="text-[11px] font-bold text-[#0e48c1] uppercase tracking-wider hover:underline px-2 py-1 bg-blue-50/50 rounded-lg">View
                         All</a>
                 </div>

@@ -26,6 +26,16 @@
                     <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $department['name'] }}</h3>
                     <p class="text-sm text-gray-500 mb-2">Students: {{ number_format($department['studentCount']) }}</p>
                     <p class="text-sm text-gray-500 mb-6">Faculty: {{ number_format($department['facultyCount']) }}</p>
+                    <div class="mb-6">
+                        <div class="flex justify-between text-[12px] font-bold text-gray-500 mb-2.5 tracking-wide">
+                            <span>PERFORMANCE</span>
+                            <span class="text-gray-800">{{ $department['score'] }}%</span>
+                        </div>
+                        <div class="w-full bg-[#f1f5f9] rounded-full h-2.5">
+                            <div class="h-2.5 rounded-full shadow-sm"
+                                style="width: {{ $department['score'] }}%; background-color: {{ $department['color']['bar'] }}; box-shadow: 0 1px 3px -1px {{ $department['color']['bar'] }}40;"></div>
+                        </div>
+                    </div>
                     <a href="{{ route('admin.departments.show', $department['slug']) }}" class="inline-block text-center w-full py-2 rounded-lg bg-[#f1f5f9] text-[#0e48c1] font-bold">View Details →</a>
                 </div>
             @empty
