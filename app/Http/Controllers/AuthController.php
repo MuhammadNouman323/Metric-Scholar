@@ -58,7 +58,7 @@ class AuthController extends Controller
 
         unset($validated['terms']);
         $validated['role'] = Role::Admin->value;
-        $validated['admin_id'] ??= 'ADM-'.strtoupper((string) str()->random(6));
+        $validated['admin_id'] = 'ADM-'.strtoupper((string) str()->random(6));
         $validated['access_level'] = 'Full Access';
         $validated['password'] = Hash::make($validated['password']);
 

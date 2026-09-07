@@ -269,7 +269,8 @@
                                 <div class="pl-4 text-gray-400">
                                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                                 </div>
-                                <input type="text" name="name" value="{{ old('name') }}" class="w-full bg-transparent px-3 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px]" placeholder="Dr. Julian Vane">
+<input type="text" name="name" value="{{ old('name') }}" required
+                                class="w-full bg-transparent px-3 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px]" placeholder="Dr. Julian Vane">
                             </div>
                             @error('name')
                                 <p class="mt-2 flex items-center gap-1.5 text-sm font-semibold text-red-500"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p>
@@ -283,7 +284,8 @@
                                 <div class="pl-4 text-gray-400">
                                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                                 </div>
-                                <input type="email" name="email" value="{{ old('email') }}" class="w-full bg-transparent px-3 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px]" placeholder="name@scholarmetric.edu">
+<input type="email" name="email" value="{{ old('email') }}" required
+                                class="w-full bg-transparent px-3 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px]" placeholder="name@scholarmetric.edu">
                             </div>
                             @error('email')
                                 <p class="mt-2 flex items-center gap-1.5 text-sm font-semibold text-red-500"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p>
@@ -311,7 +313,8 @@
                                 <div class="pl-4 text-gray-400">
                                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                                 </div>
-                                <input type="password" name="password" class="w-full bg-transparent px-3 py-3.5 pr-12 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px] tracking-widest" placeholder="••••••••••••">
+<input type="password" name="password" required minlength="8"
+                                class="w-full bg-transparent px-3 py-3.5 pr-12 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px] tracking-widest" placeholder="••••••••••••">
                                 <button type="button" class="toggle-pw absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-[#0e48c1] focus:outline-none transition-colors duration-300">
                                     <svg class="w-[18px] h-[18px] eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     <svg class="w-[18px] h-[18px] eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
@@ -329,7 +332,8 @@
                                 <div class="pl-4 text-gray-400">
                                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                                 </div>
-                                <input type="password" name="password_confirmation" class="w-full bg-transparent px-3 py-3.5 pr-12 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px] tracking-widest" placeholder="••••••••••••">
+<input type="password" name="password_confirmation" required minlength="8"
+                                class="w-full bg-transparent px-3 py-3.5 pr-12 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none text-[15px] tracking-widest" placeholder="••••••••••••">
                                 <button type="button" class="toggle-pw absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-[#0e48c1] focus:outline-none transition-colors duration-300">
                                     <svg class="w-[18px] h-[18px] eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                     <svg class="w-[18px] h-[18px] eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
@@ -339,7 +343,7 @@
 
                         <!-- Terms -->
                         <div class="mb-8 flex items-start">
-                            <input id="terms" name="terms" type="checkbox" value="1" @checked(old('terms')) class="premium-checkbox mt-0.5">
+                            <input id="terms" name="terms" type="checkbox" value="1" @checked(old('terms')) required class="premium-checkbox mt-0.5">
                             <label for="terms" class="ml-2.5 text-sm text-gray-500 font-semibold cursor-pointer select-none hover:text-gray-700 transition-colors duration-300">I agree to the institutional data privacy terms.</label>
                         </div>
                         @error('terms')
@@ -374,6 +378,28 @@
                                     btn.querySelector('.eye-open').classList.toggle('hidden', !isPw);
                                     btn.querySelector('.eye-closed').classList.toggle('hidden', isPw);
                                 });
+                            });
+
+                            // Client-side validation
+                            const form = document.querySelector('form');
+                            const password = form.querySelector('input[name="password"]');
+                            const confirmation = form.querySelector('input[name="password_confirmation"]');
+
+                            password.addEventListener('input', function () {
+                                const pw = password.value;
+                                if (pw.length < 8 || !/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/\d/.test(pw) || !/[^A-Za-z0-9]/.test(pw)) {
+                                    password.setCustomValidity('Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.');
+                                } else {
+                                    password.setCustomValidity('');
+                                }
+                            });
+
+                            confirmation.addEventListener('input', function () {
+                                if (confirmation.value && confirmation.value !== password.value) {
+                                    confirmation.setCustomValidity('Password confirmation does not match.');
+                                } else {
+                                    confirmation.setCustomValidity('');
+                                }
                             });
                         })();
                     </script>

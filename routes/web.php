@@ -21,8 +21,7 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::view('/register', 'auth.register')
     ->middleware('guest')
     ->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-// ->middleware(['guest', 'throttle:5,30'])
+Route::post('/register', [AuthController::class, 'register'])->middleware('guest');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

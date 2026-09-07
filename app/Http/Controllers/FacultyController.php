@@ -33,9 +33,10 @@ class FacultyController extends Controller
         $criteriaStats = $dashboardService->getCriteriaStats($faculty);
         $svgPoints = $dashboardService->generateSvgPoints($faculty);
 
-        $recentComments = FeedbackAnswer::where('question_id', 'comments')
+        $recentComments = FeedbackAnswer::whereIn('question_id', ['comments', 'what_worked_well', 'what_could_improve'])
             ->whereNotNull('text_answer')
             ->where('text_answer', '!=', '')
+            ->whereIn('moderation_status', ['approved', null])
             ->whereHas('feedback', function ($q) use ($faculty) {
                 $q->where('faculty_id', $faculty->id);
             })

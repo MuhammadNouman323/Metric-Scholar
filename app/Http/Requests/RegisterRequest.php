@@ -7,6 +7,7 @@ use App\Models\University;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Validator;
 
 class RegisterRequest extends FormRequest
@@ -21,9 +22,8 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
             'department' => ['nullable', 'string', 'max:255'],
-            'admin_id' => ['nullable', 'string', 'max:255', 'unique:users,admin_id'],
             'terms' => ['accepted'],
         ];
     }

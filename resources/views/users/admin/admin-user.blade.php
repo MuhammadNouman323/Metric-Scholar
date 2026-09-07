@@ -29,7 +29,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Full Name</label>
-                            <input type="text" name="name" value="{{ old('name') }}"
+                            <input type="text" name="name" value="{{ old('name') }}" required
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                 placeholder="Dr. Julian Casablancas">
                             @error('name')
@@ -38,7 +38,7 @@
                         </div>
                         <div>
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Institutional Email</label>
-                            <input type="email" name="email" value="{{ old('email') }}"
+                            <input type="email" name="email" value="{{ old('email') }}" required
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all text-sm"
                                 placeholder="julian.c@scholarmetric.edu">
                             @error('email')
@@ -51,7 +51,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
                         <div class="relative">
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Role Selection</label>
-                            <select name="role"
+                            <select name="role" required
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
                                 <option value="">Select user role</option>
                                 <option value="{{ \App\Enums\Role::Student->value }}" @selected(old('role') === \App\Enums\Role::Student->value)>Student</option>
@@ -70,7 +70,7 @@
                         </div>
                         <div class="relative">
                             <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Department</label>
-                            <select name="department"
+                            <select name="department" required
                                 class="w-full bg-[#f4f6f8] border border-transparent rounded-xl px-4 py-3.5 text-gray-900 font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-[#0e48c1] focus:bg-white focus:border-blue-200 transition-all cursor-pointer text-sm">
                                 <option value="">Assign department</option>
                                 <option value="Computer Science" @selected(old('department') === 'Computer Science')>Computer Science</option>
@@ -96,13 +96,27 @@
                         <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Temporary Password</label>
                         <div
                             class="relative flex items-center bg-[#f4f6f8] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#0e48c1] focus-within:bg-white transition-all border border-transparent focus-within:border-blue-200">
-                            <input type="password" name="password"
+                            <input type="password" name="password" required minlength="8"
                                 class="w-full bg-transparent px-4 py-3.5 pr-28 text-gray-900 font-bold placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-widest text-lg"
                                 placeholder="••••••••••••">
                         </div>
                         <p class="text-[12px] text-gray-400 font-medium mt-3">User will be prompted to change this
                             password on first login.</p>
                         @error('password')
+                            <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mt-2">
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2.5">Confirm Temporary Password</label>
+                        <div
+                            class="relative flex items-center bg-[#f4f6f8] rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#0e48c1] focus-within:bg-white transition-all border border-transparent focus-within:border-blue-200">
+                            <input type="password" name="password_confirmation" required minlength="8"
+                                class="w-full bg-transparent px-4 py-3.5 pr-28 text-gray-900 font-bold placeholder:text-gray-400 placeholder:font-normal focus:outline-none tracking-widest text-lg"
+                                placeholder="••••••••••••">
+                        </div>
+                        @error('password_confirmation')
                             <p class="mt-2 text-xs font-semibold text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -121,6 +135,42 @@
                             <span>Create User Account</span>
                         </button>
                     </div>
+
+                    <script>
+                        (function () {
+                            const form = document.querySelector('form');
+                            const password = form.querySelector('input[name="password"]');
+                            const confirmation = form.querySelector('input[name="password_confirmation"]');
+                            const email = form.querySelector('input[name="email"]');
+                            const currentDomain = @json(explode('@', auth()->user()->email)[1] ?? '');
+
+                            email.addEventListener('input', function () {
+                                const domain = email.value.split('@')[1] ?? '';
+                                if (domain && domain !== currentDomain) {
+                                    email.setCustomValidity('Email must use your institutional domain (' + currentDomain + ').');
+                                } else {
+                                    email.setCustomValidity('');
+                                }
+                            });
+
+                            password.addEventListener('input', function () {
+                                const pw = password.value;
+                                if (pw.length < 8 || !/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/\d/.test(pw) || !/[^A-Za-z0-9]/.test(pw)) {
+                                    password.setCustomValidity('Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.');
+                                } else {
+                                    password.setCustomValidity('');
+                                }
+                            });
+
+                            confirmation.addEventListener('input', function () {
+                                if (confirmation.value && confirmation.value !== password.value) {
+                                    confirmation.setCustomValidity('Password confirmation does not match.');
+                                } else {
+                                    confirmation.setCustomValidity('');
+                                }
+                            });
+                        })();
+                    </script>
 
                 </form>
             </div>

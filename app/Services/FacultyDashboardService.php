@@ -89,21 +89,22 @@ class FacultyDashboardService
 
     public function getRecentComments(User $faculty, int $limit = 5): array
     {
-        $comments = Feedback::where('faculty_id', $faculty->id)
-            ->with(['course:id,title,code', 'answers' => function ($q) {
-                $q->where('question_id', 'comments');
-            }])
-            ->whereHas('answers', function ($q) {
-                $q->where('question_id', 'comments');
+        $comments = FeedbackAnswer::whereIn('question_id', ['comments', 'what_worked_well', 'what_could_improve'])
+            ->whereNotNull('text_answer')
+            ->where('text_answer', '!=', '')
+            ->whereIn('moderation_status', ['approved', null])
+            ->whereHas('feedback', function ($q) use ($faculty) {
+                $q->where('faculty_id', $faculty->id);
             })
+            ->with(['feedback.course'])
             ->latest()
             ->take($limit)
             ->get();
 
-        return $comments->map(fn ($f) => [
-            'course' => $f->course?->title,
-            'comment' => $f->answers->first()?->text_answer,
-            'submitted_at' => $f->created_at,
+        return $comments->map(fn ($a) => [
+            'course' => $a->feedback->course?->title,
+            'comment' => $a->text_answer,
+            'submitted_at' => $a->created_at,
         ])->toArray();
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Role;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class StoreUserRequest extends FormRequest
 {
@@ -19,7 +20,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required', 'string', 'email', 'max:255', 'unique:users,email',
+                'bail', 'required', 'string', 'email', 'max:255', 'unique:users,email',
                 function (string $attribute, mixed $value, \Closure $fail) use ($adminDomain) {
                     $inputDomain = explode('@', $value)[1] ?? null;
                     if ($inputDomain !== $adminDomain) {
@@ -29,7 +30,8 @@ class StoreUserRequest extends FormRequest
             ],
             'role' => ['required', 'in:'.implode(',', [Role::Student->value, Role::Faculty->value])],
             'department' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'password_confirmation' => ['required', 'string'],
         ];
     }
 }

@@ -11,8 +11,8 @@ function registerPayload(array $overrides = []): array
     return array_merge([
         'name' => 'Admin User',
         'email' => 'admin@vu.edu.pk',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'AdminPassword123!',
+        'password_confirmation' => 'AdminPassword123!',
         'department' => 'Computer Science',
         'terms' => '1',
     ], $overrides);
@@ -114,5 +114,41 @@ test('register requires accepted terms', function () {
 
     $response->assertRedirect('/register');
     $response->assertSessionHasErrors('terms');
+    expect(User::query()->where('email', 'admin@vu.edu.pk')->exists())->toBeFalse();
+});
+
+test('registration ignores a forged admin_id and generates one server-side', function () {
+    University::factory()->create(['domain' => 'vu.edu.pk']);
+
+    $response = $this->post('/register', registerPayload([
+        'admin_id' => 'ADM-FORGED',
+    ]));
+
+    $response->assertRedirect('/admin/dashboard');
+    $this->assertAuthenticated();
+    expect(User::query()->where('email', 'admin@vu.edu.pk')->value('admin_id'))->not->toBe('ADM-FORGED');
+});
+
+test('an authenticated user cannot register an admin account', function () {
+    University::factory()->create(['domain' => 'vu.edu.pk']);
+
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $response = $this->actingAs($admin)->post('/register', registerPayload());
+
+    $response->assertRedirect('/admin/dashboard');
+    expect(User::query()->where('email', 'admin@vu.edu.pk')->exists())->toBeFalse();
+});
+
+test('registration rejects passwords without required complexity', function () {
+    University::factory()->create(['domain' => 'vu.edu.pk']);
+
+    $response = $this->from('/register')->post('/register', registerPayload([
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]));
+
+    $response->assertRedirect('/register');
+    $response->assertSessionHasErrors('password');
     expect(User::query()->where('email', 'admin@vu.edu.pk')->exists())->toBeFalse();
 });

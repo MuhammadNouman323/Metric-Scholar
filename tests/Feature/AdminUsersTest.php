@@ -231,7 +231,8 @@ test('/admin/user creation does not reuse the admin primary key as admin_id', fu
         'email' => 'new.student@example.com',
         'role' => 'student',
         'department' => 'Computer Science',
-        'password' => 'password123',
+        'password' => 'StrongPass123!',
+        'password_confirmation' => 'StrongPass123!',
     ]);
 
     $response->assertRedirect();

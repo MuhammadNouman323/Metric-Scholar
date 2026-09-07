@@ -19,7 +19,7 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $plainPassword = '123456789';
+        $plainPassword = 'Vu@12345';
         $password = Hash::make($plainPassword);
 
         // Matches the admin dashboard engagement chart window (Spring 2025 -> Fall 2026)
